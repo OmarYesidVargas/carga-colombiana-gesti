@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Button } from '@/components/ui/button';
@@ -102,10 +101,10 @@ const ExpensesReportPage = () => {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="vehicle-filter" className="text-sm font-medium">
+              <label className="text-sm font-medium mb-1 block">
                 Vehículo
               </label>
-              <Select id="vehicle-filter" value={vehicleFilter} onValueChange={setVehicleFilter}>
+              <Select value={vehicleFilter} onValueChange={setVehicleFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar vehículo" />
                 </SelectTrigger>
@@ -121,10 +120,10 @@ const ExpensesReportPage = () => {
             </div>
             
             <div>
-              <label htmlFor="category-filter" className="text-sm font-medium">
+              <label className="text-sm font-medium mb-1 block">
                 Categoría
               </label>
-              <Select id="category-filter" value={categoryFilter} onValueChange={setCategoryFilter}>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar categoría" />
                 </SelectTrigger>
@@ -139,14 +138,13 @@ const ExpensesReportPage = () => {
             </div>
             
             <div>
-              <label htmlFor="date-filter" className="text-sm font-medium">
+              <label className="text-sm font-medium mb-1 block">
                 Rango de fechas
               </label>
               <div className="grid gap-2">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
-                      id="date-filter"
                       variant={"outline"}
                       className={cn(
                         "w-full justify-start text-left font-normal",
