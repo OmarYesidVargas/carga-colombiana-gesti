@@ -398,6 +398,11 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     toast.success('Vehículo eliminado exitosamente');
   };
   
+  // Función para obtener un vehículo por ID
+  const getVehicleById = (id: string) => {
+    return vehicles.find((vehicle) => vehicle.id === id);
+  };
+  
   // Funciones para gestionar viajes
   const addTrip = (trip: Omit<Trip, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     const now = new Date();
@@ -435,6 +440,11 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     
     setTrips(trips.filter((trip) => trip.id !== id));
     toast.success('Viaje eliminado exitosamente');
+  };
+  
+  // Función para obtener un viaje por ID
+  const getTripById = (id: string) => {
+    return trips.find((trip) => trip.id === id);
   };
   
   // Funciones para gestionar gastos
@@ -482,6 +492,11 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   const deleteExpense = (id: string) => {
     setExpenses(expenses.filter((expense) => expense.id !== id));
     toast.success('Gasto eliminado exitosamente');
+  };
+  
+  // Función para obtener un gasto por ID
+  const getExpenseById = (id: string) => {
+    return expenses.find((expense) => expense.id === id);
   };
   
   // Funciones para gestionar peajes
