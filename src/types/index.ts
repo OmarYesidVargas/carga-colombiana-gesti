@@ -1,0 +1,58 @@
+
+export type User = {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: Date;
+};
+
+export type Vehicle = {
+  id: string;
+  userId: string;
+  plate: string; // Placa del vehículo
+  brand: string; // Marca
+  model: string; // Modelo
+  year: number; // Año
+  color?: string; // Color (opcional)
+  fuelType?: string; // Tipo de combustible (opcional)
+  capacity?: string; // Capacidad de carga (opcional)
+  imageUrl?: string; // URL de la imagen (opcional)
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type Trip = {
+  id: string;
+  vehicleId: string; // ID del vehículo asociado
+  userId: string;
+  startDate: Date; // Fecha de inicio
+  endDate: Date; // Fecha de fin
+  origin: string; // Lugar de origen
+  destination: string; // Lugar de destino
+  distance: number; // Distancia en kilómetros
+  notes?: string; // Notas adicionales (opcional)
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ExpenseCategory =
+  | "fuel"        // Combustible
+  | "toll"        // Peaje
+  | "maintenance" // Mantenimiento
+  | "lodging"     // Alojamiento
+  | "food"        // Comida
+  | "other";      // Otros
+
+export type Expense = {
+  id: string;
+  tripId: string; // ID del viaje asociado
+  userId: string;
+  vehicleId: string; // ID del vehículo (para facilitar consultas)
+  category: ExpenseCategory; // Categoría del gasto
+  date: Date; // Fecha del gasto
+  amount: number; // Monto en pesos colombianos
+  description?: string; // Descripción (opcional)
+  receiptUrl?: string; // URL del comprobante (opcional)
+  createdAt: Date;
+  updatedAt: Date;
+};
