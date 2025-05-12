@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Expense, Trip, Vehicle } from '@/types';
+import { Expense, Trip, Vehicle, expenseCategoryColors } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Edit, Trash } from 'lucide-react';
@@ -19,7 +19,12 @@ interface ExpenseCardProps {
 
 // Función para formateador de moneda colombiana
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(amount);
+  return new Intl.NumberFormat('es-CO', { 
+    style: 'currency', 
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0 
+  }).format(amount);
 };
 
 // Mapeo de categorías a etiquetas en español
@@ -32,26 +37,25 @@ const categoryLabels: Record<string, string> = {
   other: 'Otros',
 };
 
-// Mapeo de categorías a colores
-const categoryColors: Record<string, string> = {
-  fuel: 'bg-expense-fuel/20 text-expense-fuel border-expense-fuel',
-  toll: 'bg-expense-toll/20 text-expense-toll border-expense-toll',
-  maintenance: 'bg-expense-maintenance/20 text-expense-maintenance border-expense-maintenance',
-  lodging: 'bg-expense-lodging/20 text-expense-lodging border-expense-lodging',
-  food: 'bg-expense-food/20 text-expense-food border-expense-food',
-  other: 'bg-expense-other/20 text-expense-other border-expense-other',
-};
-
 const ExpenseCard = ({ expense, trip, vehicle, onEdit, onDelete }: ExpenseCardProps) => {
+  // Obtener el color basado en la categoría
+  const getCategoryColor = (category: string) => {
+    return {
+      backgroundColor: `${expenseCategoryColors[category as keyof typeof expenseCategoryColors]}15`,
+      borderColor: expenseCategoryColors[category as keyof typeof expenseCategoryColors],
+      color: expenseCategoryColors[category as keyof typeof expenseCategoryColors]
+    };
+  };
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
-      <CardHeader className={`pb-2 bg-${expense.category === 'other' ? 'muted' : `expense-${expense.category}`}/10`}>
+      <CardHeader className="pb-2" style={{ backgroundColor: `${expenseCategoryColors[expense.category]}15` }}>
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <Badge 
                 variant="outline" 
-                className={cn(categoryColors[expense.category])}
+                style={getCategoryColor(expense.category)}
               >
                 {categoryLabels[expense.category]}
               </Badge>

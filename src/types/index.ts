@@ -43,6 +43,16 @@ export type ExpenseCategory =
   | "food"        // Comida
   | "other";      // Otros
 
+// Colores para las categorías de gastos
+export const expenseCategoryColors = {
+  fuel: "#3b82f6",        // blue-500
+  toll: "#10b981",        // emerald-500
+  maintenance: "#f59e0b", // amber-500
+  lodging: "#8b5cf6",     // violet-500
+  food: "#ec4899",        // pink-500
+  other: "#6b7280",       // gray-500
+};
+
 export type Expense = {
   id: string;
   tripId: string; // ID del viaje asociado

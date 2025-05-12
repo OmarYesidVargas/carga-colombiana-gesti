@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Expense, Vehicle, Trip } from '@/types';
+import { Expense, Vehicle, Trip, expenseCategoryColors } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ExpenseSummaryProps {
@@ -68,13 +68,13 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
   
   // Calcular gastos por categoría
   const expensesByCategory = React.useMemo(() => {
-    const categories: Record<string, { label: string; amount: number }> = {
-      fuel: { label: 'Combustible', amount: 0 },
-      toll: { label: 'Peaje', amount: 0 },
-      maintenance: { label: 'Mantenimiento', amount: 0 },
-      lodging: { label: 'Alojamiento', amount: 0 },
-      food: { label: 'Comida', amount: 0 },
-      other: { label: 'Otros', amount: 0 },
+    const categories: Record<string, { label: string; amount: number; color: string }> = {
+      fuel: { label: 'Combustible', amount: 0, color: expenseCategoryColors.fuel },
+      toll: { label: 'Peaje', amount: 0, color: expenseCategoryColors.toll },
+      maintenance: { label: 'Mantenimiento', amount: 0, color: expenseCategoryColors.maintenance },
+      lodging: { label: 'Alojamiento', amount: 0, color: expenseCategoryColors.lodging },
+      food: { label: 'Comida', amount: 0, color: expenseCategoryColors.food },
+      other: { label: 'Otros', amount: 0, color: expenseCategoryColors.other },
     };
     
     expenses.forEach((expense) => {
@@ -107,7 +107,10 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
             <div className="space-y-1">
               {expensesByCategory.map((category) => (
                 <div key={category.label} className="flex items-center justify-between">
-                  <span>{category.label}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }}></div>
+                    <span>{category.label}</span>
+                  </div>
                   <span className="font-medium currency-cop">
                     {formatCurrency(category.amount)}
                   </span>

@@ -1,93 +1,124 @@
 
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { Car, Truck, Calendar, FileChartPie } from "lucide-react";
-
+import { Button } from "@/components/ui/button";
+import { useMobile } from "@/hooks/use-mobile";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
+  ArrowLeftRight,
+  BarChart,
+  CalendarClock,
+  CreditCard,
+  Home,
+  LayoutDashboard,
+  Menu,
+  Truck,
+  X
+} from "lucide-react";
 
 const AppSidebar = () => {
-  const { collapsed } = useSidebar();
-  const location = useLocation();
-  const currentPath = location.pathname;
+  const [isOpen, setIsOpen] = React.useState(false);
+  const isMobile = useMobile();
   
-  const menuItems = [
-    { title: "Dashboard", url: "/dashboard", icon: FileChartPie },
-    { title: "Vehículos", url: "/vehicles", icon: Truck },
-    { title: "Viajes", url: "/trips", icon: Calendar },
-  ];
-
-  const isActive = (path: string) => currentPath.startsWith(path);
+  // Clase para enlaces activos
+  const activeClass = "bg-primary/10 text-primary font-medium";
   
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    cn(
-      "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-      isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"
-    );
-
+  // Clase para enlaces
+  const linkClass = "flex items-center gap-2 py-2 px-4 rounded-md w-full transition-colors text-sm";
+  
   return (
-    <Sidebar
-      className={cn(
-        "border-r border-border",
-        collapsed ? "w-[70px]" : "w-[240px]"
+    <>
+      {/* Overlay para dispositivos móviles */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 bg-background/80 z-20"
+          onClick={() => setIsOpen(false)}
+        />
       )}
-      collapsible
-    >
-      <SidebarTrigger className="m-2 self-end" />
       
-      <SidebarContent className="pt-2">
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(!collapsed && "px-3")}>
-            {!collapsed ? "Navegación" : ""}
-          </SidebarGroupLabel>
+      {/* Botón para abrir/cerrar en móvil */}
+      {isMobile && (
+        <Button 
+          variant="outline" 
+          size="icon"
+          className="fixed bottom-4 right-4 z-30 rounded-full shadow-lg"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? <X size={18} /> : <Menu size={18} />}
+        </Button>
+      )}
+    
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "h-[calc(100vh-4rem)] bg-card w-64 border-r flex-shrink-0 py-2 flex flex-col",
+          isMobile && "fixed left-0 top-16 z-20 transition-transform duration-300",
+          isMobile && !isOpen && "-translate-x-full"
+        )}
+      >
+        <div className="flex flex-col gap-1 p-2">
+          {/* Dashboard */}
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              cn(linkClass, isActive && activeClass)
+            }
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            <span>Dashboard</span>
+          </NavLink>
           
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end={item.url === '/'} className={getNavCls}>
-                      <item.icon className="h-5 w-5" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(!collapsed && "px-3")}>
-            {!collapsed ? "Reportes" : ""}
-          </SidebarGroupLabel>
+          {/* Vehículos */}
+          <NavLink
+            to="/vehicles"
+            className={({ isActive }) =>
+              cn(linkClass, isActive && activeClass)
+            }
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            <Truck className="h-4 w-4" />
+            <span>Vehículos</span>
+          </NavLink>
           
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink to="/reports/expenses" className={getNavCls}>
-                    <FileChartPie className="h-5 w-5" />
-                    {!collapsed && <span>Gastos</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+          {/* Viajes */}
+          <NavLink
+            to="/trips"
+            className={({ isActive }) =>
+              cn(linkClass, isActive && activeClass)
+            }
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            <ArrowLeftRight className="h-4 w-4" />
+            <span>Viajes</span>
+          </NavLink>
+          
+          {/* Gastos */}
+          <NavLink
+            to="/expenses"
+            className={({ isActive }) =>
+              cn(linkClass, isActive && activeClass)
+            }
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            <CreditCard className="h-4 w-4" />
+            <span>Gastos</span>
+          </NavLink>
+          
+          {/* Reportes */}
+          <NavLink
+            to="/reports/expenses"
+            className={({ isActive }) =>
+              cn(linkClass, isActive && activeClass)
+            }
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            <BarChart className="h-4 w-4" />
+            <span>Reportes</span>
+          </NavLink>
+        </div>
+      </aside>
+    </>
   );
 };
 

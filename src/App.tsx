@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import VehiclesPage from "./pages/vehicles/VehiclesPage";
 import TripsPage from "./pages/trips/TripsPage";
 import TripDetailPage from "./pages/trips/TripDetailPage";
+import ExpensesPage from "./pages/expenses/ExpensesPage";
 import ExpensesReportPage from "./pages/reports/ExpensesReportPage";
 import NotFound from "./pages/NotFound";
 import AuthRoute from "./routes/AuthRoute";
@@ -55,6 +56,7 @@ const App = () => {
                     <Route path="vehicles" element={<VehiclesPage />} />
                     <Route path="trips" element={<TripsPage />} />
                     <Route path="trips/:id" element={<TripDetailPage />} />
+                    <Route path="expenses" element={<ExpensesPage />} />
                     <Route path="reports/expenses" element={<ExpensesReportPage />} />
                   </Route>
                   
