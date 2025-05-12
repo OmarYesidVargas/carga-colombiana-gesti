@@ -10,7 +10,13 @@ import MonthlyExpenseChart from '@/components/reports/MonthlyExpenseChart';
 import ExpenseSummary from '@/components/reports/ExpenseSummary';
 
 const Dashboard = () => {
-  const { vehicles, trips, expenses } = useData();
+  const { 
+    vehicles, 
+    trips, 
+    expenses, 
+    getVehicleById, 
+    getTripById 
+  } = useData();
   
   // Formatear moneda colombiana para el monto total de gastos
   const formatCurrency = (amount: number) => {
