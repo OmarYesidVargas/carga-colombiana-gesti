@@ -66,3 +66,34 @@ export type Expense = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+// Nuevo tipo para peajes
+export type Toll = {
+  id: string;
+  userId: string;
+  name: string;          // Nombre del peaje
+  location: string;      // Ubicación del peaje
+  category: string;      // Categoría (1, 2, 3, 4, 5, 6, 7, etc.)
+  price: number;         // Precio actual en pesos colombianos
+  route: string;         // Ruta en la que se encuentra (ej: "Bogotá-Medellín")
+  coordinates?: string;  // Coordenadas geográficas (opcional)
+  description?: string;  // Descripción adicional (opcional)
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// Registro de paso por peaje
+export type TollRecord = {
+  id: string;
+  userId: string;
+  tripId: string;        // ID del viaje asociado
+  vehicleId: string;     // ID del vehículo
+  tollId: string;        // ID del peaje
+  date: Date;            // Fecha y hora del paso por el peaje
+  price: number;         // Precio pagado (puede variar del precio actual)
+  paymentMethod: string; // Método de pago (efectivo, electrónico, tag, etc.)
+  receipt?: string;      // Número de recibo o comprobante (opcional)
+  notes?: string;        // Notas adicionales (opcional)
+  createdAt: Date;
+  updatedAt: Date;
+};

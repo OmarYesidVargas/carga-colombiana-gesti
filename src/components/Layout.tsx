@@ -3,6 +3,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import AppSidebar from './Sidebar';
+import { useMobile } from '@/hooks/use-mobile';
 
 type LayoutProps = {
   isAuthenticated?: boolean;
@@ -11,6 +12,8 @@ type LayoutProps = {
 };
 
 const Layout = ({ isAuthenticated = false, userEmail, onLogout }: LayoutProps) => {
+  const isMobile = useMobile();
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Header userEmail={userEmail} onLogout={onLogout} />

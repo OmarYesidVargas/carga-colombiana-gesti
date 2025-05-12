@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Vehicle, Trip, Expense } from '@/types';
+import { Vehicle, Trip, Expense, Toll, TollRecord } from '@/types';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
 
@@ -175,10 +174,100 @@ const initialExpenses: Expense[] = [
   },
 ];
 
+// Datos iniciales para peajes
+const initialTolls: Toll[] = [
+  {
+    id: '1',
+    userId: '1',
+    name: 'Peaje Chusacá',
+    location: 'Cundinamarca',
+    category: 'I',
+    price: 8500,
+    route: 'Bogotá-Girardot',
+    coordinates: '4.5371, -74.2861',
+    description: 'Peaje ubicado en la vía Bogotá-Girardot',
+    createdAt: new Date('2023-01-10'),
+    updatedAt: new Date('2023-01-10'),
+  },
+  {
+    id: '2',
+    userId: '1',
+    name: 'Peaje Chinauta',
+    location: 'Cundinamarca',
+    category: 'I',
+    price: 10500,
+    route: 'Bogotá-Girardot',
+    coordinates: '4.3149, -74.4514',
+    description: 'Peaje ubicado en la vía Bogotá-Girardot',
+    createdAt: new Date('2023-01-10'),
+    updatedAt: new Date('2023-01-10'),
+  },
+  {
+    id: '3',
+    userId: '1',
+    name: 'Peaje Túnel de La Línea',
+    location: 'Quindío',
+    category: 'II',
+    price: 15800,
+    route: 'Armenia-Ibagué',
+    coordinates: '4.5131, -75.5576',
+    description: 'Peaje del Túnel de La Línea, vía Armenia-Ibagué',
+    createdAt: new Date('2023-01-10'),
+    updatedAt: new Date('2023-01-10'),
+  },
+];
+
+// Datos iniciales para registros de peajes
+const initialTollRecords: TollRecord[] = [
+  {
+    id: '1',
+    userId: '1',
+    tripId: '1',
+    vehicleId: '1',
+    tollId: '1',
+    date: new Date('2023-05-10'),
+    price: 8500,
+    paymentMethod: 'efectivo',
+    receipt: '12345678',
+    notes: 'Paso por peaje Chusacá',
+    createdAt: new Date('2023-05-10'),
+    updatedAt: new Date('2023-05-10'),
+  },
+  {
+    id: '2',
+    userId: '1',
+    tripId: '1',
+    vehicleId: '1',
+    tollId: '2',
+    date: new Date('2023-05-10'),
+    price: 10500,
+    paymentMethod: 'electrónico',
+    receipt: '87654321',
+    notes: 'Paso por peaje Chinauta',
+    createdAt: new Date('2023-05-10'),
+    updatedAt: new Date('2023-05-10'),
+  },
+  {
+    id: '3',
+    userId: '1',
+    tripId: '2',
+    vehicleId: '2',
+    tollId: '3',
+    date: new Date('2023-06-05'),
+    price: 15800,
+    paymentMethod: 'tag',
+    notes: 'Paso por peaje Túnel de La Línea',
+    createdAt: new Date('2023-06-05'),
+    updatedAt: new Date('2023-06-05'),
+  },
+];
+
 interface DataContextType {
   vehicles: Vehicle[];
   trips: Trip[];
   expenses: Expense[];
+  tolls: Toll[];
+  tollRecords: TollRecord[];
   addVehicle: (vehicle: Omit<Vehicle, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => void;
   updateVehicle: (id: string, vehicle: Partial<Vehicle>) => void;
   deleteVehicle: (id: string) => void;
@@ -188,9 +277,17 @@ interface DataContextType {
   addExpense: (expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'vehicleId'>) => void;
   updateExpense: (id: string, expense: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
+  addToll: (toll: Omit<Toll, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => void;
+  updateToll: (id: string, toll: Partial<Toll>) => void;
+  deleteToll: (id: string) => void;
+  addTollRecord: (record: Omit<TollRecord, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => void;
+  updateTollRecord: (id: string, record: Partial<TollRecord>) => void;
+  deleteTollRecord: (id: string) => void;
   getVehicleById: (id: string) => Vehicle | undefined;
   getTripById: (id: string) => Trip | undefined;
   getExpenseById: (id: string) => Expense | undefined;
+  getTollById: (id: string) => Toll | undefined;
+  getTollRecordById: (id: string) => TollRecord | undefined;
   isLoading: boolean;
 }
 
@@ -215,6 +312,8 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [tolls, setTolls] = useState<Toll[]>([]);
+  const [tollRecords, setTollRecords] = useState<TollRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Cargar datos al iniciar
@@ -225,16 +324,22 @@ export const DataProvider = ({ children }: DataProviderProps) => {
         const storedVehicles = localStorage.getItem('vehicles');
         const storedTrips = localStorage.getItem('trips');
         const storedExpenses = localStorage.getItem('expenses');
+        const storedTolls = localStorage.getItem('tolls');
+        const storedTollRecords = localStorage.getItem('tollRecords');
         
         setVehicles(storedVehicles ? JSON.parse(storedVehicles) : initialVehicles);
         setTrips(storedTrips ? JSON.parse(storedTrips) : initialTrips);
         setExpenses(storedExpenses ? JSON.parse(storedExpenses) : initialExpenses);
+        setTolls(storedTolls ? JSON.parse(storedTolls) : initialTolls);
+        setTollRecords(storedTollRecords ? JSON.parse(storedTollRecords) : initialTollRecords);
       } catch (error) {
         console.error('Error loading data:', error);
         // Si hay error, usamos los datos iniciales
         setVehicles(initialVehicles);
         setTrips(initialTrips);
         setExpenses(initialExpenses);
+        setTolls(initialTolls);
+        setTollRecords(initialTollRecords);
       } finally {
         setIsLoading(false);
       }
@@ -249,8 +354,10 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       localStorage.setItem('vehicles', JSON.stringify(vehicles));
       localStorage.setItem('trips', JSON.stringify(trips));
       localStorage.setItem('expenses', JSON.stringify(expenses));
+      localStorage.setItem('tolls', JSON.stringify(tolls));
+      localStorage.setItem('tollRecords', JSON.stringify(tollRecords));
     }
-  }, [vehicles, trips, expenses, isLoading]);
+  }, [vehicles, trips, expenses, tolls, tollRecords, isLoading]);
   
   // Funciones para gestionar vehículos
   const addVehicle = (vehicle: Omit<Vehicle, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
@@ -377,17 +484,82 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     toast.success('Gasto eliminado exitosamente');
   };
   
-  // Funciones para obtener elementos por ID
-  const getVehicleById = (id: string) => {
-    return vehicles.find((vehicle) => vehicle.id === id);
+  // Funciones para gestionar peajes
+  const addToll = (toll: Omit<Toll, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
+    const now = new Date();
+    const newToll: Toll = {
+      ...toll,
+      id: `toll-${Date.now()}`,
+      userId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    setTolls([...tolls, newToll]);
+    toast.success('Peaje agregado exitosamente');
   };
   
-  const getTripById = (id: string) => {
-    return trips.find((trip) => trip.id === id);
+  const updateToll = (id: string, tollData: Partial<Toll>) => {
+    setTolls(
+      tolls.map((toll) =>
+        toll.id === id
+          ? { ...toll, ...tollData, updatedAt: new Date() }
+          : toll
+      )
+    );
+    toast.success('Peaje actualizado exitosamente');
   };
   
-  const getExpenseById = (id: string) => {
-    return expenses.find((expense) => expense.id === id);
+  const deleteToll = (id: string) => {
+    // Verificar si hay registros de peaje relacionados
+    const relatedRecords = tollRecords.filter((record) => record.tollId === id);
+    
+    if (relatedRecords.length > 0) {
+      toast.error('No se puede eliminar el peaje porque tiene registros asociados');
+      return;
+    }
+    
+    setTolls(tolls.filter((toll) => toll.id !== id));
+    toast.success('Peaje eliminado exitosamente');
+  };
+  
+  const getTollById = (id: string) => {
+    return tolls.find((toll) => toll.id === id);
+  };
+  
+  // Funciones para gestionar registros de peaje
+  const addTollRecord = (record: Omit<TollRecord, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
+    const now = new Date();
+    const newRecord: TollRecord = {
+      ...record,
+      id: `tollRec-${Date.now()}`,
+      userId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    setTollRecords([...tollRecords, newRecord]);
+    toast.success('Registro de peaje agregado exitosamente');
+  };
+  
+  const updateTollRecord = (id: string, recordData: Partial<TollRecord>) => {
+    setTollRecords(
+      tollRecords.map((record) =>
+        record.id === id
+          ? { ...record, ...recordData, updatedAt: new Date() }
+          : record
+      )
+    );
+    toast.success('Registro de peaje actualizado exitosamente');
+  };
+  
+  const deleteTollRecord = (id: string) => {
+    setTollRecords(tollRecords.filter((record) => record.id !== id));
+    toast.success('Registro de peaje eliminado exitosamente');
+  };
+  
+  const getTollRecordById = (id: string) => {
+    return tollRecords.find((record) => record.id === id);
   };
 
   return (
@@ -396,6 +568,8 @@ export const DataProvider = ({ children }: DataProviderProps) => {
         vehicles,
         trips,
         expenses,
+        tolls,
+        tollRecords,
         addVehicle,
         updateVehicle,
         deleteVehicle,
@@ -405,9 +579,17 @@ export const DataProvider = ({ children }: DataProviderProps) => {
         addExpense,
         updateExpense,
         deleteExpense,
+        addToll,
+        updateToll,
+        deleteToll,
+        addTollRecord,
+        updateTollRecord,
+        deleteTollRecord,
         getVehicleById,
         getTripById,
         getExpenseById,
+        getTollById,
+        getTollRecordById,
         isLoading,
       }}
     >
