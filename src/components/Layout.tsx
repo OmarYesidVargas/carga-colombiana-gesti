@@ -3,20 +3,14 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import AppSidebar from './Sidebar';
-import { useData } from '@/context/DataContext';
+import { useAuth } from '@/context/AuthContext';
 
-type LayoutProps = {
-  isAuthenticated?: boolean;
-  userEmail?: string;
-  onLogout?: () => void;
-};
-
-const Layout = ({ isAuthenticated = false, userEmail, onLogout }: LayoutProps) => {
-  const { vehicles, getVehicleById } = useData();
+const Layout = () => {
+  const { isAuthenticated, user, logout } = useAuth();
   
   return (
     <div className="flex flex-col min-h-screen">
-      <Header userEmail={userEmail} onLogout={onLogout} />
+      <Header userEmail={user?.email} onLogout={logout} />
       
       {isAuthenticated ? (
         <div className="relative flex flex-1 w-full">

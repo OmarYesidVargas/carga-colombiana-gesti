@@ -67,7 +67,7 @@ export type Expense = {
   updatedAt: Date;
 };
 
-// Nuevo tipo para peajes
+// Tipo para peajes
 export type Toll = {
   id: string;
   userId: string;

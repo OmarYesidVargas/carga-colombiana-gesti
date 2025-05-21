@@ -19,20 +19,12 @@ import ExpensesPage from "./pages/expenses/ExpensesPage";
 import ExpensesReportPage from "./pages/reports/ExpensesReportPage";
 import NotFound from "./pages/NotFound";
 import AuthRoute from "./routes/AuthRoute";
+import TollsPage from "./pages/tolls/TollsPage";
+import TollRecordsPage from "./pages/tolls/TollRecordsPage";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Verificar si hay un usuario en localStorage (usuario autenticado)
-  const storedUser = localStorage.getItem('user');
-  const isAuthenticated = !!storedUser;
-  const userEmail = storedUser ? JSON.parse(storedUser).email : null;
-  
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    window.location.href = '/login';
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -44,7 +36,7 @@ const App = () => {
               
               <Routes>
                 {/* Páginas públicas */}
-                <Route path="/" element={<Layout isAuthenticated={isAuthenticated} userEmail={userEmail} onLogout={handleLogout} />}>
+                <Route path="/" element={<Layout />}>
                   <Route index element={<LandingPage />} />
                   <Route path="login" element={<Login />} />
                   <Route path="register" element={<Register />} />
@@ -58,6 +50,8 @@ const App = () => {
                     <Route path="trips/:id" element={<TripDetailPage />} />
                     <Route path="expenses" element={<ExpensesPage />} />
                     <Route path="reports/expenses" element={<ExpensesReportPage />} />
+                    <Route path="tolls" element={<TollsPage />} />
+                    <Route path="toll-records" element={<TollRecordsPage />} />
                   </Route>
                   
                   {/* Redirección de rutas desconocidas */}

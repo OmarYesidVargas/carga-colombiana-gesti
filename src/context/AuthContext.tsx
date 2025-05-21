@@ -2,18 +2,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-
-type User = {
-  id: string;
-  name?: string;
-  email: string;
-};
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   isLoading: boolean;
 }
@@ -34,97 +31,99 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Cargar el usuario desde localStorage al montar el componente
+  // Escuchar cambios de autenticación y obtener la sesión inicial
   useEffect(() => {
-    const loadUser = () => {
-      try {
-        const storedUser = localStorage.getItem('user');
-        
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-      } catch (error) {
-        console.error('Error loading user from localStorage', error);
-        localStorage.removeItem('user');
-      } finally {
-        setIsLoading(false);
+    // Configurar el escuchador de cambios de autenticación PRIMERO
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
       }
-    };
+    );
 
-    loadUser();
+    // LUEGO verificar si hay una sesión existente
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setIsLoading(false);
+    });
+
+    // Limpiar el escuchador al desmontar
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
-    setIsLoading(true);
-    
-    // Esta es una simulación, en un entorno real se haría una llamada a la API
     try {
-      // Simular un tiempo de espera para la llamada a la API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       
-      // Simular un usuario con credenciales correctas
-      // En un entorno real, la API devolvería los datos del usuario
-      const loggedUser: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0], // Usamos parte del email como nombre simulado
-      };
+      if (error) {
+        toast.error(error.message);
+        throw error;
+      }
       
-      localStorage.setItem('user', JSON.stringify(loggedUser));
-      setUser(loggedUser);
       toast.success('¡Has iniciado sesión exitosamente!');
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Error al iniciar sesión. Por favor, intenta de nuevo.');
-      throw new Error('Error al iniciar sesión');
+    } catch (error: any) {
+      console.error('Error al iniciar sesión:', error);
+      toast.error(error.message || 'Error al iniciar sesión. Por favor, intenta de nuevo.');
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
   const register = async (name: string, email: string, password: string): Promise<void> => {
-    setIsLoading(true);
-    
     try {
-      // Simular un tiempo de espera para la llamada a la API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Simular un registro exitoso
-      // En un entorno real, la API registraría al usuario y devolvería sus datos
-      const newUser: User = {
-        id: '1', // En un entorno real, este ID sería generado por el servidor
-        name,
+      setIsLoading(true);
+      const { error } = await supabase.auth.signUp({
         email,
-      };
+        password,
+        options: {
+          data: { name }
+        }
+      });
       
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setUser(newUser);
-      toast.success('¡Registro exitoso!');
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Register error:', error);
-      toast.error('Error al registrarse. Por favor, intenta de nuevo.');
-      throw new Error('Error al registrarse');
+      if (error) {
+        toast.error(error.message);
+        throw error;
+      }
+      
+      toast.success('¡Registro exitoso! Por favor revisa tu correo para confirmar tu cuenta.');
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Error al registrarse:', error);
+      toast.error(error.message || 'Error al registrarse. Por favor, intenta de nuevo.');
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    toast.success('Sesión cerrada exitosamente');
-    navigate('/login');
+  const logout = async (): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast.success('Sesión cerrada exitosamente');
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Error al cerrar sesión:', error);
+      toast.error(error.message || 'Error al cerrar sesión');
+    }
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        session,
         isAuthenticated: !!user,
         login,
         logout,

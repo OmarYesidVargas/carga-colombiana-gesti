@@ -9,7 +9,291 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      expenses: {
+        Row: {
+          amount: number
+          category: Database["public"]["Enums"]["expense_category"]
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          receipt_url: string | null
+          trip_id: string
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          amount: number
+          category: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          receipt_url?: string | null
+          trip_id: string
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          amount?: number
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          receipt_url?: string | null
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      toll_records: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          payment_method: string
+          price: number
+          receipt: string | null
+          toll_id: string
+          trip_id: string
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          notes?: string | null
+          payment_method: string
+          price: number
+          receipt?: string | null
+          toll_id: string
+          trip_id: string
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          price?: number
+          receipt?: string | null
+          toll_id?: string
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "toll_records_toll_id_fkey"
+            columns: ["toll_id"]
+            isOneToOne: false
+            referencedRelation: "tolls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "toll_records_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "toll_records_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tolls: {
+        Row: {
+          category: string
+          coordinates: string | null
+          created_at: string
+          description: string | null
+          id: string
+          location: string
+          name: string
+          price: number
+          route: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          coordinates?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location: string
+          name: string
+          price: number
+          route: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          coordinates?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string
+          name?: string
+          price?: number
+          route?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trips: {
+        Row: {
+          created_at: string
+          destination: string
+          distance: number
+          end_date: string
+          id: string
+          notes: string | null
+          origin: string
+          start_date: string
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination: string
+          distance: number
+          end_date: string
+          id?: string
+          notes?: string | null
+          origin: string
+          start_date: string
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string
+          distance?: number
+          end_date?: string
+          id?: string
+          notes?: string | null
+          origin?: string
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          brand: string
+          capacity: string | null
+          color: string | null
+          created_at: string
+          fuel_type: string | null
+          id: string
+          image_url: string | null
+          model: string
+          plate: string
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          brand: string
+          capacity?: string | null
+          color?: string | null
+          created_at?: string
+          fuel_type?: string | null
+          id?: string
+          image_url?: string | null
+          model: string
+          plate: string
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          brand?: string
+          capacity?: string | null
+          color?: string | null
+          created_at?: string
+          fuel_type?: string | null
+          id?: string
+          image_url?: string | null
+          model?: string
+          plate?: string
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +302,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      expense_category:
+        | "fuel"
+        | "toll"
+        | "maintenance"
+        | "lodging"
+        | "food"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +423,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      expense_category: [
+        "fuel",
+        "toll",
+        "maintenance",
+        "lodging",
+        "food",
+        "other",
+      ],
+    },
   },
 } as const
