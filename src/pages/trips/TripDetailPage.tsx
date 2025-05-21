@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '@/context/DataContext';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
-import { Trip, Expense } from '@/types';
+import { Trip, Expense, Vehicle } from '@/types';
 import ExpenseCard from '@/components/expenses/ExpenseCard';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -52,8 +52,8 @@ const TripDetailPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Obtener el viaje y el vehículo
-  const trip = getTripById(id || '');
-  const vehicle = trip ? getVehicleById(trip.vehicleId) : undefined;
+  const trip = id ? getTripById(id) : undefined;
+  const vehicle = trip?.vehicleId ? getVehicleById(trip.vehicleId) : undefined;
   
   // Obtener los gastos del viaje
   const tripExpenses = expenses.filter(expense => expense.tripId === id);
@@ -132,10 +132,10 @@ const TripDetailPage = () => {
       
       if (currentExpense) {
         updateExpense(currentExpense.id, expenseData);
-      } else {
+      } else if (trip) {
         addExpense({
           ...expenseData,
-          tripId: trip?.id || '',
+          tripId: trip.id,
         });
       }
       
@@ -322,12 +322,13 @@ const TripDetailPage = () => {
                     {vehicle.fuelType && (
                       <div>
                         <p className="text-sm text-muted-foreground">Combustible</p>
-                        <p className="font-medium">{vehicle.fuelType === 'diesel' ? 'Diésel' : 
-                          vehicle.fuelType === 'gasoline' ? 'Gasolina' : 
-                          vehicle.fuelType === 'gas' ? 'Gas Natural' : 
-                          vehicle.fuelType === 'hybrid' ? 'Híbrido' : 
-                          vehicle.fuelType === 'electric' ? 'Eléctrico' : 
-                          vehicle.fuelType}
+                        <p className="font-medium">
+                          {vehicle.fuelType === 'diesel' ? 'Diésel' : 
+                            vehicle.fuelType === 'gasoline' ? 'Gasolina' : 
+                            vehicle.fuelType === 'gas' ? 'Gas Natural' : 
+                            vehicle.fuelType === 'hybrid' ? 'Híbrido' : 
+                            vehicle.fuelType === 'electric' ? 'Eléctrico' : 
+                            vehicle.fuelType}
                         </p>
                       </div>
                     )}
@@ -442,8 +443,8 @@ const TripDetailPage = () => {
           
           <ExpenseForm
             initialData={currentExpense || undefined}
-            trips={[trip]}
-            vehicles={vehicles}
+            trips={trip ? [trip] : []}
+            vehicles={vehicle ? [vehicle] : []}
             selectedTripId={trip.id}
             onSubmit={handleExpenseFormSubmit}
             onCancel={handleCloseExpenseForm}

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Vehicle, Trip, Expense, Toll, TollRecord } from '@/types';
 import { toast } from 'sonner';
@@ -26,11 +25,11 @@ interface DataContextType {
   addTollRecord: (record: Omit<TollRecord, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateTollRecord: (id: string, record: Partial<TollRecord>) => Promise<void>;
   deleteTollRecord: (id: string) => Promise<void>;
-  getVehicleById: (id: string) => Promise<Vehicle | null>;
-  getTripById: (id: string) => Promise<Trip | null>;
-  getExpenseById: (id: string) => Promise<Expense | null>;
-  getTollById: (id: string) => Promise<Toll | null>;
-  getTollRecordById: (id: string) => Promise<TollRecord | null>;
+  getVehicleById: (id: string) => Vehicle | undefined;
+  getTripById: (id: string) => Trip | undefined;
+  getExpenseById: (id: string) => Expense | undefined;
+  getTollById: (id: string) => Toll | undefined;
+  getTollRecordById: (id: string) => TollRecord | undefined;
   isLoading: boolean;
   reloadData: () => Promise<void>;
 }
@@ -352,37 +351,8 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   };
   
   // Función para obtener un vehículo por ID
-  const getVehicleById = async (id: string): Promise<Vehicle | null> => {
-    if (!userId) return null;
-    
-    try {
-      const { data, error } = await supabase
-        .from('vehicles')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) throw error;
-      
-      return {
-        id: data.id,
-        userId: data.user_id,
-        plate: data.plate,
-        brand: data.brand,
-        model: data.model,
-        year: data.year,
-        color: data.color,
-        fuelType: data.fuel_type,
-        capacity: data.capacity,
-        imageUrl: data.image_url,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at)
-      };
-    } catch (error) {
-      console.error('Error al obtener vehículo:', error);
-      return null;
-    }
+  const getVehicleById = (id: string): Vehicle | undefined => {
+    return vehicles.find(vehicle => vehicle.id === id);
   };
   
   // Funciones para gestionar viajes
@@ -524,36 +494,8 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   };
   
   // Función para obtener un viaje por ID
-  const getTripById = async (id: string): Promise<Trip | null> => {
-    if (!userId) return null;
-    
-    try {
-      const { data, error } = await supabase
-        .from('trips')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) throw error;
-      
-      return {
-        id: data.id,
-        userId: data.user_id,
-        vehicleId: data.vehicle_id,
-        startDate: new Date(data.start_date),
-        endDate: new Date(data.end_date),
-        origin: data.origin,
-        destination: data.destination,
-        distance: Number(data.distance),
-        notes: data.notes,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at)
-      };
-    } catch (error) {
-      console.error('Error al obtener viaje:', error);
-      return null;
-    }
+  const getTripById = (id: string): Trip | undefined => {
+    return trips.find(trip => trip.id === id);
   };
   
   // Funciones para gestionar gastos
@@ -690,36 +632,8 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   };
   
   // Función para obtener un gasto por ID
-  const getExpenseById = async (id: string): Promise<Expense | null> => {
-    if (!userId) return null;
-    
-    try {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) throw error;
-      
-      return {
-        id: data.id,
-        userId: data.user_id,
-        tripId: data.trip_id,
-        vehicleId: data.vehicle_id,
-        category: data.category,
-        date: new Date(data.date),
-        amount: Number(data.amount),
-        description: data.description,
-        receiptUrl: data.receipt_url,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at)
-      };
-    } catch (error) {
-      console.error('Error al obtener gasto:', error);
-      return null;
-    }
+  const getExpenseById = (id: string): Expense | undefined => {
+    return expenses.find(expense => expense.id === id);
   };
   
   // Funciones para gestionar peajes
@@ -850,36 +764,8 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   };
   
   // Función para obtener un peaje por ID
-  const getTollById = async (id: string): Promise<Toll | null> => {
-    if (!userId) return null;
-    
-    try {
-      const { data, error } = await supabase
-        .from('tolls')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) throw error;
-      
-      return {
-        id: data.id,
-        userId: data.user_id,
-        name: data.name,
-        location: data.location,
-        category: data.category,
-        price: Number(data.price),
-        route: data.route,
-        coordinates: data.coordinates,
-        description: data.description,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at)
-      };
-    } catch (error) {
-      console.error('Error al obtener peaje:', error);
-      return null;
-    }
+  const getTollById = (id: string): Toll | undefined => {
+    return tolls.find(toll => toll.id === id);
   };
   
   // Funciones para gestionar registros de peajes
@@ -1006,37 +892,8 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   };
   
   // Función para obtener un registro de peaje por ID
-  const getTollRecordById = async (id: string): Promise<TollRecord | null> => {
-    if (!userId) return null;
-    
-    try {
-      const { data, error } = await supabase
-        .from('toll_records')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) throw error;
-      
-      return {
-        id: data.id,
-        userId: data.user_id,
-        tripId: data.trip_id,
-        vehicleId: data.vehicle_id,
-        tollId: data.toll_id,
-        date: new Date(data.date),
-        price: Number(data.price),
-        paymentMethod: data.payment_method,
-        receipt: data.receipt,
-        notes: data.notes,
-        createdAt: new Date(data.created_at),
-        updatedAt: new Date(data.updated_at)
-      };
-    } catch (error) {
-      console.error('Error al obtener registro de peaje:', error);
-      return null;
-    }
+  const getTollRecordById = (id: string): TollRecord | undefined => {
+    return tollRecords.find(record => record.id === id);
   };
   
   // Función para recargar datos
