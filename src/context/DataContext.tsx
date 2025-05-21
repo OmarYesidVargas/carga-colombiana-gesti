@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Vehicle, Trip, Expense, Toll, TollRecord } from '@/types';
+import { Vehicle, Trip, Expense, Toll, TollRecord, ExpenseCategory } from '@/types';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
 
@@ -70,6 +70,79 @@ interface DataProviderProps {
   children: ReactNode;
 }
 
+// Utility functions to convert between database and frontend formats
+const mapVehicleFromDB = (data: any): Vehicle => ({
+  id: data.id,
+  userId: data.user_id,
+  plate: data.plate,
+  brand: data.brand,
+  model: data.model,
+  year: data.year,
+  color: data.color || undefined,
+  fuelType: data.fuel_type || undefined,
+  capacity: data.capacity || undefined,
+  imageUrl: data.image_url || undefined,
+  createdAt: new Date(data.created_at),
+  updatedAt: new Date(data.updated_at),
+});
+
+const mapTripFromDB = (data: any): Trip => ({
+  id: data.id,
+  vehicleId: data.vehicle_id,
+  userId: data.user_id,
+  startDate: new Date(data.start_date),
+  endDate: data.end_date ? new Date(data.end_date) : new Date(data.end_date),
+  origin: data.origin,
+  destination: data.destination,
+  distance: data.distance,
+  notes: data.notes || undefined,
+  createdAt: new Date(data.created_at),
+  updatedAt: new Date(data.updated_at),
+});
+
+const mapExpenseFromDB = (data: any): Expense => ({
+  id: data.id,
+  tripId: data.trip_id,
+  userId: data.user_id,
+  vehicleId: data.vehicle_id,
+  category: data.category as ExpenseCategory,
+  date: new Date(data.date),
+  amount: data.amount,
+  description: data.description || undefined,
+  receiptUrl: data.receipt_url || undefined,
+  createdAt: new Date(data.created_at),
+  updatedAt: new Date(data.updated_at),
+});
+
+const mapTollFromDB = (data: any): Toll => ({
+  id: data.id,
+  userId: data.user_id,
+  name: data.name,
+  location: data.location,
+  category: data.category,
+  price: data.price,
+  route: data.route,
+  coordinates: data.coordinates || undefined,
+  description: data.description || undefined,
+  createdAt: new Date(data.created_at),
+  updatedAt: new Date(data.updated_at),
+});
+
+const mapTollRecordFromDB = (data: any): TollRecord => ({
+  id: data.id,
+  userId: data.user_id,
+  tripId: data.trip_id,
+  vehicleId: data.vehicle_id,
+  tollId: data.toll_id,
+  date: new Date(data.date),
+  price: data.price,
+  paymentMethod: data.payment_method,
+  receipt: data.receipt || undefined,
+  notes: data.notes || undefined,
+  createdAt: new Date(data.created_at),
+  updatedAt: new Date(data.updated_at),
+});
+
 export const DataProvider = ({ children }: DataProviderProps) => {
   const { isAuthenticated, user } = useAuth();
   
@@ -135,8 +208,10 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al cargar vehículos:', error);
         toast.error('Error al cargar vehículos');
-      } else {
-        setVehicles(data);
+      } else if (data) {
+        // Map data to Vehicle type
+        const mappedVehicles = data.map(mapVehicleFromDB);
+        setVehicles(mappedVehicles);
       }
     } catch (error) {
       console.error('Error en loadVehicles:', error);
@@ -158,8 +233,10 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al cargar viajes:', error);
         toast.error('Error al cargar viajes');
-      } else {
-        setTrips(data);
+      } else if (data) {
+        // Map data to Trip type
+        const mappedTrips = data.map(mapTripFromDB);
+        setTrips(mappedTrips);
       }
     } catch (error) {
       console.error('Error en loadTrips:', error);
@@ -181,8 +258,10 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al cargar gastos:', error);
         toast.error('Error al cargar gastos');
-      } else {
-        setExpenses(data);
+      } else if (data) {
+        // Map data to Expense type
+        const mappedExpenses = data.map(mapExpenseFromDB);
+        setExpenses(mappedExpenses);
       }
     } catch (error) {
       console.error('Error en loadExpenses:', error);
@@ -204,8 +283,10 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al cargar peajes:', error);
         toast.error('Error al cargar peajes');
-      } else {
-        setTolls(data);
+      } else if (data) {
+        // Map data to Toll type
+        const mappedTolls = data.map(mapTollFromDB);
+        setTolls(mappedTolls);
       }
     } catch (error) {
       console.error('Error en loadTolls:', error);
@@ -227,8 +308,10 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al cargar registros de peajes:', error);
         toast.error('Error al cargar registros de peajes');
-      } else {
-        setTollRecords(data);
+      } else if (data) {
+        // Map data to TollRecord type
+        const mappedTollRecords = data.map(mapTollRecordFromDB);
+        setTollRecords(mappedTollRecords);
       }
     } catch (error) {
       console.error('Error en loadTollRecords:', error);
@@ -268,7 +351,14 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     
     try {
       const newVehicle = {
-        ...vehicle,
+        plate: vehicle.plate,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        year: vehicle.year,
+        color: vehicle.color,
+        fuel_type: vehicle.fuelType,
+        capacity: vehicle.capacity,
+        image_url: vehicle.imageUrl,
         user_id: user.id
       };
       
@@ -281,8 +371,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al agregar vehículo:', error);
         toast.error('Error al agregar vehículo');
-      } else {
-        setVehicles(prev => [data, ...prev]);
+      } else if (data) {
+        const mappedVehicle = mapVehicleFromDB(data);
+        setVehicles(prev => [mappedVehicle, ...prev]);
         toast.success('Vehículo agregado correctamente');
       }
     } catch (error) {
@@ -293,9 +384,20 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   
   const updateVehicle = async (id: string, vehicle: Partial<Vehicle>) => {
     try {
+      // Convert to snake_case for DB
+      const updateData: any = {};
+      if (vehicle.plate !== undefined) updateData.plate = vehicle.plate;
+      if (vehicle.brand !== undefined) updateData.brand = vehicle.brand;
+      if (vehicle.model !== undefined) updateData.model = vehicle.model;
+      if (vehicle.year !== undefined) updateData.year = vehicle.year;
+      if (vehicle.color !== undefined) updateData.color = vehicle.color;
+      if (vehicle.fuelType !== undefined) updateData.fuel_type = vehicle.fuelType;
+      if (vehicle.capacity !== undefined) updateData.capacity = vehicle.capacity;
+      if (vehicle.imageUrl !== undefined) updateData.image_url = vehicle.imageUrl;
+      
       const { data, error } = await supabase
         .from('vehicles')
-        .update(vehicle)
+        .update(updateData)
         .eq('id', id)
         .select('*')
         .single();
@@ -303,8 +405,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al actualizar vehículo:', error);
         toast.error('Error al actualizar vehículo');
-      } else {
-        setVehicles(prev => prev.map(v => (v.id === id ? data : v)));
+      } else if (data) {
+        const mappedVehicle = mapVehicleFromDB(data);
+        setVehicles(prev => prev.map(v => (v.id === id ? mappedVehicle : v)));
         toast.success('Vehículo actualizado correctamente');
       }
     } catch (error) {
@@ -358,12 +461,16 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     }
     
     try {
+      // Convert dates to ISO strings for the database
       const newTrip = {
-        ...trip,
         user_id: user.id,
-        start_date: trip.startDate,
-        end_date: trip.endDate,
-        vehicle_id: trip.vehicleId
+        vehicle_id: trip.vehicleId,
+        start_date: trip.startDate.toISOString(),
+        end_date: trip.endDate ? trip.endDate.toISOString() : null,
+        origin: trip.origin,
+        destination: trip.destination,
+        distance: trip.distance,
+        notes: trip.notes
       };
       
       const { data, error } = await supabase
@@ -375,23 +482,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al agregar viaje:', error);
         toast.error('Error al agregar viaje');
-      } else {
-        // Convertir los nombres de campos de snake_case a camelCase
-        const formattedTrip: Trip = {
-          id: data.id,
-          vehicleId: data.vehicle_id,
-          userId: data.user_id,
-          startDate: data.start_date,
-          endDate: data.end_date,
-          origin: data.origin,
-          destination: data.destination,
-          distance: data.distance,
-          notes: data.notes,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        
-        setTrips(prev => [formattedTrip, ...prev]);
+      } else if (data) {
+        const mappedTrip = mapTripFromDB(data);
+        setTrips(prev => [mappedTrip, ...prev]);
         toast.success('Viaje agregado correctamente');
       }
     } catch (error) {
@@ -402,21 +495,19 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   
   const updateTrip = async (id: string, trip: Partial<Trip>) => {
     try {
-      // Convertir campos de camelCase a snake_case para la base de datos
-      const dbTrip: any = { ...trip };
-      
-      if (trip.startDate) dbTrip.start_date = trip.startDate;
-      if (trip.endDate) dbTrip.end_date = trip.endDate;
-      if (trip.vehicleId) dbTrip.vehicle_id = trip.vehicleId;
-      
-      // Eliminar propiedades camelCase
-      delete dbTrip.startDate;
-      delete dbTrip.endDate;
-      delete dbTrip.vehicleId;
+      // Convert to snake_case and prepare dates for DB
+      const updateData: any = {};
+      if (trip.vehicleId !== undefined) updateData.vehicle_id = trip.vehicleId;
+      if (trip.startDate !== undefined) updateData.start_date = trip.startDate.toISOString();
+      if (trip.endDate !== undefined) updateData.end_date = trip.endDate ? trip.endDate.toISOString() : null;
+      if (trip.origin !== undefined) updateData.origin = trip.origin;
+      if (trip.destination !== undefined) updateData.destination = trip.destination;
+      if (trip.distance !== undefined) updateData.distance = trip.distance;
+      if (trip.notes !== undefined) updateData.notes = trip.notes;
       
       const { data, error } = await supabase
         .from('trips')
-        .update(dbTrip)
+        .update(updateData)
         .eq('id', id)
         .select('*')
         .single();
@@ -424,23 +515,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al actualizar viaje:', error);
         toast.error('Error al actualizar viaje');
-      } else {
-        // Convertir los nombres de campos de snake_case a camelCase
-        const formattedTrip: Trip = {
-          id: data.id,
-          vehicleId: data.vehicle_id,
-          userId: data.user_id,
-          startDate: data.start_date,
-          endDate: data.end_date,
-          origin: data.origin,
-          destination: data.destination,
-          distance: data.distance,
-          notes: data.notes,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        
-        setTrips(prev => prev.map(t => (t.id === id ? formattedTrip : t)));
+      } else if (data) {
+        const mappedTrip = mapTripFromDB(data);
+        setTrips(prev => prev.map(t => (t.id === id ? mappedTrip : t)));
         toast.success('Viaje actualizado correctamente');
       }
     } catch (error) {
@@ -511,7 +588,7 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       const newExpense = {
         category: expense.category,
         amount: expense.amount,
-        date: expense.date,
+        date: expense.date.toISOString(),
         description: expense.description,
         receipt_url: expense.receiptUrl,
         trip_id: expense.tripId,
@@ -528,23 +605,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al agregar gasto:', error);
         toast.error('Error al agregar gasto');
-      } else {
-        // Convertir los nombres de campos de snake_case a camelCase
-        const formattedExpense: Expense = {
-          id: data.id,
-          tripId: data.trip_id,
-          vehicleId: data.vehicle_id,
-          userId: data.user_id,
-          category: data.category,
-          date: data.date,
-          amount: data.amount,
-          description: data.description,
-          receiptUrl: data.receipt_url,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        
-        setExpenses(prev => [formattedExpense, ...prev]);
+      } else if (data) {
+        const mappedExpense = mapExpenseFromDB(data);
+        setExpenses(prev => [mappedExpense, ...prev]);
         toast.success('Gasto agregado correctamente');
       }
     } catch (error) {
@@ -555,21 +618,19 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   
   const updateExpense = async (id: string, expense: Partial<Expense>) => {
     try {
-      // Convertir campos de camelCase a snake_case para la base de datos
-      const dbExpense: any = { ...expense };
-      
-      if (expense.tripId) dbExpense.trip_id = expense.tripId;
-      if (expense.vehicleId) dbExpense.vehicle_id = expense.vehicleId;
-      if (expense.receiptUrl) dbExpense.receipt_url = expense.receiptUrl;
-      
-      // Eliminar propiedades camelCase
-      delete dbExpense.tripId;
-      delete dbExpense.vehicleId;
-      delete dbExpense.receiptUrl;
+      // Convert to snake_case for DB
+      const updateData: any = {};
+      if (expense.tripId !== undefined) updateData.trip_id = expense.tripId;
+      if (expense.vehicleId !== undefined) updateData.vehicle_id = expense.vehicleId;
+      if (expense.category !== undefined) updateData.category = expense.category;
+      if (expense.date !== undefined) updateData.date = expense.date.toISOString();
+      if (expense.amount !== undefined) updateData.amount = expense.amount;
+      if (expense.description !== undefined) updateData.description = expense.description;
+      if (expense.receiptUrl !== undefined) updateData.receipt_url = expense.receiptUrl;
       
       const { data, error } = await supabase
         .from('expenses')
-        .update(dbExpense)
+        .update(updateData)
         .eq('id', id)
         .select('*')
         .single();
@@ -577,23 +638,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al actualizar gasto:', error);
         toast.error('Error al actualizar gasto');
-      } else {
-        // Convertir los nombres de campos de snake_case a camelCase
-        const formattedExpense: Expense = {
-          id: data.id,
-          tripId: data.trip_id,
-          vehicleId: data.vehicle_id,
-          userId: data.user_id,
-          category: data.category,
-          date: data.date,
-          amount: data.amount,
-          description: data.description,
-          receiptUrl: data.receipt_url,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        
-        setExpenses(prev => prev.map(e => (e.id === id ? formattedExpense : e)));
+      } else if (data) {
+        const mappedExpense = mapExpenseFromDB(data);
+        setExpenses(prev => prev.map(e => (e.id === id ? mappedExpense : e)));
         toast.success('Gasto actualizado correctamente');
       }
     } catch (error) {
@@ -631,7 +678,13 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     
     try {
       const newToll = {
-        ...toll,
+        name: toll.name,
+        location: toll.location,
+        category: toll.category,
+        price: toll.price,
+        route: toll.route,
+        coordinates: toll.coordinates,
+        description: toll.description,
         user_id: user.id
       };
       
@@ -644,23 +697,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al agregar peaje:', error);
         toast.error('Error al agregar peaje');
-      } else {
-        // Convertir los nombres de campos de snake_case a camelCase
-        const formattedToll: Toll = {
-          id: data.id,
-          userId: data.user_id,
-          name: data.name,
-          location: data.location,
-          category: data.category,
-          price: data.price,
-          route: data.route,
-          coordinates: data.coordinates,
-          description: data.description,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        
-        setTolls(prev => [formattedToll, ...prev]);
+      } else if (data) {
+        const mappedToll = mapTollFromDB(data);
+        setTolls(prev => [mappedToll, ...prev]);
         toast.success('Peaje agregado correctamente');
       }
     } catch (error) {
@@ -671,9 +710,19 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   
   const updateToll = async (id: string, toll: Partial<Toll>) => {
     try {
+      // Convert to snake_case for DB
+      const updateData: any = {};
+      if (toll.name !== undefined) updateData.name = toll.name;
+      if (toll.location !== undefined) updateData.location = toll.location;
+      if (toll.category !== undefined) updateData.category = toll.category;
+      if (toll.price !== undefined) updateData.price = toll.price;
+      if (toll.route !== undefined) updateData.route = toll.route;
+      if (toll.coordinates !== undefined) updateData.coordinates = toll.coordinates;
+      if (toll.description !== undefined) updateData.description = toll.description;
+      
       const { data, error } = await supabase
         .from('tolls')
-        .update(toll)
+        .update(updateData)
         .eq('id', id)
         .select('*')
         .single();
@@ -681,23 +730,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al actualizar peaje:', error);
         toast.error('Error al actualizar peaje');
-      } else {
-        // Convertir los nombres de campos de snake_case a camelCase
-        const formattedToll: Toll = {
-          id: data.id,
-          userId: data.user_id,
-          name: data.name,
-          location: data.location,
-          category: data.category,
-          price: data.price,
-          route: data.route,
-          coordinates: data.coordinates,
-          description: data.description,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        
-        setTolls(prev => prev.map(t => (t.id === id ? formattedToll : t)));
+      } else if (data) {
+        const mappedToll = mapTollFromDB(data);
+        setTolls(prev => prev.map(t => (t.id === id ? mappedToll : t)));
         toast.success('Peaje actualizado correctamente');
       }
     } catch (error) {
@@ -757,7 +792,7 @@ export const DataProvider = ({ children }: DataProviderProps) => {
         trip_id: tollRecord.tripId,
         vehicle_id: tollRecord.vehicleId,
         user_id: user.id,
-        date: tollRecord.date,
+        date: tollRecord.date.toISOString(),
         price: tollRecord.price,
         payment_method: tollRecord.paymentMethod,
         receipt: tollRecord.receipt,
@@ -773,24 +808,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al agregar registro de peaje:', error);
         toast.error('Error al agregar registro de peaje');
-      } else {
-        // Convertir los nombres de campos de snake_case a camelCase
-        const formattedTollRecord: TollRecord = {
-          id: data.id,
-          tollId: data.toll_id,
-          tripId: data.trip_id,
-          vehicleId: data.vehicle_id,
-          userId: data.user_id,
-          date: data.date,
-          price: data.price,
-          paymentMethod: data.payment_method,
-          receipt: data.receipt,
-          notes: data.notes,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        
-        setTollRecords(prev => [formattedTollRecord, ...prev]);
+      } else if (data) {
+        const mappedTollRecord = mapTollRecordFromDB(data);
+        setTollRecords(prev => [mappedTollRecord, ...prev]);
         toast.success('Registro de peaje agregado correctamente');
       }
     } catch (error) {
@@ -801,23 +821,20 @@ export const DataProvider = ({ children }: DataProviderProps) => {
   
   const updateTollRecord = async (id: string, tollRecord: Partial<TollRecord>) => {
     try {
-      // Convertir campos de camelCase a snake_case para la base de datos
-      const dbTollRecord: any = { ...tollRecord };
-      
-      if (tollRecord.tollId) dbTollRecord.toll_id = tollRecord.tollId;
-      if (tollRecord.tripId) dbTollRecord.trip_id = tollRecord.tripId;
-      if (tollRecord.vehicleId) dbTollRecord.vehicle_id = tollRecord.vehicleId;
-      if (tollRecord.paymentMethod) dbTollRecord.payment_method = tollRecord.paymentMethod;
-      
-      // Eliminar propiedades camelCase
-      delete dbTollRecord.tollId;
-      delete dbTollRecord.tripId;
-      delete dbTollRecord.vehicleId;
-      delete dbTollRecord.paymentMethod;
+      // Convert to snake_case for DB
+      const updateData: any = {};
+      if (tollRecord.tollId !== undefined) updateData.toll_id = tollRecord.tollId;
+      if (tollRecord.tripId !== undefined) updateData.trip_id = tollRecord.tripId;
+      if (tollRecord.vehicleId !== undefined) updateData.vehicle_id = tollRecord.vehicleId;
+      if (tollRecord.date !== undefined) updateData.date = tollRecord.date.toISOString();
+      if (tollRecord.price !== undefined) updateData.price = tollRecord.price;
+      if (tollRecord.paymentMethod !== undefined) updateData.payment_method = tollRecord.paymentMethod;
+      if (tollRecord.receipt !== undefined) updateData.receipt = tollRecord.receipt;
+      if (tollRecord.notes !== undefined) updateData.notes = tollRecord.notes;
       
       const { data, error } = await supabase
         .from('toll_records')
-        .update(dbTollRecord)
+        .update(updateData)
         .eq('id', id)
         .select('*')
         .single();
@@ -825,24 +842,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       if (error) {
         console.error('Error al actualizar registro de peaje:', error);
         toast.error('Error al actualizar registro de peaje');
-      } else {
-        // Convertir los nombres de campos de snake_case a camelCase
-        const formattedTollRecord: TollRecord = {
-          id: data.id,
-          tollId: data.toll_id,
-          tripId: data.trip_id,
-          vehicleId: data.vehicle_id,
-          userId: data.user_id,
-          date: data.date,
-          price: data.price,
-          paymentMethod: data.payment_method,
-          receipt: data.receipt,
-          notes: data.notes,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        
-        setTollRecords(prev => prev.map(r => (r.id === id ? formattedTollRecord : r)));
+      } else if (data) {
+        const mappedTollRecord = mapTollRecordFromDB(data);
+        setTollRecords(prev => prev.map(r => (r.id === id ? mappedTollRecord : r)));
         toast.success('Registro de peaje actualizado correctamente');
       }
     } catch (error) {
