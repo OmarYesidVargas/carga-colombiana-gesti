@@ -27,6 +27,7 @@ import ExpenseForm from '@/components/expenses/ExpenseForm';
 import { Expense } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ExpenseSummary from '@/components/reports/ExpenseSummary';
+import { toast } from 'sonner';
 
 const ExpensesPage = () => {
   const { expenses, trips, vehicles, addExpense, updateExpense, deleteExpense } = useData();
@@ -90,22 +91,30 @@ const ExpensesPage = () => {
     setCurrentExpense(null);
   };
   
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = async (data: any) => {
     setIsSubmitting(true);
     
     try {
       // Convertir amount a número
-      data.amount = parseFloat(data.amount);
+      const expenseData = {
+        ...data,
+        amount: parseFloat(data.amount),
+        // Añadir vehicleId del viaje seleccionado
+        vehicleId: trips.find(trip => trip.id === data.tripId)?.vehicleId
+      };
       
       if (currentExpense) {
-        updateExpense(currentExpense.id, data);
+        await updateExpense(currentExpense.id, expenseData);
+        toast.success('Gasto actualizado correctamente');
       } else {
-        addExpense(data);
+        await addExpense(expenseData);
+        toast.success('Gasto agregado correctamente');
       }
       
       handleCloseForm();
     } catch (error) {
       console.error('Error al guardar gasto:', error);
+      toast.error('Error al guardar el gasto');
     } finally {
       setIsSubmitting(false);
     }
@@ -116,11 +125,17 @@ const ExpensesPage = () => {
     setIsDeleteDialogOpen(true);
   };
   
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (expenseToDelete) {
-      deleteExpense(expenseToDelete);
-      setIsDeleteDialogOpen(false);
-      setExpenseToDelete(null);
+      try {
+        await deleteExpense(expenseToDelete);
+        toast.success('Gasto eliminado correctamente');
+        setIsDeleteDialogOpen(false);
+        setExpenseToDelete(null);
+      } catch (error) {
+        console.error('Error al eliminar gasto:', error);
+        toast.error('Error al eliminar el gasto');
+      }
     }
   };
 

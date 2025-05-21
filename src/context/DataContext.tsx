@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle, Trip, Expense, Toll, TollRecord, ExpenseCategory } from '@/types';
@@ -584,17 +583,21 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     }
     
     try {
+      console.log("Datos del gasto a insertar:", expense);
+      
       // Convertir campos de camelCase a snake_case para la base de datos
       const newExpense = {
         category: expense.category,
         amount: expense.amount,
         date: expense.date.toISOString(),
-        description: expense.description,
-        receipt_url: expense.receiptUrl,
+        description: expense.description || null,
+        receipt_url: expense.receiptUrl || null,
         trip_id: expense.tripId,
-        vehicle_id: expense.vehicleId,
+        vehicle_id: expense.vehicleId, // Asegurarse de que este campo esté presente
         user_id: user.id
       };
+      
+      console.log("Datos formateados para Supabase:", newExpense);
       
       const { data, error } = await supabase
         .from('expenses')
@@ -604,15 +607,18 @@ export const DataProvider = ({ children }: DataProviderProps) => {
       
       if (error) {
         console.error('Error al agregar gasto:', error);
-        toast.error('Error al agregar gasto');
+        toast.error(`Error al agregar gasto: ${error.message}`);
+        throw error;
       } else if (data) {
         const mappedExpense = mapExpenseFromDB(data);
         setExpenses(prev => [mappedExpense, ...prev]);
         toast.success('Gasto agregado correctamente');
+        return mappedExpense;
       }
     } catch (error) {
       console.error('Error en addExpense:', error);
       toast.error('Error al agregar gasto');
+      throw error;
     }
   };
   

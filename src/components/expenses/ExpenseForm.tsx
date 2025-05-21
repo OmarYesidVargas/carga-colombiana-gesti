@@ -89,10 +89,8 @@ const ExpenseForm = ({
   });
 
   const handleSubmit = (data: FormData) => {
-    onSubmit({
-      ...data,
-      amount: data.amount,
-    });
+    // No es necesario convertir el monto a número aquí, lo haremos en el componente que recibe los datos
+    onSubmit(data);
   };
 
   // Filtrar viajes por vehículo (si es necesario)
