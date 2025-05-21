@@ -1,80 +1,63 @@
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import React from 'react';
+import { Link, Navigate } from 'react-router-dom';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { useAuth } from '@/context/AuthContext';
 
-// Esquema de validación para el formulario
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Loader2 } from 'lucide-react';
+
 const formSchema = z.object({
-  email: z.string().email('Correo electrónico inválido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  email: z.string().email({
+    message: "Por favor ingresa una dirección de correo válida.",
+  }),
+  password: z.string().min(6, {
+    message: "La contraseña debe tener al menos 6 caracteres.",
+  }),
 });
 
-type FormData = z.infer<typeof formSchema>;
-
 const Login = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-  
-  const form = useForm<FormData>({
+  const { login, isAuthenticated, isLoading } = useAuth();
+
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
-  
-  // Esta función simula una autenticación
-  const handleSubmit = (data: FormData) => {
-    setIsSubmitting(true);
-    
-    // Simulación de inicio de sesión (en una app real, esto sería una llamada a la API)
-    setTimeout(() => {
-      // En una implementación real, aquí verificaríamos las credenciales
-      // y manejaríamos errores de autenticación
-      if (data.email && data.password) {
-        localStorage.setItem('user', JSON.stringify({ email: data.email, id: '1' }));
-        toast.success('¡Has iniciado sesión exitosamente!');
-        navigate('/dashboard');
-      } else {
-        toast.error('Error al iniciar sesión. Por favor, intenta de nuevo.');
-      }
-      setIsSubmitting(false);
-    }, 1000);
-  };
-  
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      await login(values.email, values.password);
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+    }
   };
 
+  // Si el usuario ya está autenticado, redirigir al dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" />;
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+    <div className="flex min-h-[80vh] items-center justify-center px-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+        <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">Iniciar sesión</CardTitle>
           <CardDescription>
             Ingresa tus credenciales para acceder a tu cuenta
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="email"
@@ -83,89 +66,62 @@ const Login = () => {
                     <FormLabel>Correo electrónico</FormLabel>
                     <FormControl>
                       <Input 
-                        {...field} 
                         type="email" 
-                        placeholder="tu@correo.com" 
+                        placeholder="tu@ejemplo.com" 
+                        {...field} 
                         autoComplete="email"
-                        disabled={isSubmitting}
+                        disabled={isLoading}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Contraseña</FormLabel>
+                      <Link 
+                        to="/forgot-password" 
+                        className="text-sm text-primary hover:underline"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </Link>
+                    </div>
                     <FormControl>
-                      <div className="relative">
-                        <Input 
-                          {...field} 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder="••••••••" 
-                          autoComplete="current-password"
-                          disabled={isSubmitting}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 p-0" 
-                          onClick={togglePasswordVisibility}
-                        >
-                          {showPassword ? 
-                            <EyeOff className="h-4 w-4" /> : 
-                            <Eye className="h-4 w-4" />
-                          }
-                        </Button>
-                      </div>
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        {...field} 
+                        autoComplete="current-password"
+                        disabled={isLoading}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
-              <div className="text-sm text-right">
-                <Link 
-                  to="/forgot-password" 
-                  className="text-primary hover:underline"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-              
+
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isSubmitting}
+                disabled={isLoading}
               >
-                {isSubmitting ? (
-                  <span className="flex items-center">
-                    <span className="animate-spin mr-2">○</span> 
-                    Iniciando sesión...
-                  </span>
-                ) : (
-                  <span className="flex items-center">
-                    <LogIn className="mr-2 h-4 w-4" /> 
-                    Iniciar sesión
-                  </span>
-                )}
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Iniciar sesión
               </Button>
             </form>
           </Form>
         </CardContent>
-        
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-center">
-            ¿No tienes una cuenta? {' '}
-            <Link 
-              to="/register" 
-              className="text-primary font-medium hover:underline"
-            >
+
+        <CardFooter className="flex flex-col">
+          <div className="text-center text-sm text-muted-foreground mt-2">
+            ¿No tienes una cuenta?{' '}
+            <Link to="/register" className="text-primary hover:underline">
               Regístrate
             </Link>
           </div>
