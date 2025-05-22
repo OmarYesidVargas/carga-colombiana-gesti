@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ExpenseCard from '@/components/expenses/ExpenseCard';
 import { Expense, Trip, Vehicle } from '@/types';
+import { useMobile } from '@/hooks/use-mobile';
 
 /**
  * Props para el componente de lista de gastos
@@ -36,6 +37,8 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
   onDelete,
   onAdd
 }) => {
+  const isMobile = useMobile();
+
   /**
    * Renderiza el contenido vacío cuando no hay gastos
    */
@@ -72,16 +75,23 @@ const ExpensesList: React.FC<ExpensesListProps> = ({
   );
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-auto">
-      <TabsList className="mb-4 flex flex-nowrap overflow-x-auto pb-1 scrollbar-thin">
-        <TabsTrigger value="all" className="flex-shrink-0">Todos</TabsTrigger>
-        <TabsTrigger value="fuel" className="flex-shrink-0">Combustible</TabsTrigger>
-        <TabsTrigger value="toll" className="flex-shrink-0">Peajes</TabsTrigger>
-        <TabsTrigger value="maintenance" className="flex-shrink-0">Mantenimiento</TabsTrigger>
-        <TabsTrigger value="lodging" className="flex-shrink-0">Alojamiento</TabsTrigger>
-        <TabsTrigger value="food" className="flex-shrink-0">Comida</TabsTrigger>
-        <TabsTrigger value="other" className="flex-shrink-0">Otros</TabsTrigger>
-      </TabsList>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <div className="relative mb-4 -mx-1">
+        <div className="overflow-x-auto pb-1 scrollbar-none">
+          <TabsList className="flex flex-nowrap min-w-max p-1">
+            <TabsTrigger value="all" className="flex-shrink-0">Todos</TabsTrigger>
+            <TabsTrigger value="fuel" className="flex-shrink-0">Combustible</TabsTrigger>
+            <TabsTrigger value="toll" className="flex-shrink-0">Peajes</TabsTrigger>
+            <TabsTrigger value="maintenance" className="flex-shrink-0">Mantenimiento</TabsTrigger>
+            <TabsTrigger value="lodging" className="flex-shrink-0">Alojamiento</TabsTrigger>
+            <TabsTrigger value="food" className="flex-shrink-0">Comida</TabsTrigger>
+            <TabsTrigger value="other" className="flex-shrink-0">Otros</TabsTrigger>
+          </TabsList>
+        </div>
+        {isMobile && (
+          <div className="absolute inset-y-0 right-0 w-8 pointer-events-none bg-gradient-to-l from-background to-transparent" />
+        )}
+      </div>
       
       <TabsContent value="all">
         {filteredExpenses.length > 0 

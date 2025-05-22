@@ -13,7 +13,8 @@ import {
   LayoutDashboard,
   Menu,
   Truck,
-  X
+  X,
+  Road
 } from "lucide-react";
 
 const AppSidebar = () => {
@@ -31,7 +32,7 @@ const AppSidebar = () => {
       {/* Overlay para dispositivos móviles */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-background/80 z-20"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-20"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -52,7 +53,7 @@ const AppSidebar = () => {
       <aside
         className={cn(
           "h-[calc(100vh-4rem)] bg-card w-64 border-r flex-shrink-0 py-2 flex flex-col",
-          isMobile && "fixed left-0 top-16 z-20 transition-transform duration-300",
+          isMobile && "fixed left-0 top-16 z-20 transition-transform duration-300 shadow-lg",
           isMobile && !isOpen && "-translate-x-full"
         )}
       >
@@ -103,6 +104,30 @@ const AppSidebar = () => {
           >
             <CreditCard className="h-4 w-4" />
             <span>Gastos</span>
+          </NavLink>
+          
+          {/* Peajes */}
+          <NavLink
+            to="/tolls"
+            className={({ isActive }) =>
+              cn(linkClass, isActive && activeClass)
+            }
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            <Road className="h-4 w-4" />
+            <span>Peajes</span>
+          </NavLink>
+          
+          {/* Registro de Peajes */}
+          <NavLink
+            to="/toll-records"
+            className={({ isActive }) =>
+              cn(linkClass, isActive && activeClass)
+            }
+            onClick={() => isMobile && setIsOpen(false)}
+          >
+            <CalendarClock className="h-4 w-4" />
+            <span>Registros de Peajes</span>
           </NavLink>
           
           {/* Reportes */}

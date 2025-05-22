@@ -37,13 +37,13 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
   };
   
   return (
-    <header className="bg-white border-b border-gray-200 py-3 px-4 sm:px-6 lg:px-8 flex items-center justify-between shadow-sm">
+    <header className="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 py-2 px-3 sm:px-6 lg:px-8 flex items-center justify-between shadow-sm">
       <div className="flex items-center">
         <div 
           className="cursor-pointer flex items-center" 
           onClick={() => navigate('/')}
         >
-          <span className="text-xl font-semibold text-primary">
+          <span className="text-lg sm:text-xl font-semibold text-primary truncate">
             Transpo<span className="text-secondary">registros</span>
             <span className="text-primary font-bold">Plus</span>
           </span>
@@ -54,7 +54,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
         {userEmail ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline-block max-w-[150px] truncate">
                   {userEmail}
@@ -62,7 +62,9 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
+              <DropdownMenuLabel className="max-w-[200px] truncate">
+                {userEmail}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSettings} className="cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
@@ -75,9 +77,9 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={handleLogin}>Iniciar sesión</Button>
-            <Button variant="default" onClick={handleRegister}>Registrarse</Button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button variant="ghost" size="sm" className="sm:size-default" onClick={handleLogin}>Iniciar sesión</Button>
+            <Button variant="default" size="sm" className="sm:size-default" onClick={handleRegister}>Registrarse</Button>
           </div>
         )}
       </div>

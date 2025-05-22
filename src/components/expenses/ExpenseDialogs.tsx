@@ -57,7 +57,7 @@ const ExpenseDialogs: React.FC<ExpenseDialogsProps> = ({
     <>
       {/* Diálogo de formulario */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 w-[calc(100%-2rem)] sm:w-auto">
           <DialogHeader>
             <DialogTitle>
               {currentExpense ? 'Editar Gasto' : 'Agregar Gasto'}
@@ -82,15 +82,15 @@ const ExpenseDialogs: React.FC<ExpenseDialogsProps> = ({
       
       {/* Diálogo de confirmación para eliminar */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-2rem)] sm:w-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta acción no se puede deshacer. El gasto será eliminado permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="mt-0">Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={onConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
