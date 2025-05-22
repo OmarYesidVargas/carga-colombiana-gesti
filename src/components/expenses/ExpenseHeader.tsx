@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Download } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 /**
  * Props para el componente de encabezado de gastos
@@ -36,15 +37,28 @@ const ExpenseHeader: React.FC<ExpenseHeaderProps> = ({
           Agregar Gasto
         </Button>
         
-        <Button 
-          onClick={onExportClick} 
-          variant="outline"
-          className="flex-1 sm:flex-none"
-          disabled={!canExport}
-        >
-          <Download className="mr-2 h-4 w-4" /> 
-          Exportar CSV
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Button 
+                  onClick={onExportClick} 
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                  disabled={!canExport}
+                >
+                  <Download className="mr-2 h-4 w-4" /> 
+                  Exportar CSV
+                </Button>
+              </div>
+            </TooltipTrigger>
+            {!canExport && (
+              <TooltipContent>
+                <p>Agrega gastos para poder exportarlos</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );

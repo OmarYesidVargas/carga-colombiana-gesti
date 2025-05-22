@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Expense } from '@/types';
 
 /**
@@ -22,13 +22,21 @@ export const useExpenseFilters = (expenses: Expense[]) => {
     }
   }, [activeTab]);
   
+  // Función para resetear todos los filtros
+  const resetAllFilters = useCallback(() => {
+    setSearchTerm('');
+    setSelectedVehicleId('all');
+    setSelectedTripId('all');
+    setActiveTab('all');
+  }, []);
+  
   /**
    * Filtra los gastos según los criterios seleccionados
    */
   const filteredExpenses = useMemo(() => {
     return expenses.filter((expense) => {
       // Filtrar por búsqueda de texto
-      const matchesSearch = 
+      const matchesSearch = searchTerm === '' || 
         expense.description?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         expense.category.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -38,9 +46,12 @@ export const useExpenseFilters = (expenses: Expense[]) => {
       // Filtrar por viaje
       const matchesTrip = selectedTripId === 'all' || expense.tripId === selectedTripId;
       
-      return matchesSearch && matchesVehicle && matchesTrip;
+      // Si estamos en una pestaña específica, filtrar por categoría también
+      const matchesCategory = activeTab === 'all' || expense.category === activeTab;
+      
+      return matchesSearch && matchesVehicle && matchesTrip && matchesCategory;
     });
-  }, [expenses, searchTerm, selectedVehicleId, selectedTripId]);
+  }, [expenses, searchTerm, selectedVehicleId, selectedTripId, activeTab]);
   
   /**
    * Agrupa los gastos por categoría
@@ -55,6 +66,11 @@ export const useExpenseFilters = (expenses: Expense[]) => {
     
     return result;
   }, [filteredExpenses]);
+
+  // Indicador de si hay filtros activos
+  const hasActiveFilters = useMemo(() => {
+    return searchTerm !== '' || selectedVehicleId !== 'all' || selectedTripId !== 'all';
+  }, [searchTerm, selectedVehicleId, selectedTripId]);
   
   return {
     // Estados
@@ -65,12 +81,14 @@ export const useExpenseFilters = (expenses: Expense[]) => {
     isFilterOpen,
     filteredExpenses,
     expensesByCategory,
+    hasActiveFilters,
     
-    // Setters
+    // Acciones
     setSearchTerm,
     setSelectedVehicleId,
     setSelectedTripId,
     setActiveTab,
-    setIsFilterOpen
+    setIsFilterOpen,
+    resetAllFilters
   };
 };
