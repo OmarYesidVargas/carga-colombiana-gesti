@@ -35,7 +35,7 @@ interface DataContextType {
   
   // Funciones para gastos
   getExpenseById: (id: string) => Expense | undefined;
-  addExpense: (expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addExpense: (expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<Expense | void>;
   updateExpense: (id: string, expense: Partial<Expense>) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
   
@@ -355,7 +355,7 @@ export const DataProvider = ({ children }: DataProviderProps) => {
         model: vehicle.model,
         year: vehicle.year,
         color: vehicle.color,
-        fuel_type: vehicle.fuelType,
+        fuelType: vehicle.fuelType,
         capacity: vehicle.capacity,
         image_url: vehicle.imageUrl,
         user_id: user.id
