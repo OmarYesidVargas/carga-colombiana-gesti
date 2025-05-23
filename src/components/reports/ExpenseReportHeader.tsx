@@ -23,7 +23,7 @@ const ExpenseReportHeader: React.FC<ExpenseReportHeaderProps> = ({ onExport, tot
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Reporte de Gastos</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Reporte de Gastos</h1>
         <p className="text-muted-foreground">
           Visualiza y analiza los gastos de tus viajes
         </p>
@@ -34,7 +34,11 @@ const ExpenseReportHeader: React.FC<ExpenseReportHeaderProps> = ({ onExport, tot
         )}
       </div>
       
-      <Button onClick={onExport} disabled={totalExpenses === 0}>
+      <Button 
+        onClick={onExport} 
+        disabled={totalExpenses === 0}
+        className="w-full sm:w-auto"
+      >
         <Download className="mr-2 h-4 w-4" />
         Exportar Datos
       </Button>

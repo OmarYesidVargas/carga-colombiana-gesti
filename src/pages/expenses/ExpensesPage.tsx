@@ -179,7 +179,7 @@ const ExpensesPage = () => {
         canExport={filteredExpenses.length > 0}
       />
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
         {/* Resumen de gastos */}
         <div className="lg:col-span-1">
           <ExpenseSummary 

@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useMobile } from '@/hooks/use-mobile';
 
 // Categorías de gastos con etiquetas en español
 export const expenseCategories = [
@@ -45,13 +46,15 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
   setDateRange,
   resetFilters
 }) => {
+  const isMobile = useMobile();
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Filtros</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium mb-1 block">
               Vehículo
@@ -126,7 +129,7 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
                     selected={dateRange}
                     onSelect={setDateRange}
                     locale={es}
-                    numberOfMonths={2}
+                    numberOfMonths={isMobile ? 1 : 2}
                     className="pointer-events-auto"
                   />
                 </PopoverContent>

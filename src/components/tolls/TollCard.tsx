@@ -23,17 +23,17 @@ const formatCurrency = (amount: number) => {
 
 const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{toll.name}</CardTitle>
-          <Badge className="bg-emerald-500">{toll.category}</Badge>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <CardTitle className="text-base sm:text-lg break-words mr-2">{toll.name}</CardTitle>
+          <Badge className="bg-emerald-500 shrink-0">{toll.category}</Badge>
         </div>
       </CardHeader>
       <CardContent className="pb-3 space-y-2">
         <div className="flex items-start gap-2">
           <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-          <div>
+          <div className="break-words">
             <p className="text-sm font-medium">{toll.location}</p>
             <p className="text-xs text-muted-foreground">{toll.route}</p>
             {toll.coordinates && (
@@ -49,15 +49,16 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
             {formatCurrency(toll.price)}
           </p>
           {toll.description && (
-            <p className="text-sm text-muted-foreground mt-1">{toll.description}</p>
+            <p className="text-sm text-muted-foreground mt-1 break-words">{toll.description}</p>
           )}
         </div>
       </CardContent>
-      <CardFooter className="pt-0 flex justify-end gap-2">
+      <CardFooter className="pt-0 flex justify-end gap-2 flex-wrap">
         <Button 
           variant="outline" 
           size="sm" 
           onClick={() => onEdit(toll)}
+          className="flex-1 sm:flex-none"
         >
           <Pencil className="h-4 w-4 mr-1" /> Editar
         </Button>
@@ -65,6 +66,7 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
           variant="destructive"
           size="sm"
           onClick={() => onDelete(toll.id)}
+          className="flex-1 sm:flex-none"
         >
           <Trash2 className="h-4 w-4 mr-1" /> Eliminar
         </Button>
