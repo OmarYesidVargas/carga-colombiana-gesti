@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { Vehicle, Trip, Expense, Toll, TollRecord } from '@/types';
@@ -31,8 +30,8 @@ interface DataContextType {
   expenses: Expense[];
   getExpenseById: (id: string) => Expense | undefined;
   addExpense: (expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<Expense | void>;
-  updateExpense: (id: string, expense: Partial<Expense>) => Promise<void>;
-  deleteExpense: (id: string) => Promise<void>;
+  updateExpense: (id: string, expense: Partial<Expense>) => Promise<boolean>;
+  deleteExpense: (id: string) => Promise<boolean>;
   
   // Peajes
   tolls: Toll[];

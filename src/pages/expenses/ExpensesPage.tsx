@@ -84,14 +84,18 @@ const ExpensesPage = () => {
       };
       
       if (currentExpense) {
-        await updateExpense(currentExpense.id, expenseData);
-        toast.success('Gasto actualizado correctamente');
+        const success = await updateExpense(currentExpense.id, expenseData);
+        if (success) {
+          toast.success('Gasto actualizado correctamente');
+          handleCloseForm();
+        } else {
+          toast.error('Error al actualizar el gasto');
+        }
       } else {
         await addExpense(expenseData);
         toast.success('Gasto agregado correctamente');
+        handleCloseForm();
       }
-      
-      handleCloseForm();
     } catch (error) {
       console.error('Error al guardar gasto:', error);
       toast.error('Error al guardar el gasto');
