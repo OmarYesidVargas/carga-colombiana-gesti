@@ -17,7 +17,7 @@ const Layout = () => {
       {isAuthenticated ? (
         <div className="relative flex flex-1 w-full">
           <AppSidebar />
-          <main className={`flex-1 p-4 sm:p-6 ${isMobile ? 'pb-16' : ''}`}>
+          <main className={`flex-1 p-4 sm:p-6 ${isMobile ? 'pb-20' : ''}`}>
             <Outlet />
           </main>
         </div>

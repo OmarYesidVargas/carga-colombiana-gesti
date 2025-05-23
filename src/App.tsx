@@ -22,7 +22,15 @@ import AuthRoute from "./routes/AuthRoute";
 import TollsPage from "./pages/tolls/TollsPage";
 import TollRecordsPage from "./pages/tolls/TollRecordsPage";
 
-const queryClient = new QueryClient();
+// Create a new QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => {
   return (
@@ -35,26 +43,31 @@ const App = () => {
               <Sonner />
               
               <Routes>
-                {/* Páginas públicas */}
+                {/* Public pages */}
                 <Route path="/" element={<Layout />}>
                   <Route index element={<LandingPage />} />
                   <Route path="login" element={<Login />} />
                   <Route path="register" element={<Register />} />
                   <Route path="forgot-password" element={<ForgotPassword />} />
 
-                  {/* Páginas protegidas */}
+                  {/* Protected pages */}
                   <Route element={<AuthRoute />}>
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="vehicles" element={<VehiclesPage />} />
                     <Route path="trips" element={<TripsPage />} />
                     <Route path="trips/:id" element={<TripDetailPage />} />
                     <Route path="expenses" element={<ExpensesPage />} />
-                    <Route path="reports/expenses" element={<ExpensesReportPage />} />
                     <Route path="tolls" element={<TollsPage />} />
                     <Route path="toll-records" element={<TollRecordsPage />} />
+                    
+                    {/* Reports section */}
+                    <Route path="reports">
+                      <Route index element={<Navigate to="/reports/expenses" replace />} />
+                      <Route path="expenses" element={<ExpensesReportPage />} />
+                    </Route>
                   </Route>
                   
-                  {/* Redirección de rutas desconocidas */}
+                  {/* Redirect unknown routes */}
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>

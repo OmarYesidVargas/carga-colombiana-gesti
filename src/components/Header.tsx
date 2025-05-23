@@ -41,7 +41,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
       <div className="flex items-center">
         <div 
           className="cursor-pointer flex items-center" 
-          onClick={() => navigate('/')}
+          onClick={() => navigate(userEmail ? '/dashboard' : '/')}
         >
           <span className="text-lg sm:text-xl font-semibold text-primary truncate">
             Transpo<span className="text-secondary">registros</span>
@@ -78,8 +78,8 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
           </DropdownMenu>
         ) : (
           <div className="flex items-center gap-2 sm:gap-3">
-            <Button variant="ghost" size="sm" className="sm:size-default" onClick={handleLogin}>Iniciar sesión</Button>
-            <Button variant="default" size="sm" className="sm:size-default" onClick={handleRegister}>Registrarse</Button>
+            <Button variant="ghost" size="sm" className="text-xs sm:text-sm" onClick={handleLogin}>Iniciar sesión</Button>
+            <Button variant="default" size="sm" className="text-xs sm:text-sm" onClick={handleRegister}>Registrarse</Button>
           </div>
         )}
       </div>

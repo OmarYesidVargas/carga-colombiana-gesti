@@ -21,7 +21,7 @@ import ExpenseForm from '@/components/expenses/ExpenseForm';
 import { Expense, Trip, Vehicle } from '@/types';
 
 /**
- * Props para el componente de diálogos de gastos
+ * Props for the expense dialogs component
  */
 interface ExpenseDialogsProps {
   isFormOpen: boolean;
@@ -38,7 +38,7 @@ interface ExpenseDialogsProps {
 }
 
 /**
- * Componente que contiene los diálogos para crear/editar y eliminar gastos
+ * Component that contains dialogs for creating/editing and deleting expenses
  */
 const ExpenseDialogs: React.FC<ExpenseDialogsProps> = ({
   isFormOpen,
@@ -55,7 +55,7 @@ const ExpenseDialogs: React.FC<ExpenseDialogsProps> = ({
 }) => {
   return (
     <>
-      {/* Diálogo de formulario */}
+      {/* Form dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 w-[calc(100%-2rem)] sm:w-auto">
           <DialogHeader>
@@ -80,7 +80,7 @@ const ExpenseDialogs: React.FC<ExpenseDialogsProps> = ({
         </DialogContent>
       </Dialog>
       
-      {/* Diálogo de confirmación para eliminar */}
+      {/* Confirmation dialog for deletion */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent className="w-[calc(100%-2rem)] sm:w-auto">
           <AlertDialogHeader>

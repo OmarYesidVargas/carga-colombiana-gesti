@@ -21,15 +21,15 @@ const AppSidebar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const isMobile = useMobile();
   
-  // Clase para enlaces activos
+  // Class for active links
   const activeClass = "bg-primary/10 text-primary font-medium";
   
-  // Clase para enlaces
+  // Class for links
   const linkClass = "flex items-center gap-2 py-2 px-4 rounded-md w-full transition-colors text-sm";
   
   return (
     <>
-      {/* Overlay para dispositivos móviles */}
+      {/* Overlay for mobile devices */}
       {isMobile && isOpen && (
         <div 
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-20"
@@ -37,7 +37,7 @@ const AppSidebar = () => {
         />
       )}
       
-      {/* Botón para abrir/cerrar en móvil */}
+      {/* Button to open/close on mobile */}
       {isMobile && (
         <Button 
           variant="outline" 
@@ -70,7 +70,7 @@ const AppSidebar = () => {
             <span>Dashboard</span>
           </NavLink>
           
-          {/* Vehículos */}
+          {/* Vehicles */}
           <NavLink
             to="/vehicles"
             className={({ isActive }) =>
@@ -82,7 +82,7 @@ const AppSidebar = () => {
             <span>Vehículos</span>
           </NavLink>
           
-          {/* Viajes */}
+          {/* Trips */}
           <NavLink
             to="/trips"
             className={({ isActive }) =>
@@ -94,7 +94,7 @@ const AppSidebar = () => {
             <span>Viajes</span>
           </NavLink>
           
-          {/* Gastos */}
+          {/* Expenses */}
           <NavLink
             to="/expenses"
             className={({ isActive }) =>
@@ -106,7 +106,7 @@ const AppSidebar = () => {
             <span>Gastos</span>
           </NavLink>
           
-          {/* Peajes */}
+          {/* Tolls */}
           <NavLink
             to="/tolls"
             className={({ isActive }) =>
@@ -118,7 +118,7 @@ const AppSidebar = () => {
             <span>Peajes</span>
           </NavLink>
           
-          {/* Registro de Peajes */}
+          {/* Toll Records */}
           <NavLink
             to="/toll-records"
             className={({ isActive }) =>
@@ -130,7 +130,7 @@ const AppSidebar = () => {
             <span>Registros de Peajes</span>
           </NavLink>
           
-          {/* Reportes */}
+          {/* Reports */}
           <NavLink
             to="/reports/expenses"
             className={({ isActive }) =>
