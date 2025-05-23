@@ -14,7 +14,7 @@ import {
   Menu,
   Truck,
   X,
-  Road
+  Milestone
 } from "lucide-react";
 
 const AppSidebar = () => {
@@ -114,7 +114,7 @@ const AppSidebar = () => {
             }
             onClick={() => isMobile && setIsOpen(false)}
           >
-            <Road className="h-4 w-4" />
+            <Milestone className="h-4 w-4" />
             <span>Peajes</span>
           </NavLink>
           
