@@ -1,71 +1,67 @@
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Expense } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+// Mapeador de categorías a etiquetas en español
+const categoryLabels: Record<string, string> = {
+  fuel: 'Combustible',
+  toll: 'Peaje',
+  maintenance: 'Mantenimiento',
+  lodging: 'Alojamiento', 
+  food: 'Comida',
+  other: 'Otros'
+};
+
+// Colores para las diferentes categorías
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 interface ExpensesChartProps {
   expenses: Expense[];
-  title?: string;
+  data?: Record<string, number>;
+  dataKeyMap?: Record<string, string>;
 }
 
-// Colores para las categorías
-const categoryColors = {
-  fuel: "#FF9F1C",        // Naranja para combustible
-  toll: "#2EC4B6",        // Verde azulado para peajes
-  maintenance: "#E71D36", // Rojo para mantenimiento
-  lodging: "#7209B7",     // Morado para alojamiento
-  food: "#4CC9F0",        // Azul claro para comida
-  other: "#8E9196",       // Gris para otros
-};
+const ExpensesChart: React.FC<ExpensesChartProps> = ({ 
+  expenses, 
+  data,
+  dataKeyMap
+}) => {
+  // Si se proporciona data, usarla; de lo contrario, calcular desde los gastos
+  const expensesByCategory = data || expenses.reduce((acc, expense) => {
+    const category = expense.category;
+    if (!acc[category]) acc[category] = 0;
+    acc[category] += expense.amount;
+    return acc;
+  }, {} as Record<string, number>);
 
-// Etiquetas en español para las categorías
-const categoryLabels = {
-  fuel: "Combustible",
-  toll: "Peaje",
-  maintenance: "Mantenimiento",
-  lodging: "Alojamiento",
-  food: "Comida",
-  other: "Otros",
-};
+  // Preparar datos para el gráfico
+  const chartData = Object.entries(expensesByCategory).map(([key, value], index) => ({
+    name: dataKeyMap ? (dataKeyMap[key] || key) : (categoryLabels[key] || key),
+    value,
+    color: COLORS[index % COLORS.length]
+  }));
 
-const ExpensesChart = ({ expenses, title = "Gastos por categoría" }: ExpensesChartProps) => {
-  // Procesar datos para el gráfico agrupando por categoría
-  const chartData = React.useMemo(() => {
-    const categorySums: Record<string, number> = {};
-    
-    expenses.forEach((expense) => {
-      const { category, amount } = expense;
-      if (!categorySums[category]) {
-        categorySums[category] = 0;
-      }
-      categorySums[category] += amount;
-    });
-    
-    return Object.keys(categoryLabels).map(key => ({
-      name: categoryLabels[key as keyof typeof categoryLabels],
-      value: categorySums[key] || 0,
-      fill: categoryColors[key as keyof typeof categoryColors]
-    }));
-  }, [expenses]);
-  
-  // Formatear moneda colombiana para el tooltip
+  // Formatear moneda colombiana para las etiquetas
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', { 
       style: 'currency', 
       currency: 'COP',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0 
     }).format(value);
   };
-  
-  // Componente personalizado para el tooltip
+
+  // Componente para el tooltip personalizado
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
-          <p className="font-semibold">{payload[0].name}</p>
-          <p className="text-sm currency-cop">{formatCurrency(payload[0].value)}</p>
+        <div className="custom-tooltip bg-white p-3 border rounded shadow">
+          <p className="label font-semibold">{`${payload[0].name}`}</p>
+          <p className="intro">{formatCurrency(payload[0].value)}</p>
+          <p className="desc text-xs text-muted-foreground">
+            {Math.round((payload[0].value / expenses.reduce((a, b) => a + b.amount, 0)) * 100)}% del total
+          </p>
         </div>
       );
     }
@@ -73,28 +69,38 @@ const ExpensesChart = ({ expenses, title = "Gastos por categoría" }: ExpensesCh
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+    <div className="h-full flex flex-col">
+      <h3 className="text-lg font-semibold mb-4">Distribución de Gastos</h3>
+      
+      {chartData.length > 0 ? (
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              cx="50%"
+              cy="50%"
+              innerRadius={70}
+              outerRadius={90}
+              fill="#8884d8"
+              paddingAngle={5}
+              dataKey="value"
+              nameKey="name"
+              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(value) => formatCurrency(value).replace('COP', '').trim()} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="value" name="Monto" />
-            </BarChart>
-          </ResponsiveContainer>
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">No hay datos suficientes para mostrar el gráfico</p>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

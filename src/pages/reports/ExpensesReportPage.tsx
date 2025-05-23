@@ -2,6 +2,8 @@
 import React from 'react';
 import { useData } from '@/context/DataContext';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { useExpenseReport } from '@/hooks/useExpenseReport';
 import ExpenseReportHeader from '@/components/reports/ExpenseReportHeader';
 import ExpenseReportFilters from '@/components/reports/ExpenseReportFilters';
@@ -9,7 +11,7 @@ import ExpenseReportCharts from '@/components/reports/ExpenseReportCharts';
 import ExpenseReportTable from '@/components/reports/ExpenseReportTable';
 
 const ExpensesReportPage = () => {
-  const { vehicles, trips, expenses } = useData();
+  const { vehicles, trips, expenses, exportToCSV } = useData();
   
   // Use custom hook for filtering and calculations
   const {
@@ -21,19 +23,58 @@ const ExpensesReportPage = () => {
     setDateRange,
     resetFilters,
     filteredExpenses,
-    totalExpenses
+    totalExpenses,
+    expensesByCategory,
+    expensesByVehicle
   } = useExpenseReport(expenses);
   
-  // Función para simular la exportación de datos
+  // Función para exportar datos
   const handleExportData = () => {
-    toast.success('Reporte exportado exitosamente a tu dispositivo');
-    // En una implementación real, aquí se generaría un archivo CSV o PDF
+    if (filteredExpenses.length === 0) {
+      toast.error('No hay datos para exportar');
+      return;
+    }
+    
+    // Preparar datos para exportar (formato más legible)
+    const dataToExport = filteredExpenses.map(expense => {
+      const trip = trips.find(t => t.id === expense.tripId);
+      const vehicle = vehicles.find(v => v.id === expense.vehicleId);
+      
+      return {
+        Fecha: format(new Date(expense.date), 'dd/MM/yyyy', { locale: es }),
+        Categoría: getCategoryLabel(expense.category),
+        Monto: expense.amount,
+        Descripción: expense.description || '',
+        Vehículo: vehicle ? `${vehicle.plate} - ${vehicle.brand} ${vehicle.model}` : '',
+        Viaje: trip ? `${trip.origin} - ${trip.destination}` : '',
+      };
+    });
+    
+    exportToCSV(dataToExport, `gastos_${format(new Date(), 'yyyy-MM-dd')}`);
+    toast.success('Reporte exportado exitosamente');
+  };
+  
+  // Obtener etiquetas de categorías
+  const getCategoryLabel = (category: string): string => {
+    const labels: Record<string, string> = {
+      fuel: 'Combustible',
+      toll: 'Peaje',
+      maintenance: 'Mantenimiento',
+      lodging: 'Alojamiento',
+      food: 'Comida',
+      other: 'Otros'
+    };
+    
+    return labels[category] || category;
   };
 
   return (
     <div className="space-y-6">
       {/* Header section */}
-      <ExpenseReportHeader onExport={handleExportData} />
+      <ExpenseReportHeader 
+        onExport={handleExportData} 
+        totalExpenses={totalExpenses}
+      />
       
       {/* Filters section */}
       <ExpenseReportFilters
@@ -55,6 +96,8 @@ const ExpensesReportPage = () => {
             expenses={filteredExpenses}
             vehicles={vehicles}
             trips={trips}
+            expensesByCategory={expensesByCategory}
+            expensesByVehicle={expensesByVehicle}
           />
           
           {/* Expenses table */}

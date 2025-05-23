@@ -15,7 +15,8 @@ export const loadExpenses = async (user: User | null): Promise<Expense[]> => {
     const { data, error } = await supabase
       .from('expenses')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .order('date', { ascending: false });
     
     if (error) {
       throw error;

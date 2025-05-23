@@ -6,9 +6,20 @@ import { toast } from 'sonner';
 
 interface ExpenseReportHeaderProps {
   onExport: () => void;
+  totalExpenses: number;
 }
 
-const ExpenseReportHeader: React.FC<ExpenseReportHeaderProps> = ({ onExport }) => {
+const ExpenseReportHeader: React.FC<ExpenseReportHeaderProps> = ({ onExport, totalExpenses }) => {
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-CO', { 
+      style: 'currency', 
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0 
+    }).format(amount);
+  };
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
@@ -16,9 +27,14 @@ const ExpenseReportHeader: React.FC<ExpenseReportHeaderProps> = ({ onExport }) =
         <p className="text-muted-foreground">
           Visualiza y analiza los gastos de tus viajes
         </p>
+        {totalExpenses > 0 && (
+          <p className="text-lg mt-2">
+            Total: <span className="font-bold">{formatCurrency(totalExpenses)}</span>
+          </p>
+        )}
       </div>
       
-      <Button onClick={onExport}>
+      <Button onClick={onExport} disabled={totalExpenses === 0}>
         <Download className="mr-2 h-4 w-4" />
         Exportar Datos
       </Button>

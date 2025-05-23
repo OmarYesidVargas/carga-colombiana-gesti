@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Expense } from '@/types';
 import { User } from '@supabase/supabase-js';
 import { loadExpenses, addExpense as addExpenseService, updateExpense as updateExpenseService, deleteExpense as deleteExpenseService } from '@/services/expensesService';
@@ -12,6 +12,7 @@ import { loadExpenses, addExpense as addExpenseService, updateExpense as updateE
  */
 export const useExpenses = (user: User | null, setGlobalLoading: (loading: boolean) => void) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   
   /**
    * Efecto para cargar gastos cuando cambia el usuario
@@ -20,9 +21,16 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     const fetchExpenses = async () => {
       if (user) {
         setGlobalLoading(true);
-        const loadedExpenses = await loadExpenses(user);
-        setExpenses(loadedExpenses);
-        setGlobalLoading(false);
+        setLoading(true);
+        try {
+          const loadedExpenses = await loadExpenses(user);
+          setExpenses(loadedExpenses);
+        } catch (error) {
+          console.error('Error al cargar gastos:', error);
+        } finally {
+          setGlobalLoading(false);
+          setLoading(false);
+        }
       } else {
         setExpenses([]);
       }
@@ -36,48 +44,77 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
    * @param {string} id - ID del gasto
    * @returns {Expense | undefined} Gasto encontrado o undefined
    */
-  const getExpenseById = (id: string) => {
+  const getExpenseById = useCallback((id: string) => {
     return expenses.find(expense => expense.id === id);
-  };
+  }, [expenses]);
   
   /**
    * Agrega un nuevo gasto
    */
-  const addExpense = async (expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Expense | void> => {
-    const newExpense = await addExpenseService(user, expense);
-    
-    if (newExpense) {
-      setExpenses(prev => [...prev, newExpense]);
-      return newExpense;
+  const addExpense = useCallback(async (expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Expense | void> => {
+    setLoading(true);
+    try {
+      const newExpense = await addExpenseService(user, expense);
+      
+      if (newExpense) {
+        setExpenses(prev => [...prev, newExpense]);
+        return newExpense;
+      }
+    } catch (error) {
+      console.error('Error en useExpenses al agregar:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [user]);
   
   /**
    * Actualiza un gasto existente
    */
-  const updateExpense = async (id: string, expense: Partial<Expense>) => {
-    const success = await updateExpenseService(user, id, expense);
-    
-    if (success) {
-      setExpenses(prev => 
-        prev.map(e => e.id === id ? { ...e, ...expense } : e)
-      );
+  const updateExpense = useCallback(async (id: string, expense: Partial<Expense>) => {
+    setLoading(true);
+    try {
+      const success = await updateExpenseService(user, id, expense);
+      
+      if (success) {
+        setExpenses(prev => 
+          prev.map(e => e.id === id ? { ...e, ...expense } : e)
+        );
+      }
+      
+      return success;
+    } catch (error) {
+      console.error('Error en useExpenses al actualizar:', error);
+      return false;
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [user]);
   
   /**
    * Elimina un gasto
    */
-  const deleteExpense = async (id: string) => {
-    const success = await deleteExpenseService(user, id);
-    
-    if (success) {
-      setExpenses(prev => prev.filter(e => e.id !== id));
+  const deleteExpense = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      const success = await deleteExpenseService(user, id);
+      
+      if (success) {
+        setExpenses(prev => prev.filter(e => e.id !== id));
+      }
+      
+      return success;
+    } catch (error) {
+      console.error('Error en useExpenses al eliminar:', error);
+      return false;
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [user]);
   
   return {
     expenses,
+    loading,
     getExpenseById,
     addExpense,
     updateExpense,
