@@ -80,13 +80,20 @@ const TollRecordsPage = () => {
     setIsSubmitting(true);
     
     try {
+      console.log('Datos del formulario recibidos:', data);
+      
       // Convertir price a número
-      data.price = parseFloat(data.price);
+      const submitData = {
+        ...data,
+        price: parseFloat(data.price)
+      };
+      
+      console.log('Datos procesados para envío:', submitData);
       
       if (currentRecord) {
-        updateTollRecord(currentRecord.id, data);
+        updateTollRecord(currentRecord.id, submitData);
       } else {
-        addTollRecord(data);
+        addTollRecord(submitData);
       }
       
       handleCloseForm();

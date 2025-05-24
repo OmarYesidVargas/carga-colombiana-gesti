@@ -59,7 +59,7 @@ interface TollRecordFormProps {
   tolls: Toll[];
   vehicles: Vehicle[];
   selectedTripId?: string;
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: FormData & { vehicleId: string }) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
 }
@@ -99,14 +99,22 @@ const TollRecordForm = ({
   }, [form.watch('tollId'), tolls, form]);
 
   const handleSubmit = (data: FormData) => {
+    // Encontrar el vehículo del viaje seleccionado
+    const selectedTrip = trips.find(trip => trip.id === data.tripId);
+    if (!selectedTrip) {
+      console.error('No se encontró el viaje seleccionado');
+      return;
+    }
+
+    console.log('Viaje seleccionado:', selectedTrip);
+    console.log('Vehicle ID del viaje:', selectedTrip.vehicleId);
+
     onSubmit({
       ...data,
+      vehicleId: selectedTrip.vehicleId,
       price: data.price,
     });
   };
-
-  // Filtrar viajes por vehículo (si es necesario)
-  const filteredTrips = trips;
 
   // Encontrar vehículos para los viajes
   const getTripVehicle = (tripId: string) => {
@@ -135,7 +143,7 @@ const TollRecordForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {filteredTrips.map((trip) => {
+                  {trips.map((trip) => {
                     const vehicle = getTripVehicle(trip.id);
                     return (
                       <SelectItem key={trip.id} value={trip.id}>

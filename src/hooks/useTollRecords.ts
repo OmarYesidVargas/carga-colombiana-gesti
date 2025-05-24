@@ -109,11 +109,20 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
     if (!user) return;
     
     try {
+      console.log('Datos recibidos en addTollRecord:', record);
+      
+      // Validar que vehicleId esté presente
+      if (!record.vehicleId) {
+        throw new Error('vehicleId es requerido');
+      }
+      
       // Preparar datos para la DB
       const newRecord = mapTollRecordToDB({
         ...record,
         userId: user.id
       });
+      
+      console.log('Datos mapeados para DB:', newRecord);
       
       // Asegurar que la fecha sea string para Supabase
       if (newRecord.date instanceof Date) {
@@ -128,8 +137,11 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
         .single();
       
       if (error) {
+        console.error('Error de Supabase al insertar:', error);
         throw error;
       }
+      
+      console.log('Registro creado exitosamente:', data);
       
       // Actualizar estado local
       const mappedRecord = mapTollRecordFromDB(data);
