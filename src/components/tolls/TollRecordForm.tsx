@@ -32,19 +32,16 @@ const paymentMethods = [
   { value: 'otro', label: 'Otro' },
 ];
 
-// Esquema de validación para el formulario
+// Esquema de validación mejorado
 const formSchema = z.object({
   tripId: z.string().min(1, { message: 'Debe seleccionar un viaje' }),
   tollId: z.string().min(1, { message: 'Debe seleccionar un peaje' }),
   date: z.date({ required_error: 'La fecha es requerida' }),
   price: z.string()
+    .min(1, { message: 'El precio es requerido' })
     .refine(
-      (val) => !isNaN(Number(val)),
-      { message: 'El precio debe ser un número' }
-    )
-    .refine(
-      (val) => Number(val) >= 0,
-      { message: 'El precio no puede ser negativo' }
+      (val) => !isNaN(Number(val)) && Number(val) > 0,
+      { message: 'El precio debe ser un número mayor a 0' }
     ),
   paymentMethod: z.string().min(1, { message: 'Debe seleccionar un método de pago' }),
   receipt: z.string().optional(),
@@ -90,30 +87,50 @@ const TollRecordForm = ({
   // Auto-completar precio cuando se selecciona un peaje
   React.useEffect(() => {
     const tollId = form.watch('tollId');
-    if (tollId) {
+    if (tollId && !initialData?.price) {
       const selectedToll = tolls.find(t => t.id === tollId);
       if (selectedToll && !form.getValues('price')) {
         form.setValue('price', String(selectedToll.price));
       }
     }
-  }, [form.watch('tollId'), tolls, form]);
+  }, [form.watch('tollId'), tolls, form, initialData?.price]);
 
   const handleSubmit = (data: FormData) => {
-    // Encontrar el vehículo del viaje seleccionado
-    const selectedTrip = trips.find(trip => trip.id === data.tripId);
-    if (!selectedTrip) {
-      console.error('No se encontró el viaje seleccionado');
-      return;
+    try {
+      // Validar que el viaje existe
+      const selectedTrip = trips.find(trip => trip.id === data.tripId);
+      if (!selectedTrip) {
+        form.setError('tripId', { message: 'El viaje seleccionado no es válido' });
+        return;
+      }
+
+      // Validar que el peaje existe
+      const selectedToll = tolls.find(toll => toll.id === data.tollId);
+      if (!selectedToll) {
+        form.setError('tollId', { message: 'El peaje seleccionado no es válido' });
+        return;
+      }
+
+      // Validar que el vehículo del viaje existe
+      if (!selectedTrip.vehicleId) {
+        form.setError('tripId', { message: 'El viaje no tiene un vehículo asignado' });
+        return;
+      }
+
+      const selectedVehicle = vehicles.find(vehicle => vehicle.id === selectedTrip.vehicleId);
+      if (!selectedVehicle) {
+        form.setError('tripId', { message: 'El vehículo del viaje seleccionado no es válido' });
+        return;
+      }
+
+      // Enviar datos validados
+      onSubmit({
+        ...data,
+        vehicleId: selectedTrip.vehicleId,
+      });
+    } catch (error) {
+      console.error('Error en validación del formulario:', error);
     }
-
-    console.log('Viaje seleccionado:', selectedTrip);
-    console.log('Vehicle ID del viaje:', selectedTrip.vehicleId);
-
-    onSubmit({
-      ...data,
-      vehicleId: selectedTrip.vehicleId,
-      price: data.price,
-    });
   };
 
   // Encontrar vehículos para los viajes
@@ -122,6 +139,12 @@ const TollRecordForm = ({
     if (!trip) return null;
     return vehicles.find(v => v.id === trip.vehicleId);
   };
+
+  // Filtrar viajes válidos (que tengan vehículo asignado)
+  const validTrips = trips.filter(trip => {
+    const vehicle = getTripVehicle(trip.id);
+    return vehicle !== null;
+  });
 
   return (
     <Form {...form}>
@@ -135,7 +158,7 @@ const TollRecordForm = ({
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
-                disabled={!!selectedTripId}
+                disabled={!!selectedTripId || isSubmitting}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -143,15 +166,21 @@ const TollRecordForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {trips.map((trip) => {
-                    const vehicle = getTripVehicle(trip.id);
-                    return (
-                      <SelectItem key={trip.id} value={trip.id}>
-                        {trip.origin} → {trip.destination} 
-                        {vehicle && ` (${vehicle.plate})`}
-                      </SelectItem>
-                    );
-                  })}
+                  {validTrips.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      No hay viajes disponibles
+                    </div>
+                  ) : (
+                    validTrips.map((trip) => {
+                      const vehicle = getTripVehicle(trip.id);
+                      return (
+                        <SelectItem key={trip.id} value={trip.id}>
+                          {trip.origin} → {trip.destination} 
+                          {vehicle && ` (${vehicle.plate})`}
+                        </SelectItem>
+                      );
+                    })
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -165,18 +194,28 @@ const TollRecordForm = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Peaje *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+                disabled={isSubmitting}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar peaje" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {tolls.map((toll) => (
-                    <SelectItem key={toll.id} value={toll.id}>
-                      {toll.name} - {toll.route} (${toll.price})
-                    </SelectItem>
-                  ))}
+                  {tolls.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      No hay peajes disponibles
+                    </div>
+                  ) : (
+                    tolls.map((toll) => (
+                      <SelectItem key={toll.id} value={toll.id}>
+                        {toll.name} - {toll.route} (${toll.price})
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -200,6 +239,7 @@ const TollRecordForm = ({
                           "w-full pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
+                        disabled={isSubmitting}
                       >
                         {field.value ? (
                           format(field.value, "PPP", { locale: es })
@@ -217,6 +257,7 @@ const TollRecordForm = ({
                       onSelect={field.onChange}
                       initialFocus
                       locale={es}
+                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                     />
                   </PopoverContent>
                 </Popover>
@@ -241,6 +282,7 @@ const TollRecordForm = ({
                       step="100"
                       placeholder="0"
                       className="pl-8"
+                      disabled={isSubmitting}
                     />
                   </div>
                 </FormControl>
@@ -257,7 +299,11 @@ const TollRecordForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Método de pago *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                  disabled={isSubmitting}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar método" />
@@ -283,7 +329,11 @@ const TollRecordForm = ({
               <FormItem>
                 <FormLabel>Recibo/Factura (opcional)</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Número de recibo o factura" />
+                  <Input 
+                    {...field} 
+                    placeholder="Número de recibo o factura"
+                    disabled={isSubmitting}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -302,6 +352,7 @@ const TollRecordForm = ({
                   {...field}
                   placeholder="Información adicional sobre el paso por el peaje"
                   className="h-20"
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <FormMessage />
@@ -320,9 +371,9 @@ const TollRecordForm = ({
           </Button>
           <Button 
             type="submit" 
-            disabled={isSubmitting}
+            disabled={isSubmitting || validTrips.length === 0 || tolls.length === 0}
           >
-            {initialData?.id ? 'Actualizar' : 'Registrar'} Paso por Peaje
+            {isSubmitting ? 'Guardando...' : (initialData?.id ? 'Actualizar' : 'Registrar')} Paso por Peaje
           </Button>
         </DialogFooter>
       </form>

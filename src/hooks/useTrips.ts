@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Trip } from '@/types';
@@ -18,15 +17,19 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
    * Mapeador para convertir datos de la DB al formato de la aplicación
    */
   const mapTripFromDB = (trip: any): Trip => {
+    if (!trip || typeof trip !== 'object') {
+      throw new Error('Datos de viaje inválidos');
+    }
+
     return {
       id: trip.id,
       userId: trip.user_id,
       vehicleId: trip.vehicle_id,
-      origin: trip.origin,
-      destination: trip.destination,
+      origin: trip.origin || '',
+      destination: trip.destination || '',
       startDate: trip.start_date,
       endDate: trip.end_date || null,
-      distance: trip.distance,
+      distance: parseFloat(trip.distance) || 0,
       notes: trip.notes || null,
       createdAt: trip.created_at,
       updatedAt: trip.updated_at
@@ -39,41 +42,86 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
   const mapTripToDB = (trip: Partial<Trip>): any => {
     const mappedTrip: Record<string, any> = {};
     
-    if (trip.origin !== undefined) mappedTrip.origin = trip.origin;
-    if (trip.destination !== undefined) mappedTrip.destination = trip.destination;
-    if (trip.startDate !== undefined) mappedTrip.start_date = trip.startDate;
+    if (trip.origin) mappedTrip.origin = trip.origin.trim();
+    if (trip.destination) mappedTrip.destination = trip.destination.trim();
+    if (trip.startDate) mappedTrip.start_date = trip.startDate;
     if (trip.endDate !== undefined) mappedTrip.end_date = trip.endDate;
-    if (trip.distance !== undefined) mappedTrip.distance = trip.distance;
-    if (trip.notes !== undefined) mappedTrip.notes = trip.notes;
-    if (trip.vehicleId !== undefined) mappedTrip.vehicle_id = trip.vehicleId;
-    if (trip.userId !== undefined) mappedTrip.user_id = trip.userId;
+    if (trip.distance !== undefined) mappedTrip.distance = Number(trip.distance);
+    if (trip.notes !== undefined) mappedTrip.notes = trip.notes?.trim() || null;
+    if (trip.vehicleId) mappedTrip.vehicle_id = trip.vehicleId;
+    if (trip.userId) mappedTrip.user_id = trip.userId;
     
     return mappedTrip;
+  };
+  
+  /**
+   * Validar datos del viaje
+   */
+  const validateTrip = (trip: any): boolean => {
+    if (!trip) return false;
+    if (!trip.vehicleId || typeof trip.vehicleId !== 'string') return false;
+    if (!trip.origin || typeof trip.origin !== 'string' || trip.origin.trim().length === 0) return false;
+    if (!trip.destination || typeof trip.destination !== 'string' || trip.destination.trim().length === 0) return false;
+    if (!trip.startDate) return false;
+    if (trip.distance === undefined || isNaN(Number(trip.distance)) || Number(trip.distance) < 0) return false;
+    
+    // Validar fechas
+    const startDate = new Date(trip.startDate);
+    if (isNaN(startDate.getTime())) return false;
+    
+    if (trip.endDate) {
+      const endDate = new Date(trip.endDate);
+      if (isNaN(endDate.getTime()) || endDate < startDate) return false;
+    }
+    
+    return true;
   };
   
   /**
    * Carga viajes desde Supabase
    */
   const loadTrips = async () => {
-    if (!user) return;
+    if (!user) {
+      setTrips([]);
+      return;
+    }
     
     try {
       setGlobalLoading(true);
       const { data, error } = await supabase
         .from('trips')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
       
       if (error) {
-        throw error;
+        console.error('Error al cargar viajes:', error);
+        toast.error('Error al cargar los viajes');
+        return;
       }
       
-      // Mapear datos de la DB al formato de la aplicación
-      const mappedTrips = data.map(mapTripFromDB);
+      if (!data) {
+        setTrips([]);
+        return;
+      }
+      
+      // Mapear datos con validación
+      const mappedTrips = data
+        .filter(trip => trip && typeof trip === 'object')
+        .map(trip => {
+          try {
+            return mapTripFromDB(trip);
+          } catch (error) {
+            console.error('Error al mapear viaje:', error, trip);
+            return null;
+          }
+        })
+        .filter(Boolean) as Trip[];
+      
       setTrips(mappedTrips);
     } catch (error) {
-      console.error('Error al cargar viajes:', error);
-      toast.error('Error al cargar los viajes');
+      console.error('Error inesperado al cargar viajes:', error);
+      toast.error('Error inesperado al cargar viajes');
     } finally {
       setGlobalLoading(false);
     }
@@ -83,11 +131,7 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
    * Efecto para cargar viajes cuando cambia el usuario
    */
   useEffect(() => {
-    if (user) {
-      loadTrips();
-    } else {
-      setTrips([]);
-    }
+    loadTrips();
   }, [user]);
   
   /**
@@ -96,6 +140,7 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
    * @returns {Trip | undefined} Viaje encontrado o undefined
    */
   const getTripById = (id: string) => {
+    if (!id || typeof id !== 'string') return undefined;
     return trips.find(trip => trip.id === id);
   };
   
@@ -104,16 +149,38 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
    * @param {Omit<Trip, 'id' | 'userId' | 'createdAt' | 'updatedAt'>} trip - Datos del viaje
    */
   const addTrip = async (trip: Omit<Trip, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
-    if (!user) return;
+    if (!user) {
+      toast.error('Usuario no autenticado');
+      return;
+    }
     
     try {
+      // Validar datos
+      if (!validateTrip(trip)) {
+        toast.error('Datos del viaje incompletos o inválidos');
+        return;
+      }
+      
+      // Verificar que el vehículo existe
+      const { data: vehicleExists } = await supabase
+        .from('vehicles')
+        .select('id')
+        .eq('id', trip.vehicleId)
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!vehicleExists) {
+        toast.error('El vehículo seleccionado no existe');
+        return;
+      }
+      
       // Preparar datos para la DB
       const newTrip = mapTripToDB({
         ...trip,
         userId: user.id
       });
       
-      // Asegurar que las fechas sean strings para Supabase
+      // Convertir fechas a ISO string
       if (newTrip.start_date instanceof Date) {
         newTrip.start_date = newTrip.start_date.toISOString();
       }
@@ -130,17 +197,28 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         .single();
       
       if (error) {
-        throw error;
+        console.error('Error de Supabase:', error);
+        if (error.code === '23503') {
+          toast.error('El vehículo seleccionado no es válido');
+        } else {
+          toast.error('Error al guardar el viaje');
+        }
+        return;
+      }
+      
+      if (!data) {
+        toast.error('No se pudo crear el viaje');
+        return;
       }
       
       // Actualizar estado local
       const mappedTrip = mapTripFromDB(data);
-      setTrips(prev => [...prev, mappedTrip]);
+      setTrips(prev => [mappedTrip, ...prev]);
       
       toast.success('Viaje agregado correctamente');
     } catch (error) {
-      console.error('Error al agregar viaje:', error);
-      toast.error('Error al agregar el viaje');
+      console.error('Error inesperado al agregar viaje:', error);
+      toast.error('Error inesperado al agregar viaje');
     }
   };
   
@@ -150,13 +228,31 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
    * @param {Partial<Trip>} trip - Datos parciales del viaje
    */
   const updateTrip = async (id: string, trip: Partial<Trip>) => {
-    if (!user) return;
+    if (!user || !id) {
+      toast.error('Parámetros inválidos para actualizar');
+      return;
+    }
     
     try {
+      // Validar vehículo si se está actualizando
+      if (trip.vehicleId) {
+        const { data: vehicleExists } = await supabase
+          .from('vehicles')
+          .select('id')
+          .eq('id', trip.vehicleId)
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!vehicleExists) {
+          toast.error('El vehículo seleccionado no existe');
+          return;
+        }
+      }
+      
       // Mapear datos para la DB
       const updatedTrip = mapTripToDB(trip);
       
-      // Convertir fechas a formato string para Supabase
+      // Convertir fechas
       if (updatedTrip.start_date instanceof Date) {
         updatedTrip.start_date = updatedTrip.start_date.toISOString();
       }
@@ -173,7 +269,9 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         .eq('user_id', user.id);
       
       if (error) {
-        throw error;
+        console.error('Error al actualizar viaje:', error);
+        toast.error('Error al actualizar el viaje');
+        return;
       }
       
       // Actualizar estado local
@@ -183,8 +281,8 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
       
       toast.success('Viaje actualizado correctamente');
     } catch (error) {
-      console.error('Error al actualizar viaje:', error);
-      toast.error('Error al actualizar el viaje');
+      console.error('Error inesperado al actualizar viaje:', error);
+      toast.error('Error inesperado al actualizar viaje');
     }
   };
   
@@ -193,9 +291,23 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
    * @param {string} id - ID del viaje a eliminar
    */
   const deleteTrip = async (id: string) => {
-    if (!user) return;
+    if (!user || !id) {
+      toast.error('Parámetros inválidos para eliminar');
+      return;
+    }
     
     try {
+      // Verificar si el viaje tiene gastos o registros de peajes asociados
+      const [{ data: expenses }, { data: tollRecords }] = await Promise.all([
+        supabase.from('expenses').select('id').eq('trip_id', id).eq('user_id', user.id).limit(1),
+        supabase.from('toll_records').select('id').eq('trip_id', id).eq('user_id', user.id).limit(1)
+      ]);
+      
+      if ((expenses && expenses.length > 0) || (tollRecords && tollRecords.length > 0)) {
+        toast.error('No se puede eliminar el viaje porque tiene gastos o registros de peaje asociados');
+        return;
+      }
+      
       // Eliminar de Supabase
       const { error } = await supabase
         .from('trips')
@@ -204,7 +316,9 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         .eq('user_id', user.id);
       
       if (error) {
-        throw error;
+        console.error('Error al eliminar viaje:', error);
+        toast.error('Error al eliminar el viaje');
+        return;
       }
       
       // Eliminar del estado local
@@ -212,8 +326,8 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
       
       toast.success('Viaje eliminado correctamente');
     } catch (error) {
-      console.error('Error al eliminar viaje:', error);
-      toast.error('Error al eliminar el viaje');
+      console.error('Error inesperado al eliminar viaje:', error);
+      toast.error('Error inesperado al eliminar viaje');
     }
   };
   
