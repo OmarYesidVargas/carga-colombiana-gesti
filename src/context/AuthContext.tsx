@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -34,14 +34,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Escuchar cambios de autenticación y obtener la sesión inicial
   useEffect(() => {
     // Configurar el escuchador de cambios de autenticación PRIMERO
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
+        console.log('Auth state change:', event, newSession?.user?.email);
+        
         setSession(newSession);
         setUser(newSession?.user ?? null);
+
+        // Manejar diferentes eventos de autenticación
+        if (event === 'PASSWORD_RECOVERY') {
+          // No redirigir automáticamente, la página ResetPassword manejará esto
+          console.log('Password recovery event detected');
+        } else if (event === 'SIGNED_IN' && newSession) {
+          // Solo redirigir si no estamos en páginas de autenticación
+          const currentPath = location.pathname;
+          if (currentPath === '/login' || currentPath === '/register') {
+            navigate('/dashboard');
+          }
+        } else if (event === 'SIGNED_OUT') {
+          // Redirigir al login solo si estamos en páginas protegidas
+          const currentPath = location.pathname;
+          const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
+          if (!publicPaths.includes(currentPath)) {
+            navigate('/login');
+          }
+        }
       }
     );
 
@@ -56,7 +78,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate, location.pathname]);
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
@@ -69,7 +91,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
       
       toast.success('¡Has iniciado sesión exitosamente!');
-      navigate('/dashboard');
     } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
       toast.error(error.message || 'Error al iniciar sesión. Por favor, intenta de nuevo.');
@@ -112,7 +133,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (error) throw error;
       
       toast.success('Sesión cerrada exitosamente');
-      navigate('/login');
     } catch (error: any) {
       console.error('Error al cerrar sesión:', error);
       toast.error(error.message || 'Error al cerrar sesión');
