@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import ExpensesChart from '@/components/reports/ExpensesChart';
 import MonthlyExpenseChart from '@/components/reports/MonthlyExpenseChart';
 import ExpenseSummary from '@/components/reports/ExpenseSummary';
+import { formatCurrency } from '@/utils/chartColors';
 
 const Dashboard = () => {
   const { 
@@ -17,16 +18,6 @@ const Dashboard = () => {
     getVehicleById, 
     getTripById 
   } = useData();
-  
-  // Formatear moneda colombiana para el monto total de gastos
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CO', { 
-      style: 'currency', 
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0 
-    }).format(amount);
-  };
   
   // Calcular el total de gastos
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -110,7 +101,7 @@ const Dashboard = () => {
             <FileChartPie className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold currency-cop">
+            <div className="text-3xl font-bold">
               {formatCurrency(totalExpenses)}
             </div>
             <Link to="/reports/expenses">

@@ -2,29 +2,11 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Expense } from '@/types';
-
-// Mapeador de categorías a etiquetas en español
-const categoryLabels: Record<string, string> = {
-  fuel: 'Combustible',
-  toll: 'Peaje',
-  maintenance: 'Mantenimiento',
-  lodging: 'Alojamiento', 
-  food: 'Comida',
-  other: 'Otros'
-};
-
-// Colores consistentes para las categorías (usando los definidos en Tailwind)
-const categoryColors: Record<string, string> = {
-  fuel: '#FF9F1C',        // expense-fuel
-  toll: '#2EC4B6',        // expense-toll
-  maintenance: '#E71D36', // expense-maintenance
-  lodging: '#7209B7',     // expense-lodging
-  food: '#4CC9F0',        // expense-food
-  other: '#8E9196'        // expense-other
-};
-
-// Colores por defecto para vehículos (cuando no es por categoría)
-const defaultColors = ['#9b87f5', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+import { 
+  expenseCategoryColors, 
+  expenseCategoryLabels, 
+  chartColors 
+} from '@/utils/chartColors';
 
 interface ExpensesChartProps {
   expenses: Expense[];
@@ -46,11 +28,11 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
   }, {} as Record<string, number>);
 
   // Preparar datos para el gráfico
-  const chartData = Object.entries(expensesByCategory).map(([key, value]) => {
-    const name = dataKeyMap ? (dataKeyMap[key] || key) : (categoryLabels[key] || key);
+  const chartData = Object.entries(expensesByCategory).map(([key, value], index) => {
+    const name = dataKeyMap ? (dataKeyMap[key] || key) : (expenseCategoryLabels[key] || key);
     const color = dataKeyMap ? 
-      defaultColors[Object.keys(expensesByCategory).indexOf(key) % defaultColors.length] : 
-      categoryColors[key] || categoryColors.other;
+      chartColors[index % chartColors.length] : 
+      expenseCategoryColors[key] || expenseCategoryColors.other;
     
     return {
       name,
@@ -72,7 +54,9 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
   // Componente para el tooltip personalizado
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const totalAmount = expenses.reduce((a, b) => a + b.amount, 0);
+      const totalAmount = data ? 
+        Object.values(expensesByCategory).reduce((a, b) => a + b, 0) :
+        expenses.reduce((a, b) => a + b.amount, 0);
       const percentage = totalAmount > 0 ? Math.round((payload[0].value / totalAmount) * 100) : 0;
       
       return (

@@ -5,6 +5,7 @@ import { Expense } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { addMonths, format, isSameMonth, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { chartColors } from '@/utils/chartColors';
 
 interface MonthlyExpenseChartProps {
   expenses: Expense[];
@@ -97,11 +98,11 @@ const MonthlyExpenseChart = ({
               <Line
                 type="monotone"
                 dataKey="total"
-                stroke="#9b87f5"
+                stroke={chartColors[0]}
                 strokeWidth={3}
                 name="Total de gastos"
-                activeDot={{ r: 6, fill: "#7c3aed" }}
-                dot={{ fill: "#9b87f5", r: 4 }}
+                activeDot={{ r: 6, fill: chartColors[1] }}
+                dot={{ fill: chartColors[0], r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>

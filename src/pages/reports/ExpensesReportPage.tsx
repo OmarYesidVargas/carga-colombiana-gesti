@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useExpenseReport } from '@/hooks/useExpenseReport';
+import { getCategoryLabel } from '@/utils/chartColors';
 import ExpenseReportHeader from '@/components/reports/ExpenseReportHeader';
 import ExpenseReportFilters from '@/components/reports/ExpenseReportFilters';
 import ExpenseReportCharts from '@/components/reports/ExpenseReportCharts';
@@ -52,20 +53,6 @@ const ExpensesReportPage = () => {
     
     exportToCSV(dataToExport, `gastos_${format(new Date(), 'yyyy-MM-dd')}`);
     toast.success('Reporte exportado exitosamente');
-  };
-  
-  // Obtener etiquetas de categorías
-  const getCategoryLabel = (category: string): string => {
-    const labels: Record<string, string> = {
-      fuel: 'Combustible',
-      toll: 'Peaje',
-      maintenance: 'Mantenimiento',
-      lodging: 'Alojamiento',
-      food: 'Comida',
-      other: 'Otros'
-    };
-    
-    return labels[category] || category;
   };
 
   return (
