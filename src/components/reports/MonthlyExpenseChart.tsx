@@ -62,7 +62,7 @@ const MonthlyExpenseChart = ({
       return (
         <div className="bg-white p-2 border border-gray-200 shadow-md rounded-md">
           <p className="font-semibold">{label}</p>
-          <p className="text-sm currency-cop">{formatCurrency(payload[0].value)}</p>
+          <p className="text-sm">{formatCurrency(payload[0].value)}</p>
         </div>
       );
     }
@@ -81,18 +81,27 @@ const MonthlyExpenseChart = ({
               data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis tickFormatter={(value) => formatCurrency(value).replace('COP', '').trim()} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis 
+                dataKey="month" 
+                stroke="#6b7280"
+                fontSize={12}
+              />
+              <YAxis 
+                tickFormatter={(value) => formatCurrency(value).replace('COP', '').trim()} 
+                stroke="#6b7280"
+                fontSize={12}
+              />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Line
                 type="monotone"
                 dataKey="total"
                 stroke="#9b87f5"
-                strokeWidth={2}
+                strokeWidth={3}
                 name="Total de gastos"
-                activeDot={{ r: 8 }}
+                activeDot={{ r: 6, fill: "#7c3aed" }}
+                dot={{ fill: "#9b87f5", r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>

@@ -13,8 +13,18 @@ const categoryLabels: Record<string, string> = {
   other: 'Otros'
 };
 
-// Colores para las diferentes categorías
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+// Colores consistentes para las categorías (usando los definidos en Tailwind)
+const categoryColors: Record<string, string> = {
+  fuel: '#FF9F1C',        // expense-fuel
+  toll: '#2EC4B6',        // expense-toll
+  maintenance: '#E71D36', // expense-maintenance
+  lodging: '#7209B7',     // expense-lodging
+  food: '#4CC9F0',        // expense-food
+  other: '#8E9196'        // expense-other
+};
+
+// Colores por defecto para vehículos (cuando no es por categoría)
+const defaultColors = ['#9b87f5', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 interface ExpensesChartProps {
   expenses: Expense[];
@@ -36,11 +46,18 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
   }, {} as Record<string, number>);
 
   // Preparar datos para el gráfico
-  const chartData = Object.entries(expensesByCategory).map(([key, value], index) => ({
-    name: dataKeyMap ? (dataKeyMap[key] || key) : (categoryLabels[key] || key),
-    value,
-    color: COLORS[index % COLORS.length]
-  }));
+  const chartData = Object.entries(expensesByCategory).map(([key, value]) => {
+    const name = dataKeyMap ? (dataKeyMap[key] || key) : (categoryLabels[key] || key);
+    const color = dataKeyMap ? 
+      defaultColors[Object.keys(expensesByCategory).indexOf(key) % defaultColors.length] : 
+      categoryColors[key] || categoryColors.other;
+    
+    return {
+      name,
+      value,
+      color
+    };
+  });
 
   // Formatear moneda colombiana para las etiquetas
   const formatCurrency = (value: number) => {
@@ -55,12 +72,15 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
   // Componente para el tooltip personalizado
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const totalAmount = expenses.reduce((a, b) => a + b.amount, 0);
+      const percentage = totalAmount > 0 ? Math.round((payload[0].value / totalAmount) * 100) : 0;
+      
       return (
         <div className="custom-tooltip bg-white p-3 border rounded shadow">
           <p className="label font-semibold">{`${payload[0].name}`}</p>
           <p className="intro">{formatCurrency(payload[0].value)}</p>
           <p className="desc text-xs text-muted-foreground">
-            {Math.round((payload[0].value / expenses.reduce((a, b) => a + b.amount, 0)) * 100)}% del total
+            {percentage}% del total
           </p>
         </div>
       );
