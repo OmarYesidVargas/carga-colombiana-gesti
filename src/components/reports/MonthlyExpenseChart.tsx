@@ -3,9 +3,9 @@ import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Expense } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { addMonths, format, isSameMonth, subMonths } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { chartColors } from '@/utils/chartColors';
+import { formatCurrency } from '@/utils/chartColors';
 
 interface MonthlyExpenseChartProps {
   expenses: Expense[];
@@ -46,16 +46,6 @@ const MonthlyExpenseChart = ({
     
     return Object.values(monthData);
   }, [expenses, months]);
-  
-  // Formatear moneda colombiana para el tooltip
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CO', { 
-      style: 'currency', 
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
   
   // Componente personalizado para el tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -98,11 +88,11 @@ const MonthlyExpenseChart = ({
               <Line
                 type="monotone"
                 dataKey="total"
-                stroke={chartColors[0]}
+                stroke="#9b87f5"
                 strokeWidth={3}
                 name="Total de gastos"
-                activeDot={{ r: 6, fill: chartColors[1] }}
-                dot={{ fill: chartColors[0], r: 4 }}
+                activeDot={{ r: 6, fill: "#8b5cf6" }}
+                dot={{ fill: "#9b87f5", r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>

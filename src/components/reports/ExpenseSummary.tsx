@@ -1,7 +1,12 @@
 
 import React from 'react';
-import { Expense, Vehicle, Trip, expenseCategoryColors } from '@/types';
+import { Expense, Vehicle, Trip } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  getCategoryColor, 
+  getCategoryLabel, 
+  formatCurrency 
+} from '@/utils/chartColors';
 
 interface ExpenseSummaryProps {
   expenses: Expense[];
@@ -9,15 +14,6 @@ interface ExpenseSummaryProps {
   trips?: Trip[];
   title?: string;
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-CO', { 
-    style: 'currency', 
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0 
-  }).format(amount);
-};
 
 const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos" }: ExpenseSummaryProps) => {
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -66,22 +62,31 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
       .sort((a, b) => b.totalExpenses - a.totalExpenses);
   }, [expenses, trips, vehicles]);
   
-  // Calcular gastos por categoría
+  // Calcular gastos por categoría usando los colores consistentes
   const expensesByCategory = React.useMemo(() => {
-    const categories: Record<string, { label: string; amount: number; color: string }> = {
-      fuel: { label: 'Combustible', amount: 0, color: expenseCategoryColors.fuel },
-      toll: { label: 'Peaje', amount: 0, color: expenseCategoryColors.toll },
-      maintenance: { label: 'Mantenimiento', amount: 0, color: expenseCategoryColors.maintenance },
-      lodging: { label: 'Alojamiento', amount: 0, color: expenseCategoryColors.lodging },
-      food: { label: 'Comida', amount: 0, color: expenseCategoryColors.food },
-      other: { label: 'Otros', amount: 0, color: expenseCategoryColors.other },
-    };
+    const categories: Record<string, { label: string; amount: number; color: string }> = {};
     
-    expenses.forEach((expense) => {
-      categories[expense.category].amount += expense.amount;
+    // Inicializar todas las categorías con 0
+    const allCategories = ['fuel', 'toll', 'maintenance', 'lodging', 'food', 'other'];
+    allCategories.forEach(category => {
+      categories[category] = {
+        label: getCategoryLabel(category),
+        amount: 0,
+        color: getCategoryColor(category)
+      };
     });
     
-    return Object.values(categories).sort((a, b) => b.amount - a.amount);
+    // Sumar los gastos por categoría
+    expenses.forEach((expense) => {
+      if (categories[expense.category]) {
+        categories[expense.category].amount += expense.amount;
+      }
+    });
+    
+    // Filtrar solo las categorías que tienen gastos y ordenar
+    return Object.values(categories)
+      .filter(category => category.amount > 0)
+      .sort((a, b) => b.amount - a.amount);
   }, [expenses]);
 
   return (
@@ -108,7 +113,10 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
               {expensesByCategory.map((category) => (
                 <div key={category.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }}></div>
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: category.color }}
+                    />
                     <span>{category.label}</span>
                   </div>
                   <span className="font-medium currency-cop">

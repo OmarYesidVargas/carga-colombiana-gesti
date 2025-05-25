@@ -3,9 +3,10 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Expense } from '@/types';
 import { 
-  expenseCategoryColors, 
-  expenseCategoryLabels, 
-  chartColors 
+  getCategoryColor,
+  getCategoryLabel,
+  formatCurrency,
+  getChartColor
 } from '@/utils/chartColors';
 
 interface ExpensesChartProps {
@@ -27,29 +28,20 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // Preparar datos para el gráfico
+  // Preparar datos para el gráfico con colores consistentes
   const chartData = Object.entries(expensesByCategory).map(([key, value], index) => {
-    const name = dataKeyMap ? (dataKeyMap[key] || key) : (expenseCategoryLabels[key] || key);
+    const name = dataKeyMap ? (dataKeyMap[key] || key) : getCategoryLabel(key);
     const color = dataKeyMap ? 
-      chartColors[index % chartColors.length] : 
-      expenseCategoryColors[key] || expenseCategoryColors.other;
+      getChartColor(index) : 
+      getCategoryColor(key);
     
     return {
       name,
       value,
-      color
+      color,
+      category: key // Mantener la categoría original para referencia
     };
   });
-
-  // Formatear moneda colombiana para las etiquetas
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CO', { 
-      style: 'currency', 
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0 
-    }).format(value);
-  };
 
   // Componente para el tooltip personalizado
   const CustomTooltip = ({ active, payload }: any) => {
@@ -72,6 +64,23 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
     return null;
   };
 
+  // Componente personalizado para la leyenda
+  const CustomLegend = ({ payload }: any) => {
+    return (
+      <div className="flex flex-wrap justify-center gap-4 mt-4">
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="text-sm">{entry.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="h-full flex flex-col">
       <h3 className="text-lg font-semibold mb-4">Distribución de Gastos</h3>
@@ -85,7 +94,6 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
               cy="50%"
               innerRadius={70}
               outerRadius={90}
-              fill="#8884d8"
               paddingAngle={5}
               dataKey="value"
               nameKey="name"
@@ -96,7 +104,7 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
-            <Legend />
+            <Legend content={<CustomLegend />} />
           </PieChart>
         </ResponsiveContainer>
       ) : (
