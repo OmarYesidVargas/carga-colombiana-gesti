@@ -1,8 +1,15 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "transporegistrosplus",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "homepage": "https://omaryesidvargas.github.io/transporegistrosplus",
+  "description": "Sistema de gestión de registros de transporte colombiano",
+  "author": "Omar Yesid Vargas",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OmarYesidVargas/transporegistrosplus.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
