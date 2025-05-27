@@ -36,9 +36,9 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+    <div className="space-y-6 bg-white min-h-full">
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h1 className="text-3xl font-bold mb-2 text-gray-900">Dashboard</h1>
         <p className="text-muted-foreground">
           Bienvenido al panel de control de TransporegistrosPlus
         </p>
@@ -46,66 +46,66 @@ const Dashboard = () => {
       
       {/* Resumen de estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="bg-white">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="space-y-1">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-gray-900">
                 Vehículos
               </CardTitle>
               <CardDescription>
                 Total de vehículos registrados
               </CardDescription>
             </div>
-            <Truck className="h-5 w-5 text-muted-foreground" />
+            <Truck className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{vehicles.length}</div>
+            <div className="text-3xl font-bold text-gray-900">{vehicles.length}</div>
             <Link to="/vehicles">
-              <Button variant="link" className="p-0 h-auto">Ver vehículos</Button>
+              <Button variant="link" className="p-0 h-auto text-blue-600">Ver vehículos</Button>
             </Link>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-white">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="space-y-1">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-gray-900">
                 Viajes
               </CardTitle>
               <CardDescription>
                 Viajes activos / Total
               </CardDescription>
             </div>
-            <Calendar className="h-5 w-5 text-muted-foreground" />
+            <Calendar className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-bold text-gray-900">
               {activeTrips.length} / {trips.length}
             </div>
             <Link to="/trips">
-              <Button variant="link" className="p-0 h-auto">Ver viajes</Button>
+              <Button variant="link" className="p-0 h-auto text-blue-600">Ver viajes</Button>
             </Link>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-white">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="space-y-1">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-gray-900">
                 Gastos
               </CardTitle>
               <CardDescription>
                 Total de gastos registrados
               </CardDescription>
             </div>
-            <FileChartPie className="h-5 w-5 text-muted-foreground" />
+            <FileChartPie className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-bold text-gray-900">
               {formatCurrency(totalExpenses)}
             </div>
-            <Link to="/reports/expenses">
-              <Button variant="link" className="p-0 h-auto">Ver reportes</Button>
+            <Link to="/reports">
+              <Button variant="link" className="p-0 h-auto text-blue-600">Ver reportes</Button>
             </Link>
           </CardContent>
         </Card>
@@ -113,41 +113,47 @@ const Dashboard = () => {
       
       {/* Gráficas de gastos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ExpensesChart expenses={expenses} />
-        <MonthlyExpenseChart expenses={expenses} />
+        <div className="bg-white rounded-lg shadow-sm">
+          <ExpensesChart expenses={expenses} />
+        </div>
+        <div className="bg-white rounded-lg shadow-sm">
+          <MonthlyExpenseChart expenses={expenses} />
+        </div>
       </div>
       
       {/* Resumen de gastos recientes */}
-      <ExpenseSummary 
-        expenses={recentExpenses} 
-        vehicles={vehicles} 
-        trips={trips} 
-        title="Gastos de los últimos 30 días" 
-      />
+      <div className="bg-white rounded-lg shadow-sm">
+        <ExpenseSummary 
+          expenses={recentExpenses} 
+          vehicles={vehicles} 
+          trips={trips} 
+          title="Gastos de los últimos 30 días" 
+        />
+      </div>
       
       {/* Enlaces rápidos */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="flex flex-col items-center py-6">
-          <Truck className="h-10 w-10 text-primary mb-4" />
-          <CardTitle className="mb-3">Administrar Vehículos</CardTitle>
+        <Card className="flex flex-col items-center py-6 bg-white">
+          <Truck className="h-10 w-10 text-blue-600 mb-4" />
+          <CardTitle className="mb-3 text-gray-900">Administrar Vehículos</CardTitle>
           <Link to="/vehicles">
-            <Button>Ir a Vehículos</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">Ir a Vehículos</Button>
           </Link>
         </Card>
         
-        <Card className="flex flex-col items-center py-6">
-          <Calendar className="h-10 w-10 text-primary mb-4" />
-          <CardTitle className="mb-3">Administrar Viajes</CardTitle>
+        <Card className="flex flex-col items-center py-6 bg-white">
+          <Calendar className="h-10 w-10 text-blue-600 mb-4" />
+          <CardTitle className="mb-3 text-gray-900">Administrar Viajes</CardTitle>
           <Link to="/trips">
-            <Button>Ir a Viajes</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">Ir a Viajes</Button>
           </Link>
         </Card>
         
-        <Card className="flex flex-col items-center py-6">
-          <FileChartPie className="h-10 w-10 text-primary mb-4" />
-          <CardTitle className="mb-3">Ver Reportes</CardTitle>
-          <Link to="/reports/expenses">
-            <Button>Ir a Reportes</Button>
+        <Card className="flex flex-col items-center py-6 bg-white">
+          <FileChartPie className="h-10 w-10 text-blue-600 mb-4" />
+          <CardTitle className="mb-3 text-gray-900">Ver Reportes</CardTitle>
+          <Link to="/reports">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">Ir a Reportes</Button>
           </Link>
         </Card>
       </div>

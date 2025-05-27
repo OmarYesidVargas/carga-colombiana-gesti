@@ -29,7 +29,7 @@ const Layout = ({ children }: LayoutProps) => {
               <Header userEmail={user?.email} onLogout={logout} />
             </div>
           </header>
-          <main className="flex-1 overflow-auto p-4 md:p-6">
+          <main className="flex-1 overflow-auto p-4 md:p-6 bg-gray-50">
             <div className="w-full max-w-full mx-auto space-y-6">
               {children}
             </div>

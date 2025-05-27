@@ -98,4 +98,21 @@
   .vehicle-plate {
     @apply font-mono uppercase tracking-wider;
   }
+
+  /* Forzar fondo blanco/gris en lugar de amarillo */
+  .bg-yellow-50,
+  .bg-yellow-100,
+  .bg-yellow-200,
+  .bg-yellow-300,
+  .bg-yellow-400,
+  .bg-yellow-500 {
+    @apply bg-gray-50 !important;
+  }
+
+  /* Remover cualquier gradiente amarillo */
+  .from-yellow-400,
+  .to-yellow-600,
+  .via-yellow-500 {
+    @apply from-blue-50 to-blue-100 !important;
+  }
 }
