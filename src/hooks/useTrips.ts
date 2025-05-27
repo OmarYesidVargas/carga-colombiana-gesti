@@ -1,4 +1,20 @@
 
+/**
+ * Hook personalizado para gestionar viajes en TransporegistrosPlus
+ * 
+ * Este hook encapsula toda la lógica relacionada con viajes incluyendo:
+ * - Carga de viajes desde Supabase con ordenamiento cronológico
+ * - Creación de nuevos viajes con validación de vehículos
+ * - Actualización de viajes existentes con verificaciones de integridad
+ * - Eliminación de viajes con validación de dependencias (gastos y peajes)
+ * - Manejo robusto de estados de error y carga
+ * - Mapeo automático entre formatos de DB y aplicación
+ * - Conversión automática de fechas para compatibilidad con Supabase
+ * 
+ * @author TransporegistrosPlus Team
+ * @version 1.0.0
+ */
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Trip } from '@/types';
@@ -7,9 +23,22 @@ import { User } from '@supabase/supabase-js';
 import { validateTrip } from '@/utils/validators';
 import { mapTripFromDB, mapTripToDB } from '@/utils/tripMappers';
 
+/**
+ * Hook personalizado para gestionar viajes
+ * 
+ * @param {User | null} user - Usuario autenticado actual
+ * @param {Function} setGlobalLoading - Función para actualizar el estado global de carga
+ * @returns {Object} Objeto con funciones y estado para gestionar viajes
+ */
 export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean) => void) => {
+  // Estado local para almacenar los viajes
   const [trips, setTrips] = useState<Trip[]>([]);
   
+  /**
+   * Función para cargar todos los viajes del usuario
+   * Se ejecuta automáticamente cuando cambia el usuario
+   * Incluye manejo de errores y validación de datos
+   */
   const loadTrips = async () => {
     if (!user) {
       setTrips([]);
@@ -18,6 +47,8 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     
     try {
       setGlobalLoading(true);
+      console.log('Cargando viajes para usuario:', user.id);
+      
       const { data, error } = await supabase
         .from('trips')
         .select('*')
@@ -34,6 +65,7 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         return;
       }
       
+      // Mapear y filtrar viajes válidos
       const mappedTrips = data
         .filter(trip => trip && typeof trip === 'object')
         .map(trip => {
@@ -46,6 +78,7 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         })
         .filter(Boolean) as Trip[];
       
+      console.log('Viajes cargados exitosamente:', mappedTrips.length);
       setTrips(mappedTrips);
     } catch (error) {
       console.error('Error inesperado al cargar viajes:', error);
@@ -55,15 +88,28 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     }
   };
   
+  // Efecto para cargar viajes cuando cambia el usuario
   useEffect(() => {
     loadTrips();
   }, [user]);
   
+  /**
+   * Obtiene un viaje específico por su ID
+   * 
+   * @param {string} id - ID del viaje a buscar
+   * @returns {Trip | undefined} Viaje encontrado o undefined si no existe
+   */
   const getTripById = (id: string) => {
     if (!id || typeof id !== 'string') return undefined;
     return trips.find(trip => trip.id === id);
   };
   
+  /**
+   * Agrega un nuevo viaje con validación de vehículo
+   * Verifica que el vehículo asociado exista antes de crear el viaje
+   * 
+   * @param {Omit<Trip, 'id' | 'userId' | 'createdAt' | 'updatedAt'>} trip - Datos del nuevo viaje
+   */
   const addTrip = async (trip: Omit<Trip, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) {
       toast.error('Usuario no autenticado');
@@ -71,11 +117,13 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     }
     
     try {
+      // Validar datos del viaje
       if (!validateTrip(trip)) {
         toast.error('Datos del viaje incompletos o inválidos');
         return;
       }
       
+      // Verificar que el vehículo existe
       const { data: vehicleExists } = await supabase
         .from('vehicles')
         .select('id')
@@ -87,11 +135,13 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         return;
       }
       
+      // Preparar datos para inserción en DB
       const newTrip = mapTripToDB({
         ...trip,
         userId: user.id
       });
       
+      // Convertir fechas a formato ISO string para Supabase
       if (newTrip.start_date instanceof Date) {
         newTrip.start_date = newTrip.start_date.toISOString();
       }
@@ -99,6 +149,8 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
       if (newTrip.end_date instanceof Date) {
         newTrip.end_date = newTrip.end_date.toISOString();
       }
+      
+      console.log('Creando nuevo viaje:', newTrip);
       
       const { data, error } = await supabase
         .from('trips')
@@ -121,9 +173,11 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         return;
       }
       
+      // Mapear y agregar al estado
       const mappedTrip = mapTripFromDB(data);
       setTrips(prev => [mappedTrip, ...prev]);
       
+      console.log('Viaje creado exitosamente:', mappedTrip.id);
       toast.success('Viaje agregado correctamente');
     } catch (error) {
       console.error('Error inesperado al agregar viaje:', error);
@@ -131,6 +185,13 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     }
   };
   
+  /**
+   * Actualiza un viaje existente con validación de vehículo
+   * Verifica que el vehículo exista si se está actualizando
+   * 
+   * @param {string} id - ID del viaje a actualizar
+   * @param {Partial<Trip>} trip - Datos a actualizar
+   */
   const updateTrip = async (id: string, trip: Partial<Trip>) => {
     if (!user || !id) {
       toast.error('Parámetros inválidos para actualizar');
@@ -138,6 +199,7 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     }
     
     try {
+      // Verificar vehículo si se está actualizando
       if (trip.vehicleId) {
         const { data: vehicleExists } = await supabase
           .from('vehicles')
@@ -151,8 +213,11 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         }
       }
       
+      console.log('Actualizando viaje:', id, trip);
+      
       const updatedTrip = mapTripToDB(trip);
       
+      // Convertir fechas a formato ISO string para Supabase
       if (updatedTrip.start_date instanceof Date) {
         updatedTrip.start_date = updatedTrip.start_date.toISOString();
       }
@@ -172,10 +237,12 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         return;
       }
       
+      // Actualizar estado local
       setTrips(prev => 
         prev.map(t => t.id === id ? { ...t, ...trip } : t)
       );
       
+      console.log('Viaje actualizado exitosamente:', id);
       toast.success('Viaje actualizado correctamente');
     } catch (error) {
       console.error('Error inesperado al actualizar viaje:', error);
@@ -183,6 +250,12 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     }
   };
   
+  /**
+   * Elimina un viaje después de verificar que no tenga dependencias
+   * Verifica que no tenga gastos o registros de peaje asociados
+   * 
+   * @param {string} id - ID del viaje a eliminar
+   */
   const deleteTrip = async (id: string) => {
     if (!user || !id) {
       toast.error('Parámetros inválidos para eliminar');
@@ -190,6 +263,9 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     }
     
     try {
+      console.log('Verificando dependencias para eliminar viaje:', id);
+      
+      // Verificar dependencias en paralelo
       const [{ data: expenses }, { data: tollRecords }] = await Promise.all([
         supabase.from('expenses').select('id').eq('trip_id', id).limit(1),
         supabase.from('toll_records').select('id').eq('trip_id', id).limit(1)
@@ -199,6 +275,8 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         toast.error('No se puede eliminar el viaje porque tiene gastos o registros de peaje asociados');
         return;
       }
+      
+      console.log('Eliminando viaje:', id);
       
       const { error } = await supabase
         .from('trips')
@@ -211,8 +289,10 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
         return;
       }
       
+      // Actualizar estado local
       setTrips(prev => prev.filter(t => t.id !== id));
       
+      console.log('Viaje eliminado exitosamente:', id);
       toast.success('Viaje eliminado correctamente');
     } catch (error) {
       console.error('Error inesperado al eliminar viaje:', error);
