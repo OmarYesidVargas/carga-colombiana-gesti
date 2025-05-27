@@ -171,22 +171,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 - GitHub: [@omaryesidvargas](https://github.com/omaryesidvargas)
 - Website: https://omaryesidvargas.github.io/transporegistrosplus/
 
-## 🤝 Contribuir
 
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📞 Soporte
-
-Si tienes preguntas o necesitas ayuda:
-- 📧 Email: support@transporegistrosplus.com
-- 🐛 Issues: [GitHub Issues](https://github.com/omaryesidvargas/transporegistrosplus/issues)
-- 📖 Documentación: [Wiki del proyecto](https://github.com/omaryesidvargas/transporegistrosplus/wiki)
 
 ## 🏆 Estado del Proyecto
 
@@ -203,9 +188,3 @@ Si tienes preguntas o necesitas ayuda:
 - [x] UI/UX pulida y responsiva
 - [x] Deploy automatizado en GitHub Pages
 - [x] Documentación completa
-
----
-
-⭐ **¡Proyecto finalizado y listo para producción!** ⭐
-
-Si este proyecto te resulta útil, ¡dale una estrella en GitHub!
