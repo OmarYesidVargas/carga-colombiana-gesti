@@ -20,7 +20,7 @@ const Layout = ({ children }: LayoutProps) => {
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-w-0">
           <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b bg-background px-4">
-            <SidebarTrigger className="md:hidden" />
+            <SidebarTrigger />
             <div className="flex-1 min-w-0">
               <Header userEmail={user?.email} onLogout={logout} />
             </div>
