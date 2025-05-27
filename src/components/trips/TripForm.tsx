@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -146,7 +145,6 @@ const TripForm = ({ initialData, vehicles, onSubmit, onCancel, isSubmitting = fa
                       onSelect={field.onChange}
                       initialFocus
                       locale={es}
-                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
@@ -187,7 +185,6 @@ const TripForm = ({ initialData, vehicles, onSubmit, onCancel, isSubmitting = fa
                       onSelect={field.onChange}
                       initialFocus
                       locale={es}
-                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
