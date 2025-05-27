@@ -1,197 +1,294 @@
 
-import React from 'react';
+/**
+ * Página de Registro de Usuarios para TransporegistrosPlus
+ * 
+ * Formulario completo de registro con validaciones específicas para Colombia:
+ * - Datos personales básicos
+ * - Información de contacto
+ * - Datos de documento de identidad
+ * - Información de ubicación (departamento y ciudad)
+ * - Validaciones en tiempo real con Zod
+ * - Diseño responsive y accesible
+ * 
+ * @author TransporegistrosPlus Team
+ * @version 1.0.0
+ */
+
+import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { z } from "zod";
 import { useAuth } from '@/context/AuthContext';
+import { validateEmail, validateColombianPhone, validateColombianDocument } from '@/utils/validators';
 
+// Componentes UI
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from 'lucide-react';
+import { Loader2, User, Mail, Lock, Phone, MapPin, Calendar, CreditCard } from 'lucide-react';
 
-// Esquema de validación mejorado para el mercado colombiano
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "El nombre debe tener al menos 2 caracteres.",
-  }).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
-    message: "El nombre solo puede contener letras y espacios.",
-  }),
-  email: z.string().email({
-    message: "Por favor ingresa una dirección de correo válida.",
-  }),
-  phone: z.string().min(10, {
-    message: "El teléfono debe tener al menos 10 dígitos.",
-  }).regex(/^[+]?[0-9\s\-()]+$/, {
-    message: "El teléfono solo puede contener números, espacios, guiones y paréntesis.",
-  }),
-  document_type: z.string().min(1, {
-    message: "Selecciona el tipo de documento.",
-  }),
-  document_number: z.string().min(6, {
-    message: "El número de documento debe tener al menos 6 caracteres.",
-  }).regex(/^[0-9]+$/, {
-    message: "El número de documento solo puede contener números.",
-  }),
-  city: z.string().min(2, {
-    message: "La ciudad debe tener al menos 2 caracteres.",
-  }).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
-    message: "La ciudad solo puede contener letras y espacios.",
-  }),
-  department: z.string().min(1, {
-    message: "Selecciona el departamento.",
-  }),
-  birth_date: z.string().min(1, {
-    message: "La fecha de nacimiento es requerida.",
-  }).refine((date) => {
-    const birthDate = new Date(date);
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    return age >= 18 && age <= 100;
-  }, {
-    message: "Debes ser mayor de 18 años.",
-  }),
-  gender: z.string().min(1, {
-    message: "Selecciona el género.",
-  }),
-  password: z.string().min(8, {
-    message: "La contraseña debe tener al menos 8 caracteres.",
-  }).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-    message: "La contraseña debe contener al menos una mayúscula, una minúscula y un número.",
-  }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Las contraseñas no coinciden",
-  path: ["confirmPassword"],
-});
+/**
+ * Datos de departamentos y ciudades principales de Colombia
+ * Utilizados en los selectores del formulario
+ */
+const COLOMBIA_DEPARTMENTS = [
+  { value: 'antioquia', label: 'Antioquia' },
+  { value: 'atlantico', label: 'Atlántico' },
+  { value: 'bogota', label: 'Bogotá D.C.' },
+  { value: 'bolivar', label: 'Bolívar' },
+  { value: 'boyaca', label: 'Boyacá' },
+  { value: 'caldas', label: 'Caldas' },
+  { value: 'caqueta', label: 'Caquetá' },
+  { value: 'casanare', label: 'Casanare' },
+  { value: 'cauca', label: 'Cauca' },
+  { value: 'cesar', label: 'Cesar' },
+  { value: 'choco', label: 'Chocó' },
+  { value: 'cordoba', label: 'Córdoba' },
+  { value: 'cundinamarca', label: 'Cundinamarca' },
+  { value: 'huila', label: 'Huila' },
+  { value: 'la_guajira', label: 'La Guajira' },
+  { value: 'magdalena', label: 'Magdalena' },
+  { value: 'meta', label: 'Meta' },
+  { value: 'nariño', label: 'Nariño' },
+  { value: 'norte_santander', label: 'Norte de Santander' },
+  { value: 'quindio', label: 'Quindío' },
+  { value: 'risaralda', label: 'Risaralda' },
+  { value: 'santander', label: 'Santander' },
+  { value: 'sucre', label: 'Sucre' },
+  { value: 'tolima', label: 'Tolima' },
+  { value: 'valle_del_cauca', label: 'Valle del Cauca' }
+];
 
-// Datos específicos para Colombia
+/**
+ * Tipos de documento válidos en Colombia
+ */
 const DOCUMENT_TYPES = [
   { value: 'cedula', label: 'Cédula de Ciudadanía' },
   { value: 'cedula_extranjeria', label: 'Cédula de Extranjería' },
   { value: 'pasaporte', label: 'Pasaporte' },
-  { value: 'tarjeta_identidad', label: 'Tarjeta de Identidad' },
+  { value: 'tarjeta_identidad', label: 'Tarjeta de Identidad' }
 ];
 
-const DEPARTMENTS = [
-  'Amazonas', 'Antioquia', 'Arauca', 'Atlántico', 'Bolívar', 'Boyacá', 
-  'Caldas', 'Caquetá', 'Casanare', 'Cauca', 'Cesar', 'Chocó', 'Córdoba', 
-  'Cundinamarca', 'Guainía', 'Guaviare', 'Huila', 'La Guajira', 'Magdalena', 
-  'Meta', 'Nariño', 'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda', 
-  'San Andrés y Providencia', 'Santander', 'Sucre', 'Tolima', 'Valle del Cauca', 
-  'Vaupés', 'Vichada', 'Bogotá D.C.'
-];
-
-const GENDERS = [
+/**
+ * Opciones de género
+ */
+const GENDER_OPTIONS = [
   { value: 'masculino', label: 'Masculino' },
   { value: 'femenino', label: 'Femenino' },
   { value: 'otro', label: 'Otro' },
-  { value: 'prefiero_no_decir', label: 'Prefiero no decir' },
+  { value: 'prefiero_no_decir', label: 'Prefiero no decir' }
 ];
 
-const Register = () => {
-  const { register, isAuthenticated, isLoading } = useAuth();
+/**
+ * Esquema de validación con Zod para el formulario de registro
+ * Incluye todas las validaciones necesarias para datos colombianos
+ */
+const registerSchema = z.object({
+  // Datos básicos
+  name: z
+    .string()
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(100, "El nombre es demasiado largo")
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El nombre solo puede contener letras y espacios"),
+  
+  email: z
+    .string()
+    .email("Ingresa un correo electrónico válido")
+    .refine((email) => validateEmail(email), "Formato de email inválido"),
+  
+  password: z
+    .string()
+    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "La contraseña debe contener al menos una mayúscula, una minúscula y un número"),
+  
+  confirmPassword: z
+    .string()
+    .min(8, "Confirma tu contraseña"),
+  
+  // Datos de contacto
+  phone: z
+    .string()
+    .min(10, "El teléfono debe tener al menos 10 dígitos")
+    .refine((phone) => validateColombianPhone(phone), "Formato de teléfono colombiano inválido"),
+  
+  // Datos de documento
+  documentType: z
+    .string()
+    .min(1, "Selecciona un tipo de documento"),
+  
+  documentNumber: z
+    .string()
+    .min(6, "El número de documento debe tener al menos 6 caracteres")
+    .max(12, "El número de documento es demasiado largo"),
+  
+  // Datos de ubicación
+  department: z
+    .string()
+    .min(1, "Selecciona un departamento"),
+  
+  city: z
+    .string()
+    .min(2, "La ciudad debe tener al menos 2 caracteres")
+    .max(100, "El nombre de la ciudad es demasiado largo"),
+  
+  // Datos opcionales
+  birthDate: z
+    .string()
+    .optional(),
+  
+  gender: z
+    .string()
+    .optional()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmPassword"],
+}).refine((data) => validateColombianDocument(data.documentNumber, data.documentType), {
+  message: "Número de documento inválido para el tipo seleccionado",
+  path: ["documentNumber"],
+});
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+/**
+ * Tipo inferido del esquema de validación
+ */
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+/**
+ * Componente principal de la página de registro
+ */
+const Register = () => {
+  // Hooks de autenticación y navegación
+  const { register, isAuthenticated, isLoading } = useAuth();
+  
+  // Estado local para manejo de errores específicos
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Configuración del formulario con react-hook-form y validación Zod
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: "",
       email: "",
-      phone: "",
-      document_type: "",
-      document_number: "",
-      city: "",
-      department: "",
-      birth_date: "",
-      gender: "",
       password: "",
       confirmPassword: "",
+      phone: "",
+      documentType: "",
+      documentNumber: "",
+      department: "",
+      city: "",
+      birthDate: "",
+      gender: ""
     },
+    mode: "onChange" // Validación en tiempo real
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  /**
+   * Maneja el envío del formulario
+   * Procesa los datos y llama al servicio de registro
+   * 
+   * @param {RegisterFormData} values - Datos del formulario validados
+   */
+  const onSubmit = async (values: RegisterFormData) => {
     try {
-      // Preparar metadata del usuario para Colombia
-      const userMetadata = {
-        name: values.name,
+      setSubmitError(null);
+      
+      console.log('Iniciando proceso de registro con datos:', {
+        ...values,
+        password: '[OCULTA]',
+        confirmPassword: '[OCULTA]'
+      });
+      
+      // Preparar metadatos adicionales para Supabase
+      const metadata = {
         phone: values.phone,
-        document_type: values.document_type,
-        document_number: values.document_number,
-        city: values.city,
+        document_type: values.documentType,
+        document_number: values.documentNumber,
         department: values.department,
-        birth_date: values.birth_date,
-        gender: values.gender,
+        city: values.city,
+        birth_date: values.birthDate || null,
+        gender: values.gender || null
       };
       
-      await register(values.name, values.email, values.password, userMetadata);
-    } catch (error) {
-      console.error("Error al registrarse:", error);
+      // Llamar al servicio de registro
+      await register(values.name, values.email, values.password, metadata);
+      
+      console.log('Registro completado exitosamente');
+    } catch (error: any) {
+      console.error("Error durante el registro:", error);
+      setSubmitError(error.message || 'Error inesperado durante el registro');
     }
   };
 
-  // Si el usuario ya está autenticado, redirigir al dashboard
+  // Redirigir si el usuario ya está autenticado
   if (isAuthenticated) {
     return <Navigate to="/dashboard" />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center px-4 py-8">
       <Card className="w-full max-w-2xl shadow-xl">
-        <CardHeader className="space-y-1 text-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
-          <CardTitle className="text-3xl font-bold">Crear una cuenta</CardTitle>
-          <CardDescription className="text-blue-100">
-            Únete a TransporegistrosPlus y gestiona tu transporte de manera eficiente
+        {/* Encabezado del formulario */}
+        <CardHeader className="space-y-1 text-center bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-t-lg">
+          <CardTitle className="text-2xl font-bold">Crear Cuenta</CardTitle>
+          <CardDescription className="text-green-100">
+            Únete a TransporegistrosPlus y gestiona tus viajes de transporte
           </CardDescription>
         </CardHeader>
 
+        {/* Contenido del formulario */}
         <CardContent className="p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Información personal básica */}
+              {/* Sección: Datos Personales */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                  Información Personal
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                  Datos Personales
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Nombre completo */}
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre completo *</FormLabel>
+                        <FormLabel className="text-gray-700">Nombre Completo *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Ej: Juan Carlos Pérez" 
-                            {...field} 
-                            autoComplete="name"
-                            disabled={isLoading}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                          />
+                          <div className="relative">
+                            <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              placeholder="Ingresa tu nombre completo" 
+                              {...field} 
+                              disabled={isLoading}
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
+                  {/* Fecha de nacimiento */}
                   <FormField
                     control={form.control}
-                    name="email"
+                    name="birthDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Correo electrónico *</FormLabel>
+                        <FormLabel className="text-gray-700">Fecha de Nacimiento</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="email" 
-                            placeholder="juan@ejemplo.com" 
-                            {...field} 
-                            autoComplete="email"
-                            disabled={isLoading}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                          />
+                          <div className="relative">
+                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              type="date" 
+                              {...field} 
+                              disabled={isLoading}
+                              max={new Date().toISOString().split('T')[0]} // No permitir fechas futuras
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -199,45 +296,18 @@ const Register = () => {
                   />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Teléfono *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="tel" 
-                          placeholder="Ej: +57 300 123 4567 o 3001234567" 
-                          {...field} 
-                          autoComplete="tel"
-                          disabled={isLoading}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Documentación e identificación */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                  Documentación
-                </h3>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Tipo de documento */}
                   <FormField
                     control={form.control}
-                    name="document_type"
+                    name="documentType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tipo de documento *</FormLabel>
+                        <FormLabel className="text-gray-700">Tipo de Documento *</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
                           <FormControl>
-                            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500">
-                              <SelectValue placeholder="Selecciona el tipo" />
+                            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500">
+                              <SelectValue placeholder="Selecciona tipo de documento" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -253,50 +323,132 @@ const Register = () => {
                     )}
                   />
 
+                  {/* Número de documento */}
                   <FormField
                     control={form.control}
-                    name="document_number"
+                    name="documentNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Número de documento *</FormLabel>
+                        <FormLabel className="text-gray-700">Número de Documento *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Ej: 12345678" 
-                            {...field} 
-                            disabled={isLoading}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                          />
+                          <div className="relative">
+                            <CreditCard className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              placeholder="Número de documento" 
+                              {...field} 
+                              disabled={isLoading}
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+
+                {/* Género */}
+                <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700">Género</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                        <FormControl>
+                          <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500">
+                            <SelectValue placeholder="Selecciona tu género (opcional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {GENDER_OPTIONS.map((gender) => (
+                            <SelectItem key={gender.value} value={gender.value}>
+                              {gender.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              {/* Ubicación */}
+              {/* Sección: Información de Contacto */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                  Ubicación
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                  Información de Contacto
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Email */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700">Correo Electrónico *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              type="email" 
+                              placeholder="tu@ejemplo.com" 
+                              {...field} 
+                              autoComplete="email"
+                              disabled={isLoading}
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Teléfono */}
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700">Teléfono *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              type="tel" 
+                              placeholder="3001234567" 
+                              {...field} 
+                              disabled={isLoading}
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Departamento */}
                   <FormField
                     control={form.control}
                     name="department"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Departamento *</FormLabel>
+                        <FormLabel className="text-gray-700">Departamento *</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
                           <FormControl>
-                            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500">
-                              <SelectValue placeholder="Selecciona el departamento" />
+                            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500">
+                              <SelectValue placeholder="Selecciona departamento" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="max-h-60">
-                            {DEPARTMENTS.map((dept) => (
-                              <SelectItem key={dept} value={dept}>
-                                {dept}
+                          <SelectContent>
+                            {COLOMBIA_DEPARTMENTS.map((dept) => (
+                              <SelectItem key={dept.value} value={dept.value}>
+                                {dept.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -306,19 +458,23 @@ const Register = () => {
                     )}
                   />
 
+                  {/* Ciudad */}
                   <FormField
                     control={form.control}
                     name="city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ciudad *</FormLabel>
+                        <FormLabel className="text-gray-700">Ciudad *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Ej: Bogotá, Medellín, Cali" 
-                            {...field} 
-                            disabled={isLoading}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                          />
+                          <div className="relative">
+                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              placeholder="Ingresa tu ciudad" 
+                              {...field} 
+                              disabled={isLoading}
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -327,106 +483,57 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Información adicional */}
+              {/* Sección: Seguridad */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                  Información Adicional
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                  Configuración de Seguridad
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="birth_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fecha de nacimiento *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="date" 
-                            {...field} 
-                            disabled={isLoading}
-                            max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="gender"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Género *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
-                          <FormControl>
-                            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500">
-                              <SelectValue placeholder="Selecciona el género" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {GENDERS.map((gender) => (
-                              <SelectItem key={gender.value} value={gender.value}>
-                                {gender.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Seguridad */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                  Seguridad
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Contraseña */}
                   <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contraseña *</FormLabel>
+                        <FormLabel className="text-gray-700">Contraseña *</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="password" 
-                            placeholder="••••••••" 
-                            {...field} 
-                            autoComplete="new-password"
-                            disabled={isLoading}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                          />
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              type="password" 
+                              placeholder="••••••••" 
+                              {...field} 
+                              autoComplete="new-password"
+                              disabled={isLoading}
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
-                        <p className="text-xs text-gray-500 mt-1">
-                          Mínimo 8 caracteres, incluye mayúscula, minúscula y número
-                        </p>
                       </FormItem>
                     )}
                   />
 
+                  {/* Confirmar contraseña */}
                   <FormField
                     control={form.control}
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirmar contraseña *</FormLabel>
+                        <FormLabel className="text-gray-700">Confirmar Contraseña *</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="password" 
-                            placeholder="••••••••" 
-                            {...field} 
-                            autoComplete="new-password"
-                            disabled={isLoading}
-                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                          />
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              type="password" 
+                              placeholder="••••••••" 
+                              {...field} 
+                              autoComplete="new-password"
+                              disabled={isLoading}
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -435,24 +542,33 @@ const Register = () => {
                 </div>
               </div>
 
+              {/* Mostrar errores de envío si existen */}
+              {submitError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-600">{submitError}</p>
+                </div>
+              )}
+
+              {/* Botón de registro */}
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg" 
+                className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
                 disabled={isLoading}
                 size="lg"
               >
                 {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                Crear mi cuenta
+                Crear Cuenta
               </Button>
             </form>
           </Form>
         </CardContent>
 
+        {/* Pie del formulario */}
         <CardFooter className="bg-gray-50 rounded-b-lg">
           <div className="text-center text-sm text-gray-600 w-full">
             ¿Ya tienes una cuenta?{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors">
-              Iniciar sesión
+            <Link to="/login" className="text-green-600 hover:text-green-800 font-semibold hover:underline transition-colors">
+              Inicia sesión
             </Link>
           </div>
         </CardFooter>
