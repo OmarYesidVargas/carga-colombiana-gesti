@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/utils/chartColors';
 
 interface ExpenseCardProps {
   expense: Expense;

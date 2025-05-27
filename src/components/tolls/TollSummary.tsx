@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TollRecord, Toll, Trip, Vehicle } from '@/types';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/utils/chartColors';
 
 interface TollSummaryProps {
   tollRecords: TollRecord[];
@@ -24,7 +24,7 @@ const TollSummary = ({
   title = "Resumen de peajes" 
 }: TollSummaryProps) => {
   // Calcular el total de gastos en peajes
-  const totalTollExpenses = tollRecords.reduce((sum, record) => sum + record.price, 0);
+  const totalTollExpenses = tollRecords.reduce((sum, record) => sum + (record.price || record.amount), 0);
   
   // Calcular peajes por viaje
   const tollsByTrip = React.useMemo(() => {
@@ -33,7 +33,7 @@ const TollSummary = ({
       if (!tripTolls[record.tripId]) {
         tripTolls[record.tripId] = 0;
       }
-      tripTolls[record.tripId] += record.price;
+      tripTolls[record.tripId] += (record.price || record.amount);
     });
     
     return trips
@@ -55,7 +55,7 @@ const TollSummary = ({
       if (!vehicleTolls[record.vehicleId]) {
         vehicleTolls[record.vehicleId] = 0;
       }
-      vehicleTolls[record.vehicleId] += record.price;
+      vehicleTolls[record.vehicleId] += (record.price || record.amount);
     });
     
     return vehicles
@@ -75,7 +75,7 @@ const TollSummary = ({
         tollFrequency[record.tollId] = { count: 0, total: 0 };
       }
       tollFrequency[record.tollId].count += 1;
-      tollFrequency[record.tollId].total += record.price;
+      tollFrequency[record.tollId].total += (record.price || record.amount);
     });
     
     return tolls

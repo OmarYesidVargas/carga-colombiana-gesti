@@ -16,28 +16,30 @@ interface VehicleCardProps {
 }
 
 const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) => {
-  const isExpiringSoon = (date?: Date) => {
+  const isExpiringSoon = (date?: Date | string) => {
     if (!date) return false;
+    const expiryDate = typeof date === 'string' ? new Date(date) : date;
     const today = new Date();
-    const daysUntilExpiry = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
   };
 
-  const isExpired = (date?: Date) => {
+  const isExpired = (date?: Date | string) => {
     if (!date) return false;
+    const expiryDate = typeof date === 'string' ? new Date(date) : date;
     const today = new Date();
-    return date < today;
+    return expiryDate < today;
   };
 
-  const getDocumentStatus = (date?: Date) => {
+  const getDocumentStatus = (date?: Date | string) => {
     if (!date) return { status: 'none', color: 'gray', icon: null };
     if (isExpired(date)) return { status: 'expired', color: 'red', icon: AlertTriangle };
     if (isExpiringSoon(date)) return { status: 'expiring', color: 'yellow', icon: Clock };
     return { status: 'valid', color: 'green', icon: CheckCircle };
   };
 
-  const soatStatus = getDocumentStatus(vehicle.soatExpiryDate);
-  const technoStatus = getDocumentStatus(vehicle.technoExpiryDate);
+  const soatStatus = getDocumentStatus(vehicle.soatExpiryDate || vehicle.soatExpiry);
+  const technoStatus = getDocumentStatus(vehicle.technoExpiryDate || vehicle.technicalReviewExpiry);
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
@@ -91,7 +93,7 @@ const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) 
             {/* SOAT */}
             <div className="flex items-center justify-between">
               <span className="text-sm">SOAT</span>
-              {vehicle.soatExpiryDate ? (
+              {(vehicle.soatExpiryDate || vehicle.soatExpiry) ? (
                 <div className="flex items-center gap-2">
                   {soatStatus.icon && <soatStatus.icon className={`h-4 w-4 text-${soatStatus.color}-600`} />}
                   <Badge 
@@ -114,7 +116,7 @@ const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) 
             {/* Tecnomecánica */}
             <div className="flex items-center justify-between">
               <span className="text-sm">Tecnomecánica</span>
-              {vehicle.technoExpiryDate ? (
+              {(vehicle.technoExpiryDate || vehicle.technicalReviewExpiry) ? (
                 <div className="flex items-center gap-2">
                   {technoStatus.icon && <technoStatus.icon className={`h-4 w-4 text-${technoStatus.color}-600`} />}
                   <Badge 

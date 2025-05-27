@@ -11,10 +11,18 @@ export interface Vehicle {
   brand: string;
   model: string;
   year: number;
+  color?: string;
   capacity: string;
   fuelType: 'gasolina' | 'diesel' | 'gas' | 'electrico' | 'hibrido';
   soatExpiry?: string;
+  soatExpiryDate?: Date;
   technicalReviewExpiry?: string;
+  technoExpiryDate?: Date;
+  soatInsuranceCompany?: string;
+  technoCenter?: string;
+  soatDocumentUrl?: string;
+  technoDocumentUrl?: string;
+  imageUrl?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -34,12 +42,14 @@ export interface Trip {
   updatedAt: string;
 }
 
+export type ExpenseCategory = 'fuel' | 'toll' | 'maintenance' | 'lodging' | 'food' | 'other';
+
 export interface Expense {
   id: string;
   userId: string;
   tripId: string;
   vehicleId: string;
-  category: 'combustible' | 'peajes' | 'mantenimiento' | 'alimentacion' | 'hospedaje' | 'multas' | 'otros';
+  category: ExpenseCategory;
   amount: number;
   description: string;
   date: string;
@@ -53,7 +63,7 @@ export interface Toll {
   name: string;
   location: string;
   category: string;
-  price: string;
+  price: number;
   route: string;
   coordinates?: string;
   description?: string;
@@ -67,8 +77,11 @@ export interface TollRecord {
   tollId: string;
   tripId: string;
   vehicleId: string;
+  price: number;
   amount: number;
   date: string;
+  paymentMethod: string;
+  receipt?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -90,8 +103,15 @@ export interface VehicleFormData {
   year: string;
   capacity: string;
   fuelType: string;
+  color?: string;
   soatExpiry?: string;
+  soatExpiryDate?: Date;
   technicalReviewExpiry?: string;
+  technoExpiryDate?: Date;
+  soatInsuranceCompany?: string;
+  technoCenter?: string;
+  soatDocumentUrl?: string;
+  technoDocumentUrl?: string;
   notes?: string;
 }
 
@@ -113,3 +133,13 @@ export interface ExpenseFormData {
   description: string;
   date: Date;
 }
+
+// Colores para categorías de gastos
+export const expenseCategoryColors = {
+  fuel: '#ef4444',
+  toll: '#f97316', 
+  maintenance: '#eab308',
+  lodging: '#3b82f6',
+  food: '#22c55e',
+  other: '#6b7280'
+} as const;

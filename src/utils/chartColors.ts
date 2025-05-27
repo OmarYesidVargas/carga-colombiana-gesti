@@ -73,6 +73,25 @@ export const getSeriesColors = (count: number): string[] => {
 };
 
 /**
+ * Obtiene un color basado en el índice
+ */
+export const getChartColor = (index: number): string => {
+  return MULTI_SERIES_COLORS[index % MULTI_SERIES_COLORS.length];
+};
+
+/**
+ * Formatea un número como moneda colombiana
+ */
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('es-CO', { 
+    style: 'currency', 
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0 
+  }).format(amount);
+};
+
+/**
  * Colores para estados de vehículos
  */
 export const VEHICLE_STATUS_COLORS = {

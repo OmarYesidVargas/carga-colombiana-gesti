@@ -23,3 +23,6 @@ export function useMobile() {
 
   return isMobile
 }
+
+// Alias para compatibilidad
+export const useIsMobile = useMobile

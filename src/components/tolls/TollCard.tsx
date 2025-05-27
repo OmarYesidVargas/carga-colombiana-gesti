@@ -5,21 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, MapPin, DollarSign, Route } from 'lucide-react';
 import { Toll } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/utils/chartColors';
 
 interface TollCardProps {
   toll: Toll;
   onEdit: (toll: Toll) => void;
   onDelete: (tollId: string) => void;
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-CO', { 
-    style: 'currency', 
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0 
-  }).format(amount);
-};
 
 const getCategoryColor = (category: string) => {
   switch (category.toLowerCase()) {
@@ -77,7 +69,7 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">
-              {formatCurrency(toll.price)}
+              {formatCurrency(Number(toll.price))}
             </p>
             <p className="text-xs text-gray-500">Tarifa oficial</p>
           </div>
