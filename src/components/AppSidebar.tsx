@@ -42,14 +42,14 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="offcanvas">
-      <SidebarContent>
+    <Sidebar collapsible="offcanvas" className="border-r">
+      <SidebarContent className="bg-white">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground font-medium">
+          <SidebarGroupLabel className="text-gray-700 font-semibold px-4 py-3 text-sm">
             Navegación
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1 px-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton asChild>
@@ -57,14 +57,14 @@ export function AppSidebar() {
                       to={item.to}
                       onClick={handleLinkClick}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all w-full no-underline ${
+                        `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all w-full no-underline ${
                           isActive 
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm" 
-                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                            ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600 font-medium" 
+                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                         }`
                       }
                     >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
                       <span className="truncate font-medium">{item.label}</span>
                     </NavLink>
                   </SidebarMenuButton>
