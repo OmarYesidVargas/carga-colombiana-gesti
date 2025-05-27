@@ -14,6 +14,7 @@ import { Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import VehicleCard from '@/components/vehicles/VehicleCard';
 import VehicleForm from '@/components/vehicles/VehicleForm';
+import VehicleDetailDialog from '@/components/vehicles/VehicleDetailDialog';
 import { Vehicle } from '@/types';
 import { 
   AlertDialog,
@@ -42,7 +43,9 @@ const VehiclesPage = () => {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [currentVehicle, setCurrentVehicle] = useState<Vehicle | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [vehicleToDelete, setVehicleToDelete] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,6 +62,12 @@ const VehiclesPage = () => {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setCurrentVehicle(null);
+  };
+
+  const handleSelectVehicle = (vehicle: Vehicle) => {
+    console.log('🚗 Seleccionando vehículo para ver detalles:', vehicle.id);
+    setSelectedVehicle(vehicle);
+    setIsDetailDialogOpen(true);
   };
   
   const handleSubmitVehicle = (vehicleData: any) => {
@@ -161,7 +170,7 @@ const VehiclesPage = () => {
               vehicle={vehicle}
               onEdit={handleOpenForm}
               onDelete={handleDeleteClick}
-              onSelect={() => {}}
+              onSelect={handleSelectVehicle}
             />
           ))}
         </div>
@@ -176,6 +185,13 @@ const VehiclesPage = () => {
           )}
         </div>
       )}
+
+      {/* Diálogo de detalles del vehículo */}
+      <VehicleDetailDialog
+        vehicle={selectedVehicle}
+        open={isDetailDialogOpen}
+        onOpenChange={setIsDetailDialogOpen}
+      />
       
       {/* Diálogo de confirmación para eliminar */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

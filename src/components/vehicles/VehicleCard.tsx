@@ -41,6 +41,11 @@ const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) 
   const soatStatus = getDocumentStatus(vehicle.soatExpiryDate || vehicle.soatExpiry);
   const technoStatus = getDocumentStatus(vehicle.technoExpiryDate || vehicle.technicalReviewExpiry);
 
+  const handleViewDetails = () => {
+    console.log('🔍 Ver detalles del vehículo:', vehicle.id);
+    onSelect(vehicle);
+  };
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <CardHeader className="bg-secondary/10 pb-2">
@@ -143,7 +148,11 @@ const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) 
         <div className="text-xs text-muted-foreground">
           Añadido {formatDistanceToNow(new Date(vehicle.createdAt), { locale: es, addSuffix: true })}
         </div>
-        <Button variant="outline" size="sm" onClick={() => onSelect(vehicle)}>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleViewDetails}
+        >
           Ver detalles
         </Button>
       </CardFooter>
