@@ -218,7 +218,7 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                   </div>
                 )}
 
-                {vehicle.soatDocumentUrl && (
+                {vehicle.soatDocumentUrl ? (
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -237,6 +237,8 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                       Descargar
                     </Button>
                   </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No hay documento adjunto</p>
                 )}
               </div>
 
@@ -277,7 +279,7 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                   </div>
                 )}
 
-                {vehicle.technoDocumentUrl && (
+                {vehicle.technoDocumentUrl ? (
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -296,6 +298,8 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                       Descargar
                     </Button>
                   </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No hay documento adjunto</p>
                 )}
               </div>
             </CardContent>
