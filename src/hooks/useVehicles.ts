@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle } from '@/types';
@@ -79,20 +78,37 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
     return vehicle;
   };
   
-  const addVehicle = async (vehicle: Omit<Vehicle, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
+  const addVehicle = async (vehicleData: Omit<Vehicle, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) {
       toast.error('Usuario no autenticado');
       return;
     }
     
     try {
-      if (!validateVehicle(vehicle)) {
-        toast.error('Datos del vehículo incompletos o inválidos');
+      console.log('🚗 Intentando agregar vehículo:', vehicleData);
+      
+      // Crear objeto con datos normalizados
+      const normalizedVehicle = {
+        ...vehicleData,
+        plate: vehicleData.plate?.trim().toUpperCase() || '',
+        brand: vehicleData.brand?.trim() || '',
+        model: vehicleData.model?.trim() || '',
+        year: typeof vehicleData.year === 'string' ? parseInt(vehicleData.year, 10) : vehicleData.year,
+        color: vehicleData.color?.trim() || null,
+        fuelType: vehicleData.fuelType?.trim() || null,
+        capacity: vehicleData.capacity?.trim() || null
+      };
+      
+      console.log('🔄 Vehículo normalizado:', normalizedVehicle);
+      
+      if (!validateVehicle(normalizedVehicle)) {
+        console.error('❌ Validación fallida para vehículo:', normalizedVehicle);
+        toast.error('Por favor, completa todos los campos obligatorios correctamente');
         return;
       }
 
       const existingVehicle = vehicles.find(v => 
-        v.plate.toLowerCase().trim() === vehicle.plate.toLowerCase().trim()
+        v.plate.toLowerCase().trim() === normalizedVehicle.plate.toLowerCase().trim()
       );
       
       if (existingVehicle) {
@@ -100,10 +116,16 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         return;
       }
       
-      const newVehicle = mapVehicleToDB({
-        ...vehicle,
+      const vehicleToSave = {
+        ...normalizedVehicle,
         userId: user.id
-      });
+      };
+      
+      console.log('💾 Preparando para guardar vehículo:', vehicleToSave);
+      
+      const newVehicle = mapVehicleToDB(vehicleToSave);
+      
+      console.log('📤 Datos mapeados para DB:', newVehicle);
       
       const { data, error } = await supabase
         .from('vehicles')
@@ -112,11 +134,11 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         .single();
       
       if (error) {
-        console.error('Error de Supabase:', error);
+        console.error('❌ Error de Supabase:', error);
         if (error.code === '23505') {
           toast.error('Ya existe un vehículo con esta placa');
         } else {
-          toast.error('Error al guardar el vehículo');
+          toast.error(`Error al guardar el vehículo: ${error.message}`);
         }
         return;
       }
@@ -138,28 +160,59 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       
       setVehicles(prev => [mappedVehicle, ...prev]);
       toast.success('Vehículo agregado correctamente');
+      
+      console.log('✅ Vehículo creado exitosamente:', mappedVehicle);
     } catch (error) {
-      console.error('Error inesperado al agregar vehículo:', error);
+      console.error('❌ Error inesperado al agregar vehículo:', error);
       toast.error('Error inesperado al agregar vehículo');
     }
   };
   
-  const updateVehicle = async (id: string, vehicle: Partial<Vehicle>) => {
+  const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>) => {
     if (!user || !id) {
       toast.error('Parámetros inválidos para actualizar');
       return;
     }
     
     try {
+      console.log('🔄 Intentando actualizar vehículo:', id, vehicleData);
+      
       const existingVehicle = getVehicleById(id);
       if (!existingVehicle) {
         toast.error('Vehículo no encontrado');
         return;
       }
       
-      if (vehicle.plate) {
+      // Normalizar datos
+      const normalizedData = {
+        ...vehicleData,
+        plate: vehicleData.plate?.trim().toUpperCase(),
+        brand: vehicleData.brand?.trim(),
+        model: vehicleData.model?.trim(),
+        year: typeof vehicleData.year === 'string' ? parseInt(vehicleData.year, 10) : vehicleData.year,
+        color: vehicleData.color?.trim() || null,
+        fuelType: vehicleData.fuelType?.trim() || null,
+        capacity: vehicleData.capacity?.trim() || null
+      };
+      
+      // Validar solo si hay cambios en campos obligatorios
+      const hasRequiredFieldChanges = normalizedData.plate || normalizedData.brand || normalizedData.model || normalizedData.year;
+      
+      if (hasRequiredFieldChanges) {
+        const vehicleToValidate = {
+          ...existingVehicle,
+          ...normalizedData
+        };
+        
+        if (!validateVehicle(vehicleToValidate)) {
+          toast.error('Datos del vehículo incompletos o inválidos');
+          return;
+        }
+      }
+      
+      if (normalizedData.plate) {
         const plateExists = vehicles.find(v => 
-          v.id !== id && v.plate.toLowerCase().trim() === vehicle.plate.toLowerCase().trim()
+          v.id !== id && v.plate.toLowerCase().trim() === normalizedData.plate.toLowerCase().trim()
         );
         
         if (plateExists) {
@@ -168,7 +221,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         }
       }
       
-      const updatedVehicle = mapVehicleToDB(vehicle);
+      const updatedVehicle = mapVehicleToDB(normalizedData);
       
       const { error } = await supabase
         .from('vehicles')
@@ -190,13 +243,15 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         plate: existingVehicle.plate,
         brand: existingVehicle.brand,
         model: existingVehicle.model
-      }, vehicle, { action: 'update_vehicle' });
+      }, normalizedData, { action: 'update_vehicle' });
       
       setVehicles(prev => 
-        prev.map(v => v.id === id ? { ...v, ...vehicle } : v)
+        prev.map(v => v.id === id ? { ...v, ...normalizedData } : v)
       );
       
       toast.success('Vehículo actualizado correctamente');
+      
+      console.log('✅ Vehículo actualizado exitosamente');
     } catch (error) {
       console.error('Error inesperado al actualizar vehículo:', error);
       toast.error('Error inesperado al actualizar vehículo');

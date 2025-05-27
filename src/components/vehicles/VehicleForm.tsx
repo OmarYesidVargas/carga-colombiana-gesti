@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -21,12 +22,22 @@ import { useAuth } from '@/context/AuthContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import DocumentUpload from './DocumentUpload';
 
-// Esquema de validación para el formulario
+// Esquema de validación para el formulario - más flexible
 const formSchema = z.object({
-  plate: z.string().min(6, 'La placa debe tener al menos 6 caracteres').max(7, 'La placa no debe exceder 7 caracteres'),
-  brand: z.string().min(2, 'La marca es requerida'),
-  model: z.string().min(2, 'El modelo es requerido'),
+  plate: z.string()
+    .min(1, 'La placa es requerida')
+    .max(15, 'La placa no debe exceder 15 caracteres')
+    .transform(val => val.toUpperCase().trim()),
+  brand: z.string()
+    .min(1, 'La marca es requerida')
+    .max(50, 'La marca no debe exceder 50 caracteres')
+    .transform(val => val.trim()),
+  model: z.string()
+    .min(1, 'El modelo es requerido')
+    .max(50, 'El modelo no debe exceder 50 caracteres')
+    .transform(val => val.trim()),
   year: z.string()
+    .min(1, 'El año es requerido')
     .refine(
       (val) => !isNaN(Number(val)),
       { message: 'El año debe ser un número' }
@@ -38,14 +49,14 @@ const formSchema = z.object({
       },
       { message: `El año debe estar entre 1950 y ${new Date().getFullYear() + 1}` }
     ),
-  color: z.string().optional(),
+  color: z.string().optional().transform(val => val?.trim() || ''),
   fuelType: z.string().optional(),
-  capacity: z.string().optional(),
+  capacity: z.string().optional().transform(val => val?.trim() || ''),
   // Nuevos campos para Colombia
   soatExpiryDate: z.string().optional(),
   technoExpiryDate: z.string().optional(),
   soatInsuranceCompany: z.string().optional(),
-  technoCenter: z.string().optional(),
+  technoCenter: z.string().optional().transform(val => val?.trim() || ''),
 });
 
 type FormData = z.infer<typeof formSchema> & {
@@ -107,12 +118,22 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
   });
 
   const handleSubmit = (data: FormData) => {
+    console.log('📝 Datos del formulario enviados:', data);
+    
     const submitData = {
       ...data,
-      year: data.year,
+      year: parseInt(data.year, 10), // Asegurar que el año sea número
+      // Convertir strings vacías a undefined para campos opcionales
+      color: data.color || undefined,
+      fuelType: data.fuelType || undefined,
+      capacity: data.capacity || undefined,
       soatExpiryDate: data.soatExpiryDate ? new Date(data.soatExpiryDate) : undefined,
       technoExpiryDate: data.technoExpiryDate ? new Date(data.technoExpiryDate) : undefined,
+      soatInsuranceCompany: data.soatInsuranceCompany || undefined,
+      technoCenter: data.technoCenter || undefined,
     };
+    
+    console.log('🚀 Datos procesados para envío:', submitData);
     onSubmit(submitData);
   };
 
@@ -156,7 +177,10 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                           {...field} 
                           placeholder="ABC123" 
                           className="uppercase vehicle-plate h-9"
-                          maxLength={7}
+                          maxLength={15}
+                          onChange={(e) => {
+                            field.onChange(e.target.value.toUpperCase());
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -172,7 +196,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                       <FormItem>
                         <FormLabel className="text-sm">Marca *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Marca" className="h-9" />
+                          <Input {...field} placeholder="Toyota" className="h-9" maxLength={50} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -186,7 +210,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                       <FormItem>
                         <FormLabel className="text-sm">Modelo *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Modelo" className="h-9" />
+                          <Input {...field} placeholder="Corolla" className="h-9" maxLength={50} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -203,7 +227,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                         <FormLabel className="text-sm">Año *</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value.toString()}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="h-9">
@@ -230,7 +254,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                       <FormItem>
                         <FormLabel className="text-sm">Color</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Color" className="h-9" />
+                          <Input {...field} placeholder="Blanco" className="h-9" maxLength={30} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -245,7 +269,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                         <FormLabel className="text-sm">Combustible</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="h-9">
@@ -273,7 +297,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                     <FormItem>
                       <FormLabel className="text-sm">Capacidad de Carga</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Ej: 5 Toneladas" className="h-9" />
+                        <Input {...field} placeholder="Ej: 5 Toneladas" className="h-9" maxLength={50} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -335,7 +359,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                           <FormLabel className="text-sm">Aseguradora</FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger className="h-9">
@@ -410,7 +434,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                         <FormItem>
                           <FormLabel className="text-sm">Centro Diagnóstico</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Centro (opcional)" className="h-9" />
+                            <Input {...field} placeholder="Centro (opcional)" className="h-9" maxLength={100} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -446,7 +470,7 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
             type="submit" 
             disabled={isSubmitting}
           >
-            {initialData?.id ? 'Actualizar' : 'Guardar'} Vehículo
+            {isSubmitting ? 'Guardando...' : (initialData?.id ? 'Actualizar' : 'Guardar')} Vehículo
           </Button>
         </DialogFooter>
       </form>

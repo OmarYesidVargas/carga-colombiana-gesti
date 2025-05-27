@@ -1,3 +1,4 @@
+
 /**
  * Utilidades de Validación Internacionales para TransporegistrosPlus
  * 
@@ -80,48 +81,56 @@ const VALIDATION_CONFIG = {
  */
 export const validateVehicle = (vehicle: Partial<Vehicle>, country: string = 'CO'): boolean => {
   try {
+    console.log('🔍 Validando vehículo:', vehicle);
+    
     // Validaciones obligatorias
     if (!vehicle.plate || vehicle.plate.trim().length === 0) {
-      console.error('Validación vehículo: Placa es obligatoria');
+      console.error('❌ Validación vehículo: Placa es obligatoria');
       return false;
     }
     
     if (!vehicle.brand || vehicle.brand.trim().length === 0) {
-      console.error('Validación vehículo: Marca es obligatoria');
+      console.error('❌ Validación vehículo: Marca es obligatoria');
       return false;
     }
     
     if (!vehicle.model || vehicle.model.trim().length === 0) {
-      console.error('Validación vehículo: Modelo es obligatorio');
+      console.error('❌ Validación vehículo: Modelo es obligatorio');
       return false;
     }
     
-    if (!vehicle.year || vehicle.year < 1900 || vehicle.year > new Date().getFullYear() + 2) {
-      console.error('Validación vehículo: Año inválido');
+    // Validar año - aceptar tanto number como string
+    const year = typeof vehicle.year === 'string' ? parseInt(vehicle.year, 10) : vehicle.year;
+    if (!year || isNaN(year) || year < 1900 || year > new Date().getFullYear() + 2) {
+      console.error('❌ Validación vehículo: Año inválido', year);
       return false;
     }
     
     // Validar formato de placa según país
     const plateValidation = validateVehiclePlate(vehicle.plate.trim(), country);
     if (!plateValidation.isValid) {
-      console.error('Validación vehículo:', plateValidation.error);
+      console.error('❌ Validación vehículo:', plateValidation.error);
       return false;
     }
     
-    // Validaciones opcionales
-    if (vehicle.color && vehicle.color.trim().length < 2) {
-      console.error('Validación vehículo: Color debe tener al menos 2 caracteres');
+    // Validaciones opcionales - solo validar si tienen valor
+    if (vehicle.color && vehicle.color.trim().length > 0 && vehicle.color.trim().length < 2) {
+      console.error('❌ Validación vehículo: Color debe tener al menos 2 caracteres');
       return false;
     }
     
-    if (vehicle.capacity && isNaN(Number(vehicle.capacity))) {
-      console.error('Validación vehículo: Capacidad debe ser un número válido');
-      return false;
+    if (vehicle.capacity && vehicle.capacity.trim().length > 0) {
+      // Permitir descripciones de capacidad como "5 Toneladas", no solo números
+      if (vehicle.capacity.trim().length < 1) {
+        console.error('❌ Validación vehículo: Capacidad debe tener al menos 1 caracter');
+        return false;
+      }
     }
     
+    console.log('✅ Validación vehículo exitosa');
     return true;
   } catch (error) {
-    console.error('Error en validateVehicle:', error);
+    console.error('❌ Error en validateVehicle:', error);
     return false;
   }
 };
@@ -134,8 +143,9 @@ export const validateVehicle = (vehicle: Partial<Vehicle>, country: string = 'CO
  * @returns {object} Resultado de validación con isValid y error
  */
 export const validateVehiclePlate = (plate: string, country: string): { isValid: boolean; error?: string } => {
+  // Hacer la validación más flexible para Colombia
   const plateRegexes: Record<string, RegExp> = {
-    CO: /^[A-Z]{3}[\s\-]?\d{2}[A-Z\d]$|^[A-Z]{2}[\s\-]?\d{3}[A-Z]$/,
+    CO: /^[A-Z]{3}[\s\-]?\d{2}[A-Z\d]$|^[A-Z]{2}[\s\-]?\d{3}[A-Z]$|^[A-Z]{3}[\s\-]?\d{3}$/,
     US: /^[A-Z0-9]{2,8}$/,
     MX: /^[A-Z]{3}[\s\-]?\d{2}[\s\-]?\d{2}$/,
     BR: /^[A-Z]{3}[\s\-]?\d{4}$|^[A-Z]{3}[\s\-]?\d[A-Z]\d{2}$/,
@@ -144,11 +154,12 @@ export const validateVehiclePlate = (plate: string, country: string): { isValid:
   };
   
   const regex = plateRegexes[country] || /^[A-Za-z0-9\-\s]{3,15}$/;
+  const normalizedPlate = plate.toUpperCase().trim();
   
-  if (!regex.test(plate)) {
+  if (!regex.test(normalizedPlate)) {
     return {
       isValid: false,
-      error: `Formato de placa inválido para ${country}`
+      error: `Formato de placa inválido para ${country}. Placa: ${plate}`
     };
   }
   
