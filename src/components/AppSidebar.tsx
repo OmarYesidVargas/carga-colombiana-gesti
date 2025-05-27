@@ -36,7 +36,6 @@ export function AppSidebar() {
   const { setOpenMobile, isMobile } = useSidebar();
 
   const handleLinkClick = () => {
-    // Cerrar sidebar en móvil cuando se hace clic en un enlace
     if (isMobile) {
       setOpenMobile(false);
     }

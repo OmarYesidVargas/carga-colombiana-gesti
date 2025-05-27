@@ -89,7 +89,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al dashboard"
           >
-            <span className="text-lg font-semibold text-primary truncate">
+            <span className="text-base md:text-lg font-semibold text-primary truncate">
               Transpo<span className="text-secondary">registros</span>
               <span className="text-primary font-bold">Plus</span>
             </span>
@@ -100,7 +100,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al inicio"
           >
-            <span className="text-lg font-semibold text-primary truncate">
+            <span className="text-base md:text-lg font-semibold text-primary truncate">
               Transpo<span className="text-secondary">registros</span>
               <span className="text-primary font-bold">Plus</span>
             </span>
