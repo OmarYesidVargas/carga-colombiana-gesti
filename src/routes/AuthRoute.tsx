@@ -14,9 +14,10 @@ const AuthRoute = ({ children }: AuthRouteProps) => {
   
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
+      console.log('Usuario no autenticado, redirigiendo a login desde:', location.pathname);
       toast.error('Debes iniciar sesión para acceder a esta página');
     }
-  }, [isLoading, isAuthenticated]);
+  }, [isLoading, isAuthenticated, location.pathname]);
 
   if (isLoading) {
     return (
@@ -30,6 +31,7 @@ const AuthRoute = ({ children }: AuthRouteProps) => {
   }
 
   if (!isAuthenticated) {
+    console.log('Redirigiendo a login, from:', location.pathname);
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 

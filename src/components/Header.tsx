@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,6 +32,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
     if (onLogout) {
       try {
         await onLogout();
+        navigate('/');
       } catch (error) {
         console.error('Error al cerrar sesión:', error);
       }
@@ -64,21 +65,39 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
       flex-shrink-0
     ">
       <div className="flex items-center min-w-0 flex-1">
-        <button 
-          className="cursor-pointer flex items-center min-w-0 focus:outline-none" 
-          onClick={handleLogoClick}
-          aria-label="Ir al inicio"
-        >
-          <span className="
-            text-base sm:text-lg lg:text-xl 
-            font-semibold text-primary 
-            truncate
-            whitespace-nowrap
-          ">
-            Transpo<span className="text-secondary">registros</span>
-            <span className="text-primary font-bold">Plus</span>
-          </span>
-        </button>
+        {userEmail ? (
+          <Link 
+            to="/dashboard"
+            className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
+            aria-label="Ir al dashboard"
+          >
+            <span className="
+              text-base sm:text-lg lg:text-xl 
+              font-semibold text-primary 
+              truncate
+              whitespace-nowrap
+            ">
+              Transpo<span className="text-secondary">registros</span>
+              <span className="text-primary font-bold">Plus</span>
+            </span>
+          </Link>
+        ) : (
+          <Link 
+            to="/"
+            className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
+            aria-label="Ir al inicio"
+          >
+            <span className="
+              text-base sm:text-lg lg:text-xl 
+              font-semibold text-primary 
+              truncate
+              whitespace-nowrap
+            ">
+              Transpo<span className="text-secondary">registros</span>
+              <span className="text-primary font-bold">Plus</span>
+            </span>
+          </Link>
+        )}
       </div>
       
       <div className="flex items-center flex-shrink-0 ml-2">

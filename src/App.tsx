@@ -33,12 +33,21 @@ const queryClient = new QueryClient({
   },
 });
 
-// Obtener el basename según el entorno
+// Configuración mejorada del basename para GitHub Pages
 const getBasename = () => {
-  // Solo usar basename en producción y cuando estamos en GitHub Pages
-  if (import.meta.env.PROD && window.location.hostname.includes('github.io')) {
+  // En desarrollo local, no usar basename
+  if (import.meta.env.DEV) {
+    return "";
+  }
+  
+  // En producción, verificar si estamos en GitHub Pages
+  const isGitHubPages = window.location.hostname.includes('github.io');
+  
+  if (isGitHubPages) {
     return "/transporegistrosplus";
   }
+  
+  // Para otros deployments de producción
   return "";
 };
 
@@ -46,6 +55,11 @@ function App() {
   useEffect(() => {
     initializeApp();
   }, []);
+
+  const basename = getBasename();
+  
+  console.log('App starting with basename:', basename);
+  console.log('Current location:', window.location.href);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -64,7 +78,7 @@ function App() {
             }
           }}
         />
-        <BrowserRouter basename={getBasename()}>
+        <BrowserRouter basename={basename}>
           <AuthProvider>
             <DataProvider>
               <Routes>

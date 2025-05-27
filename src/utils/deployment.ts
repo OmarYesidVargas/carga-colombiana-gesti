@@ -13,10 +13,35 @@ export const isProduction = (): boolean => {
 }
 
 /**
+ * Verifica si estamos en GitHub Pages
+ */
+export const isGitHubPages = (): boolean => {
+  return window.location.hostname.includes('github.io')
+}
+
+/**
  * Obtiene la URL base de la aplicación según el entorno
  */
 export const getBaseUrl = (): string => {
+  if (isGitHubPages()) {
+    return 'https://omaryesidvargas.github.io/transporegistrosplus'
+  }
   return APP_CONFIG.urls.current
+}
+
+/**
+ * Obtiene el basename para React Router
+ */
+export const getRouterBasename = (): string => {
+  if (import.meta.env.DEV) {
+    return ""
+  }
+  
+  if (isGitHubPages()) {
+    return "/transporegistrosplus"
+  }
+  
+  return ""
 }
 
 /**
@@ -34,7 +59,10 @@ export const setPageTitle = (title?: string): void => {
 export const registerServiceWorker = async (): Promise<void> => {
   if ('serviceWorker' in navigator && isProduction()) {
     try {
-      await navigator.serviceWorker.register('/sw.js')
+      const swUrl = isGitHubPages() 
+        ? '/transporegistrosplus/sw.js' 
+        : '/sw.js'
+      await navigator.serviceWorker.register(swUrl)
       console.log('✅ Service Worker registrado correctamente')
     } catch (error) {
       console.warn('⚠️ Error al registrar Service Worker:', error)
@@ -77,11 +105,16 @@ export const initializeApp = (): void => {
   setupErrorHandling()
   initializeAnalytics()
   
-  if (isProduction()) {
-    // Desactivar logs de desarrollo en producción
+  // Logs de información útil para debugging
+  console.log(`🚀 ${APP_CONFIG.name} v${APP_CONFIG.version} iniciado`)
+  console.log('🌍 Entorno:', isProduction() ? 'PRODUCCIÓN' : 'DESARROLLO')
+  console.log('📍 URL Base:', getBaseUrl())
+  console.log('🔗 Router Basename:', getRouterBasename())
+  console.log('📱 GitHub Pages:', isGitHubPages())
+  
+  if (isProduction() && !isGitHubPages()) {
+    // Desactivar logs de desarrollo solo en producción que no sea GitHub Pages
     console.log = () => {}
     console.warn = () => {}
   }
-  
-  console.log(`🚀 ${APP_CONFIG.name} v${APP_CONFIG.version} iniciado en ${isProduction() ? 'PRODUCCIÓN' : 'DESARROLLO'}`)
 }

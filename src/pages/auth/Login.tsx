@@ -28,6 +28,8 @@ const Login = () => {
   // Obtener la ruta desde donde vino el usuario
   const from = location.state?.from || '/dashboard';
 
+  console.log('Login - estado actual:', { isAuthenticated, isLoading, from });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,7 +40,9 @@ const Login = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      console.log('Intentando iniciar sesión...');
       await login(values.email, values.password);
+      console.log('Login exitoso');
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
     }
@@ -46,6 +50,7 @@ const Login = () => {
 
   // Si el usuario ya está autenticado, redirigir
   if (isAuthenticated) {
+    console.log('Usuario autenticado, redirigiendo a:', from);
     return <Navigate to={from} replace />;
   }
 
