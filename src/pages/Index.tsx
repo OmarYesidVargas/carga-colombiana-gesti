@@ -74,8 +74,8 @@ const Index = () => {
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            La solución integral para la gestión de transportes en Colombia. 
-            Controla vehículos, viajes, gastos y genera reportes profesionales.
+            La solución integral para la gestión de transportes
+            Controla vehículos, viajes, gastos y genera reportes.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -204,7 +204,7 @@ const Index = () => {
             </span>
           </div>
           <p className="text-gray-400">
-            © 2025 TransporegistrosPlus. Sistema integral de gestión de transportes para Colombia.
+            © 2025 TransporegistrosPlus. Sistema integral de gestión de transportes .
           </p>
         </div>
       </footer>
