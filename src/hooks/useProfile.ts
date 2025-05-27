@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-interface ProfileData {
+export interface ProfileData {
   id: string;
   name: string | null;
   email: string;

@@ -25,10 +25,6 @@ const ProfileSettings = () => {
     );
   }
 
-  const handleProfileUpdate = async (data: any) => {
-    await updateProfile(data);
-  };
-
   const handleAvatarUpdate = async (avatarUrl: string | null) => {
     await updateProfile({ avatar_url: avatarUrl });
   };
@@ -88,21 +84,7 @@ const ProfileSettings = () => {
 
             {/* Form Section */}
             <div className="lg:col-span-2">
-              <ProfileForm
-                initialData={{
-                  name: profile?.name || '',
-                  phone: profile?.phone || '',
-                  document_type: profile?.document_type || 'cedula',
-                  document_number: profile?.document_number || '',
-                  city: profile?.city || '',
-                  department: profile?.department || '',
-                  birth_date: profile?.birth_date ? new Date(profile.birth_date) : undefined,
-                  gender: profile?.gender || '',
-                }}
-                email={user?.email || ''}
-                onSubmit={handleProfileUpdate}
-                loading={loading}
-              />
+              <ProfileForm />
             </div>
           </div>
         </TabsContent>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 import { useProfile, ProfileData } from '@/hooks/useProfile';
 import { useDebugLogger } from '@/hooks/useDebugLogger';
-import { AvatarUpload } from './AvatarUpload';
+import AvatarUpload from './AvatarUpload';
 import { ProfileFormFields } from './ProfileFormFields';
 import { ProfileLocationFields } from './ProfileLocationFields';
 
