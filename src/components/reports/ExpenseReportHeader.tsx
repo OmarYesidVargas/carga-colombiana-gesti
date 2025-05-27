@@ -38,7 +38,7 @@ const ExpenseReportHeader: React.FC<ExpenseReportHeaderProps> = ({
         )}
       </div>
       
-      {/* Botón de exportación - Responsive */}
+      {/* Botón de exportación - Responsive con indicación de formato XLSX */}
       <Button 
         onClick={onExport} 
         disabled={totalExpenses === 0}
@@ -46,8 +46,8 @@ const ExpenseReportHeader: React.FC<ExpenseReportHeaderProps> = ({
         size={totalExpenses === 0 ? "default" : "lg"}
       >
         <Download className="h-4 w-4" />
-        <span className="hidden sm:inline">Exportar Datos</span>
-        <span className="sm:hidden">Exportar</span>
+        <span className="hidden sm:inline">Exportar a Excel (XLSX)</span>
+        <span className="sm:hidden">Exportar Excel</span>
       </Button>
     </div>
   );

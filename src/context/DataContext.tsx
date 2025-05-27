@@ -7,6 +7,7 @@ import { useExpenses } from '@/hooks/useExpenses';
 import { useTolls } from '@/hooks/useTolls';
 import { useTollRecords } from '@/hooks/useTollRecords';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 /**
  * Interfaz que define las propiedades y funciones disponibles en el contexto de datos
@@ -91,7 +92,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
   
   /**
-   * Exporta datos a un archivo CSV
+   * Exporta datos a un archivo XLSX con codificación UTF-8 para soportar caracteres especiales
    * @param {any[]} data - Datos a exportar
    * @param {string} filename - Nombre del archivo
    */
@@ -103,40 +104,32 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     try {
-      // Obtener encabezados (claves del primer objeto)
-      const headers = Object.keys(data[0]);
+      // Crear una nueva hoja de trabajo con los datos
+      const worksheet = XLSX.utils.json_to_sheet(data);
       
-      // Crear contenido CSV
-      const csvRows = [];
+      // Crear un nuevo libro de trabajo
+      const workbook = XLSX.utils.book_new();
       
-      // Añadir encabezados
-      csvRows.push(headers.join(','));
+      // Añadir la hoja al libro
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Datos');
       
-      // Añadir filas de datos
-      for (const row of data) {
-        const values = headers.map(header => {
-          const value = row[header];
-          // Manejar valores especiales (cadenas con comas, nulos, etc.)
-          if (value === null || value === undefined) return '';
-          if (typeof value === 'string') {
-            // Escapar comillas y envolver en comillas si contiene comas
-            const escaped = value.replace(/"/g, '""');
-            return escaped.includes(',') ? `"${escaped}"` : escaped;
-          }
-          return value;
-        });
-        csvRows.push(values.join(','));
-      }
+      // Configurar opciones para XLSX con codificación UTF-8
+      const wbout = XLSX.write(workbook, {
+        bookType: 'xlsx',
+        type: 'array',
+        compression: true
+      });
       
-      // Unir filas con saltos de línea
-      const csvContent = csvRows.join('\n');
+      // Crear blob con tipo MIME correcto para XLSX
+      const blob = new Blob([wbout], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+      });
       
-      // Crear blob y link para descargar
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      // Crear enlace de descarga
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `${filename}.csv`);
+      link.setAttribute('download', `${filename}.xlsx`);
       link.style.visibility = 'hidden';
       
       // Añadir al DOM, simular clic y limpiar
@@ -145,9 +138,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      toast.success(`Datos exportados a ${filename}.csv`);
+      toast.success(`Datos exportados a ${filename}.xlsx`);
     } catch (error) {
-      console.error('Error al exportar a CSV:', error);
+      console.error('Error al exportar a XLSX:', error);
       toast.error('Error al exportar datos');
     }
   };

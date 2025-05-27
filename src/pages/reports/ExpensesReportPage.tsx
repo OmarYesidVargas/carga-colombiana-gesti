@@ -34,8 +34,8 @@ const ExpensesReportPage = () => {
   } = useExpenseReport(expenses);
   
   /**
-   * Función para exportar datos a CSV con formato legible
-   * Prepara los datos con información completa para exportación
+   * Función para exportar datos a XLSX con formato legible y codificación UTF-8
+   * Prepara los datos con información completa para exportación con caracteres especiales
    */
   const handleExportData = () => {
     if (filteredExpenses.length === 0) {
@@ -43,23 +43,25 @@ const ExpensesReportPage = () => {
       return;
     }
     
-    // Preparar datos para exportar con formato más legible
+    // Preparar datos para exportar con formato más legible y caracteres especiales
     const dataToExport = filteredExpenses.map(expense => {
       const trip = trips.find(t => t.id === expense.tripId);
       const vehicle = vehicles.find(v => v.id === expense.vehicleId);
       
       return {
-        Fecha: format(new Date(expense.date), 'dd/MM/yyyy', { locale: es }),
-        Categoría: getCategoryLabel(expense.category),
-        Monto: expense.amount,
-        Descripción: expense.description || '',
-        Vehículo: vehicle ? `${vehicle.plate} - ${vehicle.brand} ${vehicle.model}` : '',
-        Viaje: trip ? `${trip.origin} - ${trip.destination}` : '',
+        'Fecha': format(new Date(expense.date), 'dd/MM/yyyy', { locale: es }),
+        'Categoría': getCategoryLabel(expense.category),
+        'Monto (COP)': expense.amount,
+        'Descripción': expense.description || '',
+        'Vehículo': vehicle ? `${vehicle.plate} - ${vehicle.brand} ${vehicle.model}` : '',
+        'Viaje': trip ? `${trip.origin} → ${trip.destination}` : '',
+        'Año': format(new Date(expense.date), 'yyyy'),
+        'Mes': format(new Date(expense.date), 'MMMM', { locale: es })
       };
     });
     
-    exportToCSV(dataToExport, `gastos_${format(new Date(), 'yyyy-MM-dd')}`);
-    toast.success('Reporte exportado exitosamente');
+    exportToCSV(dataToExport, `reporte_gastos_${format(new Date(), 'yyyy-MM-dd')}`);
+    toast.success('Reporte exportado exitosamente en formato XLSX');
   };
 
   return (
