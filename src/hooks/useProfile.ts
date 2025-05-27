@@ -9,8 +9,12 @@ interface ProfileData {
   name: string | null;
   email: string;
   phone: string | null;
+  document_type: string | null;
+  document_number: string | null;
   city: string | null;
   department: string | null;
+  birth_date: string | null;
+  gender: string | null;
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
