@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,8 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Settings } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   userEmail?: string;
@@ -19,6 +22,35 @@ interface HeaderProps {
 
 const Header = ({ userEmail, onLogout }: HeaderProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (user) {
+      fetchUserAvatar();
+    }
+  }, [user]);
+
+  const fetchUserAvatar = async () => {
+    try {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching avatar:', error);
+        return;
+      }
+
+      setAvatarUrl(data?.avatar_url || null);
+    } catch (error) {
+      console.error('Error fetching user avatar:', error);
+    }
+  };
   
   const handleLogin = () => {
     navigate('/login');
@@ -40,8 +72,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
   };
   
   const handleSettings = () => {
-    // TODO: Implementar página de configuración
-    console.log('Configuración - pendiente de implementar');
+    navigate('/profile/settings');
   };
   
   const handleLogoClick = () => {
@@ -50,6 +81,11 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
     } else {
       navigate('/');
     }
+  };
+
+  const getInitials = () => {
+    if (!userEmail) return 'U';
+    return userEmail.charAt(0).toUpperCase();
   };
   
   return (
@@ -113,7 +149,12 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
                   text-xs sm:text-sm
                 "
               >
-                <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
+                  <AvatarImage src={avatarUrl || undefined} alt="Foto de perfil" />
+                  <AvatarFallback className="text-xs">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
                 <span className="
                   hidden sm:inline-block 
                   max-w-[80px] lg:max-w-[150px] 

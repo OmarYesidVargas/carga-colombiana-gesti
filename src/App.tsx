@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -23,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import AuthRoute from "./routes/AuthRoute";
 import { initializeApp } from "@/utils/deployment";
 import { useEffect } from "react";
+import ProfileSettings from "./pages/profile/ProfileSettings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -92,6 +92,14 @@ function App() {
                   <AuthRoute>
                     <Layout>
                       <Dashboard />
+                    </Layout>
+                  </AuthRoute>
+                } />
+                
+                <Route path="/profile/settings" element={
+                  <AuthRoute>
+                    <Layout>
+                      <ProfileSettings />
                     </Layout>
                   </AuthRoute>
                 } />
