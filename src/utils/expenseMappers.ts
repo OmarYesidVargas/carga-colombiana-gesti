@@ -11,7 +11,7 @@ export const mapExpenseFromDB = (expense: any): Expense => {
     vehicleId: expense.vehicle_id,
     tripId: expense.trip_id,
     category: expense.category,
-    amount: Number(expense.amount), // Asegurar que sea número
+    amount: Number(expense.amount),
     date: expense.date,
     description: expense.description || '',
     receiptUrl: expense.receipt_url || undefined,
@@ -26,29 +26,27 @@ export const mapExpenseFromDB = (expense: any): Expense => {
 export const mapExpenseToDB = (expense: Partial<Expense>): any => {
   const mappedExpense: Record<string, any> = {};
   
-  // Mapear solo los campos que tienen valores definidos
+  if (expense.id !== undefined) mappedExpense.id = expense.id;
+  if (expense.userId !== undefined) mappedExpense.user_id = expense.userId;
+  if (expense.vehicleId !== undefined) mappedExpense.vehicle_id = expense.vehicleId;
+  if (expense.tripId !== undefined) mappedExpense.trip_id = expense.tripId;
   if (expense.category !== undefined) mappedExpense.category = expense.category;
-  if (expense.amount !== undefined) mappedExpense.amount = Number(expense.amount); // Convertir a número
+  if (expense.amount !== undefined) mappedExpense.amount = Number(expense.amount);
   if (expense.date !== undefined) mappedExpense.date = expense.date;
   if (expense.description !== undefined) mappedExpense.description = expense.description || '';
   if (expense.receiptUrl !== undefined) mappedExpense.receipt_url = expense.receiptUrl;
-  if (expense.tripId !== undefined) mappedExpense.trip_id = expense.tripId;
-  if (expense.vehicleId !== undefined) mappedExpense.vehicle_id = expense.vehicleId;
-  if (expense.userId !== undefined) mappedExpense.user_id = expense.userId;
   
-  // Log para debugging
   console.log('🔄 [ExpenseMapper] Mapeando expense:', { original: expense, mapped: mappedExpense });
   
   return mappedExpense;
 };
 
 /**
- * Validador de datos de gasto antes de mapear
+ * Validador de datos de gasto con validaciones completas
  */
 export const validateExpenseData = (expense: any): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
   
-  // Validaciones críticas
   if (!expense.category) errors.push('Categoría es requerida');
   if (!expense.amount || isNaN(Number(expense.amount)) || Number(expense.amount) <= 0) {
     errors.push('Monto debe ser un número mayor a 0');

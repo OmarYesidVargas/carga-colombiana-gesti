@@ -1,14 +1,46 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Car, Truck, Calendar, FileChartPie } from 'lucide-react';
+import { Car, Truck, Calendar, FileChartPie, Shield, BarChart3 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const features = [
+    {
+      icon: Truck,
+      title: "Gestión de Vehículos",
+      description: "Administra tu flota de vehículos con información detallada y seguimiento completo."
+    },
+    {
+      icon: Calendar,
+      title: "Control de Viajes",
+      description: "Organiza y rastrea todos tus viajes con origen, destino y distancia."
+    },
+    {
+      icon: FileChartPie,
+      title: "Gestión de Gastos",
+      description: "Registra todos los gastos por categoría para cada viaje realizado."
+    },
+    {
+      icon: BarChart3,
+      title: "Reportes y Estadísticas",
+      description: "Visualiza reportes detallados de tus gastos para optimizar tus operaciones."
+    }
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
       <section className="bg-gradient-to-b from-primary/20 to-background pt-12 pb-20 px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
@@ -20,6 +52,7 @@ const LandingPage = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/register">
               <Button size="lg" className="gap-2">
+                <Shield className="h-5 w-5" />
                 Comenzar Ahora
               </Button>
             </Link>
@@ -32,7 +65,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="py-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">
@@ -40,58 +72,23 @@ const LandingPage = () => {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="border border-primary/20 hover:shadow-md transition-all">
-              <CardContent className="pt-6 flex flex-col items-center text-center">
-                <div className="p-3 bg-primary/20 rounded-full mb-4">
-                  <Truck className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Gestión de Vehículos</h3>
-                <p className="text-muted-foreground">
-                  Registra y administra todos tus vehículos con información detallada.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="border border-primary/20 hover:shadow-md transition-all">
-              <CardContent className="pt-6 flex flex-col items-center text-center">
-                <div className="p-3 bg-primary/20 rounded-full mb-4">
-                  <Calendar className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Control de Viajes</h3>
-                <p className="text-muted-foreground">
-                  Organiza y rastrea todos tus viajes con origen, destino y distancia.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="border border-primary/20 hover:shadow-md transition-all">
-              <CardContent className="pt-6 flex flex-col items-center text-center">
-                <div className="p-3 bg-primary/20 rounded-full mb-4">
-                  <FileChartPie className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Gestión de Gastos</h3>
-                <p className="text-muted-foreground">
-                  Registra todos los gastos por categoría para cada viaje realizado.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="border border-primary/20 hover:shadow-md transition-all">
-              <CardContent className="pt-6 flex flex-col items-center text-center">
-                <div className="p-3 bg-primary/20 rounded-full mb-4">
-                  <FileChartPie className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Reportes y Estadísticas</h3>
-                <p className="text-muted-foreground">
-                  Visualiza reportes detallados de tus gastos para optimizar tus operaciones.
-                </p>
-              </CardContent>
-            </Card>
+            {features.map((feature, index) => (
+              <Card key={index} className="border border-primary/20 hover:shadow-md transition-all">
+                <CardContent className="pt-6 flex flex-col items-center text-center">
+                  <div className="p-3 bg-primary/20 rounded-full mb-4">
+                    <feature.icon className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground">
+                    {feature.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="bg-secondary/10 py-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-6">
@@ -108,7 +105,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="bg-muted py-10 px-4 md:px-6 lg:px-8 mt-auto">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-lg font-bold mb-2">TransporegistrosPlus</p>

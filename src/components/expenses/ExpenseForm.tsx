@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Expense, ExpenseCategory, Trip, Vehicle } from '@/types';
+import { Expense, Trip, Vehicle } from '@/types';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -24,7 +24,6 @@ import { es } from 'date-fns/locale';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Categorías de gastos
 const expenseCategories = [
   { value: 'fuel', label: 'Combustible' },
   { value: 'toll', label: 'Peaje' },
@@ -34,7 +33,6 @@ const expenseCategories = [
   { value: 'other', label: 'Otros' },
 ];
 
-// Esquema de validación mejorado
 const formSchema = z.object({
   tripId: z.string().min(1, 'Debe seleccionar un viaje'),
   category: z.string().refine(
@@ -47,12 +45,8 @@ const formSchema = z.object({
   amount: z.string()
     .min(1, 'El monto es requerido')
     .refine(
-      (val) => !isNaN(Number(val)),
-      { message: 'El monto debe ser un número válido' }
-    )
-    .refine(
-      (val) => Number(val) > 0,
-      { message: 'El monto debe ser mayor a 0' }
+      (val) => !isNaN(Number(val)) && Number(val) > 0,
+      { message: 'El monto debe ser un número válido mayor a 0' }
     ),
   description: z.string().optional(),
 });
@@ -93,21 +87,18 @@ const ExpenseForm = ({
     try {
       console.log('📝 [ExpenseForm] Enviando datos del formulario:', data);
       
-      // Validar que el viaje existe
       const selectedTrip = trips.find(trip => trip.id === data.tripId);
       if (!selectedTrip) {
         form.setError('tripId', { message: 'El viaje seleccionado no es válido' });
         return;
       }
 
-      // Validar que el vehículo del viaje existe
       const selectedVehicle = vehicles.find(vehicle => vehicle.id === selectedTrip.vehicleId);
       if (!selectedVehicle) {
         form.setError('tripId', { message: 'El vehículo del viaje seleccionado no es válido' });
         return;
       }
 
-      // Validar monto
       const amount = Number(data.amount);
       if (isNaN(amount) || amount <= 0) {
         form.setError('amount', { message: 'El monto debe ser un número válido mayor a 0' });
@@ -121,14 +112,12 @@ const ExpenseForm = ({
     }
   };
 
-  // Encontrar vehículos para los viajes
   const getTripVehicle = (tripId: string) => {
     const trip = trips.find(t => t.id === tripId);
     if (!trip) return null;
     return vehicles.find(v => v.id === trip.vehicleId);
   };
 
-  // Filtrar viajes válidos (que tengan vehículo asignado)
   const validTrips = trips.filter(trip => {
     const vehicle = getTripVehicle(trip.id);
     return vehicle !== null;
@@ -263,7 +252,7 @@ const ExpenseForm = ({
                     type="number"
                     min="0"
                     step="1"
-                    placeholder="0"
+                    placeholder="25500"
                     className="pl-8"
                     disabled={isSubmitting}
                   />

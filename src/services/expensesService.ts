@@ -5,9 +5,6 @@ import { Expense } from '@/types';
 import { toast } from 'sonner';
 import { mapExpenseFromDB, mapExpenseToDB, validateExpenseData } from '@/utils/expenseMappers';
 
-/**
- * Carga gastos desde Supabase para un usuario específico
- */
 export const loadExpenses = async (user: User | null): Promise<Expense[]> => {
   if (!user) {
     console.log('❌ [ExpensesService] Usuario no autenticado');
@@ -30,8 +27,7 @@ export const loadExpenses = async (user: User | null): Promise<Expense[]> => {
     
     console.log('✅ [ExpensesService] Datos cargados:', data?.length || 0, 'gastos');
     
-    // Mapear datos de la DB al formato de la aplicación
-    const mappedExpenses = data.map(mapExpenseFromDB);
+    const mappedExpenses = data?.map(mapExpenseFromDB) || [];
     console.log('✅ [ExpensesService] Gastos mapeados correctamente');
     
     return mappedExpenses;
@@ -42,9 +38,6 @@ export const loadExpenses = async (user: User | null): Promise<Expense[]> => {
   }
 };
 
-/**
- * Agrega un nuevo gasto con validación completa
- */
 export const addExpense = async (
   user: User | null, 
   expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
@@ -58,24 +51,45 @@ export const addExpense = async (
   try {
     console.log('🔄 [ExpensesService] Agregando gasto:', expense);
     
-    // Validar datos antes de procesar
-    const validation = validateExpenseData(expense);
+    // Preparar datos completos
+    const expenseWithUser = {
+      ...expense,
+      userId: user.id,
+      amount: Number(expense.amount) // Asegurar conversión numérica
+    };
+    
+    // Validar datos
+    const validation = validateExpenseData(expenseWithUser);
     if (!validation.isValid) {
       console.error('❌ [ExpensesService] Datos inválidos:', validation.errors);
       toast.error(`Datos inválidos: ${validation.errors.join(', ')}`);
       return;
     }
     
-    // Preparar datos para la DB
-    const expenseWithUser = {
-      ...expense,
-      userId: user.id
-    };
+    // Verificar que el viaje existe y pertenece al usuario
+    const { data: tripData, error: tripError } = await supabase
+      .from('trips')
+      .select('id, vehicle_id')
+      .eq('id', expense.tripId)
+      .eq('user_id', user.id)
+      .single();
+    
+    if (tripError || !tripData) {
+      console.error('❌ [ExpensesService] Viaje no encontrado:', tripError);
+      toast.error('El viaje seleccionado no existe o no te pertenece');
+      return;
+    }
+    
+    // Verificar consistencia del vehículo
+    if (tripData.vehicle_id !== expense.vehicleId) {
+      console.error('❌ [ExpensesService] Inconsistencia en vehículo');
+      toast.error('El vehículo no coincide con el del viaje seleccionado');
+      return;
+    }
     
     const newExpense = mapExpenseToDB(expenseWithUser);
     console.log('🔄 [ExpensesService] Datos preparados para DB:', newExpense);
     
-    // Insertar en Supabase
     const { data, error } = await supabase
       .from('expenses')
       .insert(newExpense)
@@ -94,7 +108,6 @@ export const addExpense = async (
     
     console.log('✅ [ExpensesService] Gasto insertado en DB:', data);
     
-    // Mapear respuesta
     const mappedExpense = mapExpenseFromDB(data);
     console.log('✅ [ExpensesService] Gasto mapeado:', mappedExpense);
     
@@ -104,7 +117,6 @@ export const addExpense = async (
   } catch (error: any) {
     console.error('❌ [ExpensesService] Error crítico al agregar gasto:', error);
     
-    // Mensajes de error más específicos
     if (error.code === '23503') {
       toast.error('Error: El viaje o vehículo seleccionado no existe');
     } else if (error.code === '23505') {
@@ -115,32 +127,32 @@ export const addExpense = async (
   }
 };
 
-/**
- * Actualiza un gasto existente con validación completa
- */
 export const updateExpense = async (
   user: User | null, 
   id: string, 
   expense: Partial<Expense>
 ): Promise<boolean> => {
-  if (!user) {
-    console.error('❌ [ExpensesService] Usuario no autenticado');
-    toast.error('Usuario no autenticado');
-    return false;
-  }
-  
-  if (!id) {
-    console.error('❌ [ExpensesService] ID de gasto no proporcionado');
-    toast.error('ID de gasto inválido');
+  if (!user || !id) {
+    console.error('❌ [ExpensesService] Parámetros inválidos');
+    toast.error('Parámetros inválidos para actualizar');
     return false;
   }
   
   try {
     console.log('🔄 [ExpensesService] Actualizando gasto:', id, expense);
     
-    // Validar datos si se están actualizando campos críticos
-    if (expense.amount !== undefined || expense.category !== undefined) {
-      const validation = validateExpenseData(expense);
+    // Preparar datos con conversión numérica si es necesario
+    const expenseToUpdate = { ...expense };
+    if (expenseToUpdate.amount !== undefined) {
+      expenseToUpdate.amount = Number(expenseToUpdate.amount);
+    }
+    
+    // Validar datos críticos si se están actualizando
+    const fieldsToValidate = ['amount', 'category', 'date', 'tripId', 'vehicleId'];
+    const hasImportantChanges = fieldsToValidate.some(field => expenseToUpdate[field] !== undefined);
+    
+    if (hasImportantChanges) {
+      const validation = validateExpenseData(expenseToUpdate);
       if (!validation.isValid) {
         console.error('❌ [ExpensesService] Datos inválidos:', validation.errors);
         toast.error(`Datos inválidos: ${validation.errors.join(', ')}`);
@@ -148,11 +160,9 @@ export const updateExpense = async (
       }
     }
     
-    // Mapear datos para la DB
-    const updatedExpense = mapExpenseToDB(expense);
+    const updatedExpense = mapExpenseToDB(expenseToUpdate);
     console.log('🔄 [ExpensesService] Datos preparados para actualización:', updatedExpense);
     
-    // Actualizar en Supabase
     const { error } = await supabase
       .from('expenses')
       .update(updatedExpense)
@@ -175,29 +185,19 @@ export const updateExpense = async (
   }
 };
 
-/**
- * Elimina un gasto con validación
- */
 export const deleteExpense = async (
   user: User | null, 
   id: string
 ): Promise<boolean> => {
-  if (!user) {
-    console.error('❌ [ExpensesService] Usuario no autenticado');
-    toast.error('Usuario no autenticado');
-    return false;
-  }
-  
-  if (!id) {
-    console.error('❌ [ExpensesService] ID de gasto no proporcionado');
-    toast.error('ID de gasto inválido');
+  if (!user || !id) {
+    console.error('❌ [ExpensesService] Parámetros inválidos');
+    toast.error('Parámetros inválidos para eliminar');
     return false;
   }
   
   try {
     console.log('🔄 [ExpensesService] Eliminando gasto:', id);
     
-    // Eliminar de Supabase
     const { error } = await supabase
       .from('expenses')
       .delete()

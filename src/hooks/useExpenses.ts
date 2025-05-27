@@ -1,17 +1,3 @@
-/**
- * Hook personalizado para gestionar gastos en TransporegistrosPlus
- * 
- * Este hook encapsula toda la lógica relacionada con gastos incluyendo:
- * - Carga de gastos desde Supabase
- * - Creación de nuevos gastos
- * - Actualización de gastos existentes
- * - Eliminación de gastos
- * - Manejo de estados de carga y errores
- * - Registro de auditoría automático
- * 
- * @author TransporegistrosPlus Team
- * @version 1.0.0
- */
 
 import { useState, useEffect, useCallback } from 'react';
 import { Expense } from '@/types';
@@ -25,26 +11,13 @@ import {
   deleteExpense as deleteExpenseService 
 } from '@/services/expensesService';
 
-/**
- * Hook personalizado para gestionar gastos
- * 
- * @param {User | null} user - Usuario autenticado actual
- * @param {Function} setGlobalLoading - Función para actualizar el estado global de carga
- * @returns {Object} Objeto con funciones y estado para gestionar gastos
- */
 export const useExpenses = (user: User | null, setGlobalLoading: (loading: boolean) => void) => {
-  // Estados locales
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Hook de auditoría
   const { logRead, logCreate, logUpdate, logDelete } = useAuditLogger(user);
   
-  /**
-   * Efecto para cargar gastos cuando cambia el usuario
-   * Se ejecuta automáticamente al montar el componente y cuando cambia el usuario
-   */
   useEffect(() => {
     const fetchExpenses = async () => {
       if (!user) {
@@ -58,21 +31,20 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
         setLoading(true);
         setError(null);
         
-        console.log('Cargando gastos para el usuario:', user.id);
+        console.log('🔄 [useExpenses] Cargando gastos para el usuario:', user.id);
         
         const loadedExpenses = await loadExpenses(user);
         
-        // Registrar auditoría de lectura
         await logRead('expenses', undefined, { 
           count: loadedExpenses.length,
           action: 'load_all_expenses'
         });
         
-        console.log('Gastos cargados exitosamente:', loadedExpenses.length);
+        console.log('✅ [useExpenses] Gastos cargados exitosamente:', loadedExpenses.length);
         setExpenses(loadedExpenses);
       } catch (error) {
         const errorMessage = 'Error al cargar los gastos';
-        console.error(errorMessage, error);
+        console.error('❌ [useExpenses] Error al cargar:', error);
         setError(errorMessage);
       } finally {
         setGlobalLoading(false);
@@ -83,21 +55,14 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     fetchExpenses();
   }, [user, setGlobalLoading, logRead]);
   
-  /**
-   * Obtiene un gasto específico por su ID
-   * 
-   * @param {string} id - ID del gasto a buscar
-   * @returns {Expense | undefined} Gasto encontrado o undefined si no existe
-   */
   const getExpenseById = useCallback((id: string): Expense | undefined => {
     if (!id || typeof id !== 'string') {
-      console.warn('getExpenseById: ID inválido proporcionado');
+      console.warn('❌ [useExpenses] getExpenseById: ID inválido proporcionado');
       return undefined;
     }
     
     const expense = expenses.find(expense => expense.id === id);
     
-    // Registrar auditoría de lectura individual (sin await para no bloquear)
     if (expense) {
       logRead('expenses', id, { action: 'get_expense_by_id' });
     }
@@ -105,27 +70,28 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     return expense;
   }, [expenses, logRead]);
   
-  /**
-   * Agrega un nuevo gasto
-   * 
-   * @param {Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>} expense - Datos del nuevo gasto
-   * @returns {Promise<Expense | void>} Gasto creado o void si hay error
-   */
   const addExpense = useCallback(async (
     expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
   ): Promise<Expense | void> => {
-    // Validar que el usuario esté autenticado
     if (!user) {
       const errorMessage = 'Usuario no autenticado';
-      console.error(errorMessage);
+      console.error('❌ [useExpenses] addExpense:', errorMessage);
       setError(errorMessage);
       throw new Error(errorMessage);
     }
 
-    // Validar datos del gasto
-    if (!validateExpense(expense)) {
+    // Validar datos básicos
+    const expenseToValidate = {
+      ...expense,
+      userId: user.id,
+      id: 'temp',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (!validateExpense(expenseToValidate)) {
       const errorMessage = 'Datos del gasto inválidos';
-      console.error(errorMessage);
+      console.error('❌ [useExpenses] Validación fallida:', expense);
       setError(errorMessage);
       throw new Error(errorMessage);
     }
@@ -134,12 +100,11 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       setLoading(true);
       setError(null);
       
-      console.log('Agregando nuevo gasto:', expense);
+      console.log('🔄 [useExpenses] Agregando nuevo gasto:', expense);
       
       const newExpense = await addExpenseService(user, expense);
       
       if (newExpense) {
-        // Registrar auditoría de creación
         await logCreate('expenses', newExpense.id, {
           category: newExpense.category,
           amount: newExpense.amount,
@@ -148,14 +113,13 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
           description: newExpense.description
         }, { action: 'create_expense' });
         
-        // Actualizar estado local agregando el nuevo gasto al inicio
         setExpenses(prevExpenses => [newExpense, ...prevExpenses]);
-        console.log('Gasto agregado exitosamente:', newExpense.id);
+        console.log('✅ [useExpenses] Gasto agregado exitosamente:', newExpense.id);
         return newExpense;
       }
     } catch (error: any) {
       const errorMessage = error.message || 'Error al agregar el gasto';
-      console.error('Error en useExpenses al agregar:', error);
+      console.error('❌ [useExpenses] Error al agregar:', error);
       setError(errorMessage);
       throw error;
     } finally {
@@ -163,46 +127,21 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     }
   }, [user, logCreate]);
   
-  /**
-   * Actualiza un gasto existente
-   * 
-   * @param {string} id - ID del gasto a actualizar
-   * @param {Partial<Expense>} expenseUpdates - Datos a actualizar
-   * @returns {Promise<boolean>} true si la actualización fue exitosa
-   */
   const updateExpense = useCallback(async (
     id: string, 
     expenseUpdates: Partial<Expense>
   ): Promise<boolean> => {
-    // Validar parámetros
-    if (!user) {
-      const errorMessage = 'Usuario no autenticado';
-      console.error(errorMessage);
+    if (!user || !id) {
+      const errorMessage = 'Parámetros inválidos para actualizar';
+      console.error('❌ [useExpenses] updateExpense:', errorMessage);
       setError(errorMessage);
       return false;
     }
 
-    if (!id || typeof id !== 'string') {
-      const errorMessage = 'ID de gasto inválido';
-      console.error(errorMessage);
-      setError(errorMessage);
-      return false;
-    }
-
-    // Verificar que el gasto existe
     const existingExpense = getExpenseById(id);
     if (!existingExpense) {
       const errorMessage = 'Gasto no encontrado';
-      console.error(errorMessage);
-      setError(errorMessage);
-      return false;
-    }
-
-    // Validar datos actualizados
-    const updatedExpense = { ...existingExpense, ...expenseUpdates };
-    if (!validateExpense(updatedExpense)) {
-      const errorMessage = 'Datos actualizados del gasto son inválidos';
-      console.error(errorMessage);
+      console.error('❌ [useExpenses] Gasto no encontrado:', id);
       setError(errorMessage);
       return false;
     }
@@ -211,31 +150,29 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       setLoading(true);
       setError(null);
       
-      console.log('Actualizando gasto:', id, expenseUpdates);
+      console.log('🔄 [useExpenses] Actualizando gasto:', id, expenseUpdates);
       
       const success = await updateExpenseService(user, id, expenseUpdates);
       
       if (success) {
-        // Registrar auditoría de actualización
         await logUpdate('expenses', id, {
           category: existingExpense.category,
           amount: existingExpense.amount,
           description: existingExpense.description
         }, expenseUpdates, { action: 'update_expense' });
         
-        // Actualizar estado local
         setExpenses(prevExpenses => 
           prevExpenses.map(expense => 
             expense.id === id ? { ...expense, ...expenseUpdates } : expense
           )
         );
-        console.log('Gasto actualizado exitosamente:', id);
+        console.log('✅ [useExpenses] Gasto actualizado exitosamente:', id);
       }
       
       return success;
     } catch (error: any) {
       const errorMessage = error.message || 'Error al actualizar el gasto';
-      console.error('Error en useExpenses al actualizar:', error);
+      console.error('❌ [useExpenses] Error al actualizar:', error);
       setError(errorMessage);
       return false;
     } finally {
@@ -243,33 +180,18 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     }
   }, [user, getExpenseById, logUpdate]);
   
-  /**
-   * Elimina un gasto
-   * 
-   * @param {string} id - ID del gasto a eliminar
-   * @returns {Promise<boolean>} true si la eliminación fue exitosa
-   */
   const deleteExpense = useCallback(async (id: string): Promise<boolean> => {
-    // Validar parámetros
-    if (!user) {
-      const errorMessage = 'Usuario no autenticado';
-      console.error(errorMessage);
+    if (!user || !id) {
+      const errorMessage = 'Parámetros inválidos para eliminar';
+      console.error('❌ [useExpenses] deleteExpense:', errorMessage);
       setError(errorMessage);
       return false;
     }
 
-    if (!id || typeof id !== 'string') {
-      const errorMessage = 'ID de gasto inválido';
-      console.error(errorMessage);
-      setError(errorMessage);
-      return false;
-    }
-
-    // Verificar que el gasto existe
     const existingExpense = getExpenseById(id);
     if (!existingExpense) {
       const errorMessage = 'Gasto no encontrado';
-      console.error(errorMessage);
+      console.error('❌ [useExpenses] Gasto no encontrado:', id);
       setError(errorMessage);
       return false;
     }
@@ -278,12 +200,11 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       setLoading(true);
       setError(null);
       
-      console.log('Eliminando gasto:', id);
+      console.log('🔄 [useExpenses] Eliminando gasto:', id);
       
       const success = await deleteExpenseService(user, id);
       
       if (success) {
-        // Registrar auditoría de eliminación
         await logDelete('expenses', id, {
           category: existingExpense.category,
           amount: existingExpense.amount,
@@ -292,17 +213,16 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
           description: existingExpense.description
         }, { action: 'delete_expense' });
         
-        // Actualizar estado local removiendo el gasto
         setExpenses(prevExpenses => 
           prevExpenses.filter(expense => expense.id !== id)
         );
-        console.log('Gasto eliminado exitosamente:', id);
+        console.log('✅ [useExpenses] Gasto eliminado exitosamente:', id);
       }
       
       return success;
     } catch (error: any) {
       const errorMessage = error.message || 'Error al eliminar el gasto';
-      console.error('Error en useExpenses al eliminar:', error);
+      console.error('❌ [useExpenses] Error al eliminar:', error);
       setError(errorMessage);
       return false;
     } finally {
@@ -310,16 +230,10 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     }
   }, [user, getExpenseById, logDelete]);
 
-  /**
-   * Función para limpiar errores manualmente
-   */
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  /**
-   * Función para recargar gastos manualmente
-   */
   const reloadExpenses = useCallback(async () => {
     if (!user) return;
 
@@ -329,7 +243,6 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       
       const loadedExpenses = await loadExpenses(user);
       
-      // Registrar auditoría de recarga
       await logRead('expenses', undefined, { 
         count: loadedExpenses.length,
         action: 'reload_expenses'
@@ -338,27 +251,21 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       setExpenses(loadedExpenses);
     } catch (error) {
       const errorMessage = 'Error al recargar los gastos';
-      console.error(errorMessage, error);
+      console.error('❌ [useExpenses] Error al recargar:', error);
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
   }, [user, logRead]);
   
-  // Retornar todas las funciones y estados disponibles
   return {
-    // Estado
     expenses,
     loading,
     error,
-    
-    // Funciones principales
     getExpenseById,
     addExpense,
     updateExpense,
     deleteExpense,
-    
-    // Funciones auxiliares
     clearError,
     reloadExpenses
   };
