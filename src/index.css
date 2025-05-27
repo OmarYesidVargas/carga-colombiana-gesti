@@ -14,7 +14,7 @@
     --popover: 255 255 255;
     --popover-foreground: 15 23 42;
 
-    --primary: 59 130 246;
+    --primary: 139 92 246;
     --primary-foreground: 255 255 255;
 
     --secondary: 241 245 249;
@@ -31,18 +31,18 @@
 
     --border: 226 232 240;
     --input: 226 232 240;
-    --ring: 59 130 246;
+    --ring: 139 92 246;
 
     --radius: 0.5rem;
 
     --sidebar-background: 255 255 255;
     --sidebar-foreground: 71 85 105;
-    --sidebar-primary: 59 130 246;
+    --sidebar-primary: 139 92 246;
     --sidebar-primary-foreground: 255 255 255;
     --sidebar-accent: 241 245 249;
     --sidebar-accent-foreground: 51 65 85;
     --sidebar-border: 226 232 240;
-    --sidebar-ring: 59 130 246;
+    --sidebar-ring: 139 92 246;
   }
 
   .dark {
@@ -55,7 +55,7 @@
     --popover: 30 41 59;
     --popover-foreground: 248 250 252;
 
-    --primary: 59 130 246;
+    --primary: 139 92 246;
     --primary-foreground: 255 255 255;
 
     --secondary: 51 65 85;
@@ -72,16 +72,16 @@
 
     --border: 51 65 85;
     --input: 51 65 85;
-    --ring: 59 130 246;
+    --ring: 139 92 246;
 
     --sidebar-background: 30 41 59;
     --sidebar-foreground: 203 213 225;
-    --sidebar-primary: 59 130 246;
+    --sidebar-primary: 139 92 246;
     --sidebar-primary-foreground: 255 255 255;
     --sidebar-accent: 51 65 85;
     --sidebar-accent-foreground: 248 250 252;
     --sidebar-border: 51 65 85;
-    --sidebar-ring: 59 130 246;
+    --sidebar-ring: 139 92 246;
   }
 }
 
@@ -102,13 +102,13 @@
 }
 
 @layer components {
-  /* UNIX HOVER EFFECTS - Solo grises y azules */
+  /* Hover effects con colores originales */
   
   /* Botones y elementos interactivos */
   button:hover,
   .hover\:bg-accent:hover,
   [role="button"]:hover {
-    background-color: #f1f5f9 !important;
+    background-color: #f5f3ff !important;
   }
   
   .hover\:bg-muted:hover {
@@ -139,37 +139,22 @@
   /* Links y navegación */
   a:hover,
   .hover\:text-primary:hover {
-    color: #3b82f6 !important;
+    color: #8b5cf6 !important;
   }
   
   /* Sidebar específico */
   .sidebar-menu-button:hover,
   [data-sidebar="menu-button"]:hover {
-    background-color: #f1f5f9 !important;
+    background-color: #f5f3ff !important;
   }
   
-  /* Eliminar cualquier amarillo en hover */
-  .hover\:bg-yellow-50:hover,
-  .hover\:bg-yellow-100:hover,
-  .hover\:bg-yellow-200:hover,
-  .hover\:bg-yellow-300:hover,
-  .hover\:bg-yellow-400:hover,
-  .hover\:bg-yellow-500:hover {
-    background-color: #f1f5f9 !important;
-  }
-  
-  .hover\:text-yellow-600:hover,
-  .hover\:text-yellow-700:hover {
-    color: #3b82f6 !important;
-  }
-  
-  /* Focus states - Solo azul Unix */
+  /* Focus states con violeta */
   .focus\:ring-2:focus {
-    ring-color: #3b82f6 !important;
+    ring-color: #8b5cf6 !important;
   }
   
   .focus\:border-primary:focus {
-    border-color: #3b82f6 !important;
+    border-color: #8b5cf6 !important;
   }
   
   /* Elementos de tabla */
@@ -181,16 +166,16 @@
   /* Menu items */
   .menu-item:hover,
   [role="menuitem"]:hover {
-    background-color: #f1f5f9 !important;
+    background-color: #f5f3ff !important;
   }
   
   /* Dropdown items */
   .dropdown-item:hover {
-    background-color: #f1f5f9 !important;
+    background-color: #f5f3ff !important;
   }
 }
 
-/* Forzar sombras grises Unix */
+/* Sombras suaves */
 .shadow-sm {
   box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.05) !important;
 }
@@ -207,31 +192,15 @@
   box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1) !important;
 }
 
-/* Eliminar cualquier clase amarilla del sistema */
-.bg-yellow-50,
-.bg-yellow-100,
-.bg-yellow-200,
-.bg-yellow-300,
-.bg-yellow-400,
-.bg-yellow-500,
-.text-yellow-600,
-.text-yellow-700,
-.border-yellow-200,
-.border-yellow-300 {
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
-  border-color: #e2e8f0 !important;
-}
-
-/* Estados activos Unix */
+/* Estados activos con violeta */
 .active,
 [aria-selected="true"],
 [data-state="active"] {
-  background-color: #3b82f6 !important;
+  background-color: #8b5cf6 !important;
   color: #ffffff !important;
 }
 
-/* Ripple effects Unix */
+/* Ripple effects */
 .ripple:hover {
-  background-color: #f1f5f9 !important;
+  background-color: #f5f3ff !important;
 }

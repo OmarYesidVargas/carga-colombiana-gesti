@@ -1,41 +1,41 @@
 
 /**
  * Configuración de colores para gráficos y visualizaciones
- * TEMA UNIX: Colores sobrios y profesionales - Solo grises y azules
+ * TEMA ORIGINAL: Colores vibrantes con violetas y púrpuras
  */
 
-// Colores principales Unix - Sin amarillo
+// Colores principales del tema original
 export const PRIMARY_COLORS = {
-  primary: '#3b82f6',     // Azul Unix
+  primary: '#8b5cf6',     // Violeta principal
   secondary: '#64748b',   // Gris slate
-  accent: '#10b981',      // Verde sobrio
-  warning: '#f97316',     // Naranja (reemplaza amarillo)
+  accent: '#10b981',      // Verde
+  warning: '#f59e0b',     // Amarillo
   danger: '#ef4444',      // Rojo
   info: '#0ea5e9'         // Azul cielo
 };
 
 /**
- * Paleta Unix para categorías de gastos - Sin amarillo
+ * Paleta original para categorías de gastos
  */
 export const EXPENSE_CATEGORY_COLORS: Record<string, string> = {
-  fuel: '#f97316',        // Naranja - Combustible (NO amarillo)
-  toll: '#3b82f6',        // Azul - Peajes
+  fuel: '#f59e0b',        // Amarillo - Combustible
+  toll: '#8b5cf6',        // Violeta - Peajes
   maintenance: '#ef4444', // Rojo - Mantenimiento
-  lodging: '#8b5cf6',     // Violeta - Alojamiento
+  lodging: '#a855f7',     // Púrpura - Alojamiento
   food: '#10b981',        // Verde - Comida
   other: '#64748b'        // Gris - Otros
 };
 
 /**
- * Colores Unix para gráficos - Paleta profesional sin amarillo
+ * Colores para gráficos - Paleta vibrante original
  */
 export const CHART_COLORS = [
-  '#3b82f6', // Azul principal
-  '#64748b', // Gris slate
+  '#8b5cf6', // Violeta principal
+  '#a855f7', // Púrpura
   '#10b981', // Verde
-  '#f97316', // Naranja (NO amarillo)
+  '#f59e0b', // Amarillo
   '#ef4444', // Rojo
-  '#8b5cf6', // Violeta
+  '#3b82f6', // Azul
   '#06b6d4', // Cyan
   '#84cc16', // Verde lima
   '#ec4899', // Rosa
