@@ -18,8 +18,8 @@ export const APP_CONFIG = {
     docs: 'https://docs.transporegistrosplus.com'
   },
   supabase: {
-    url: import.meta.env.VITE_SUPABASE_URL || '',
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    url: import.meta.env.VITE_SUPABASE_URL || 'https://pwieabhoqzstiglmjmod.supabase.co',
+    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3aWVhYmhvcXpzdGlnbG1qbW9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3OTUzOTEsImV4cCI6MjA2MzM3MTM5MX0.BomWLRgOMMqGmxsIzrowSfmn8QA8Kj9Oit83rNOmh3I'
   }
 };
 
