@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          additional_info: Json | null
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          operation: Database["public"]["Enums"]["audit_operation"]
+          record_id: string | null
+          session_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          additional_info?: Json | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          operation: Database["public"]["Enums"]["audit_operation"]
+          record_id?: string | null
+          session_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          additional_info?: Json | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          operation?: Database["public"]["Enums"]["audit_operation"]
+          record_id?: string | null
+          session_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           amount: number
@@ -365,6 +410,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      audit_operation: "CREATE" | "READ" | "UPDATE" | "DELETE"
       expense_category:
         | "fuel"
         | "toll"
@@ -487,6 +533,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      audit_operation: ["CREATE", "READ", "UPDATE", "DELETE"],
       expense_category: [
         "fuel",
         "toll",

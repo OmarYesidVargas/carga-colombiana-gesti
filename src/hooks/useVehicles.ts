@@ -6,9 +6,11 @@ import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
 import { validateVehicle } from '@/utils/validators';
 import { mapVehicleFromDB, mapVehicleToDB } from '@/utils/vehicleMappers';
+import { useAuditLogger } from './useAuditLogger';
 
 export const useVehicles = (user: User | null, setGlobalLoading: (loading: boolean) => void) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const { logRead, logCreate, logUpdate, logDelete } = useAuditLogger(user);
   
   const loadVehicles = async () => {
     if (!user) {
@@ -46,6 +48,12 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         })
         .filter(Boolean) as Vehicle[];
       
+      // Registrar auditoría de lectura
+      await logRead('vehicles', undefined, { 
+        count: mappedVehicles.length,
+        action: 'load_all_vehicles'
+      });
+      
       setVehicles(mappedVehicles);
     } catch (error) {
       console.error('Error inesperado al cargar vehículos:', error);
@@ -61,7 +69,14 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
   
   const getVehicleById = (id: string) => {
     if (!id || typeof id !== 'string') return undefined;
-    return vehicles.find(vehicle => vehicle.id === id);
+    const vehicle = vehicles.find(vehicle => vehicle.id === id);
+    
+    // Registrar auditoría de lectura individual
+    if (vehicle) {
+      logRead('vehicles', id, { action: 'get_vehicle_by_id' });
+    }
+    
+    return vehicle;
   };
   
   const addVehicle = async (vehicle: Omit<Vehicle, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
@@ -112,8 +127,16 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       }
       
       const mappedVehicle = mapVehicleFromDB(data);
-      setVehicles(prev => [mappedVehicle, ...prev]);
       
+      // Registrar auditoría de creación
+      await logCreate('vehicles', mappedVehicle.id, {
+        plate: mappedVehicle.plate,
+        brand: mappedVehicle.brand,
+        model: mappedVehicle.model,
+        year: mappedVehicle.year
+      }, { action: 'create_vehicle' });
+      
+      setVehicles(prev => [mappedVehicle, ...prev]);
       toast.success('Vehículo agregado correctamente');
     } catch (error) {
       console.error('Error inesperado al agregar vehículo:', error);
@@ -128,12 +151,18 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
     }
     
     try {
+      const existingVehicle = getVehicleById(id);
+      if (!existingVehicle) {
+        toast.error('Vehículo no encontrado');
+        return;
+      }
+      
       if (vehicle.plate) {
-        const existingVehicle = vehicles.find(v => 
+        const plateExists = vehicles.find(v => 
           v.id !== id && v.plate.toLowerCase().trim() === vehicle.plate.toLowerCase().trim()
         );
         
-        if (existingVehicle) {
+        if (plateExists) {
           toast.error('Ya existe un vehículo con esta placa');
           return;
         }
@@ -156,6 +185,13 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         return;
       }
       
+      // Registrar auditoría de actualización
+      await logUpdate('vehicles', id, {
+        plate: existingVehicle.plate,
+        brand: existingVehicle.brand,
+        model: existingVehicle.model
+      }, vehicle, { action: 'update_vehicle' });
+      
       setVehicles(prev => 
         prev.map(v => v.id === id ? { ...v, ...vehicle } : v)
       );
@@ -174,6 +210,12 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
     }
     
     try {
+      const existingVehicle = getVehicleById(id);
+      if (!existingVehicle) {
+        toast.error('Vehículo no encontrado');
+        return;
+      }
+      
       const { data: trips } = await supabase
         .from('trips')
         .select('id')
@@ -196,8 +238,15 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         return;
       }
       
-      setVehicles(prev => prev.filter(v => v.id !== id));
+      // Registrar auditoría de eliminación
+      await logDelete('vehicles', id, {
+        plate: existingVehicle.plate,
+        brand: existingVehicle.brand,
+        model: existingVehicle.model,
+        year: existingVehicle.year
+      }, { action: 'delete_vehicle' });
       
+      setVehicles(prev => prev.filter(v => v.id !== id));
       toast.success('Vehículo eliminado correctamente');
     } catch (error) {
       console.error('Error inesperado al eliminar vehículo:', error);

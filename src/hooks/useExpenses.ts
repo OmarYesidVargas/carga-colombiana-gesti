@@ -1,4 +1,3 @@
-
 /**
  * Hook personalizado para gestionar gastos en TransporegistrosPlus
  * 
@@ -8,6 +7,7 @@
  * - Actualización de gastos existentes
  * - Eliminación de gastos
  * - Manejo de estados de carga y errores
+ * - Registro de auditoría automático
  * 
  * @author TransporegistrosPlus Team
  * @version 1.0.0
@@ -17,6 +17,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Expense } from '@/types';
 import { User } from '@supabase/supabase-js';
 import { validateExpense } from '@/utils/validators';
+import { useAuditLogger } from './useAuditLogger';
 import { 
   loadExpenses, 
   addExpense as addExpenseService, 
@@ -37,13 +38,15 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Hook de auditoría
+  const { logRead, logCreate, logUpdate, logDelete } = useAuditLogger(user);
+  
   /**
    * Efecto para cargar gastos cuando cambia el usuario
    * Se ejecuta automáticamente al montar el componente y cuando cambia el usuario
    */
   useEffect(() => {
     const fetchExpenses = async () => {
-      // Solo cargar si hay un usuario autenticado
       if (!user) {
         setExpenses([]);
         setError(null);
@@ -59,6 +62,12 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
         
         const loadedExpenses = await loadExpenses(user);
         
+        // Registrar auditoría de lectura
+        await logRead('expenses', undefined, { 
+          count: loadedExpenses.length,
+          action: 'load_all_expenses'
+        });
+        
         console.log('Gastos cargados exitosamente:', loadedExpenses.length);
         setExpenses(loadedExpenses);
       } catch (error) {
@@ -72,7 +81,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     };
     
     fetchExpenses();
-  }, [user, setGlobalLoading]);
+  }, [user, setGlobalLoading, logRead]);
   
   /**
    * Obtiene un gasto específico por su ID
@@ -86,8 +95,15 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       return undefined;
     }
     
-    return expenses.find(expense => expense.id === id);
-  }, [expenses]);
+    const expense = expenses.find(expense => expense.id === id);
+    
+    // Registrar auditoría de lectura individual (sin await para no bloquear)
+    if (expense) {
+      logRead('expenses', id, { action: 'get_expense_by_id' });
+    }
+    
+    return expense;
+  }, [expenses, logRead]);
   
   /**
    * Agrega un nuevo gasto
@@ -123,6 +139,15 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       const newExpense = await addExpenseService(user, expense);
       
       if (newExpense) {
+        // Registrar auditoría de creación
+        await logCreate('expenses', newExpense.id, {
+          category: newExpense.category,
+          amount: newExpense.amount,
+          tripId: newExpense.tripId,
+          vehicleId: newExpense.vehicleId,
+          description: newExpense.description
+        }, { action: 'create_expense' });
+        
         // Actualizar estado local agregando el nuevo gasto al inicio
         setExpenses(prevExpenses => [newExpense, ...prevExpenses]);
         console.log('Gasto agregado exitosamente:', newExpense.id);
@@ -136,7 +161,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, logCreate]);
   
   /**
    * Actualiza un gasto existente
@@ -191,6 +216,13 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       const success = await updateExpenseService(user, id, expenseUpdates);
       
       if (success) {
+        // Registrar auditoría de actualización
+        await logUpdate('expenses', id, {
+          category: existingExpense.category,
+          amount: existingExpense.amount,
+          description: existingExpense.description
+        }, expenseUpdates, { action: 'update_expense' });
+        
         // Actualizar estado local
         setExpenses(prevExpenses => 
           prevExpenses.map(expense => 
@@ -209,7 +241,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     } finally {
       setLoading(false);
     }
-  }, [user, getExpenseById]);
+  }, [user, getExpenseById, logUpdate]);
   
   /**
    * Elimina un gasto
@@ -251,6 +283,15 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       const success = await deleteExpenseService(user, id);
       
       if (success) {
+        // Registrar auditoría de eliminación
+        await logDelete('expenses', id, {
+          category: existingExpense.category,
+          amount: existingExpense.amount,
+          tripId: existingExpense.tripId,
+          vehicleId: existingExpense.vehicleId,
+          description: existingExpense.description
+        }, { action: 'delete_expense' });
+        
         // Actualizar estado local removiendo el gasto
         setExpenses(prevExpenses => 
           prevExpenses.filter(expense => expense.id !== id)
@@ -267,7 +308,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     } finally {
       setLoading(false);
     }
-  }, [user, getExpenseById]);
+  }, [user, getExpenseById, logDelete]);
 
   /**
    * Función para limpiar errores manualmente
@@ -287,6 +328,13 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       setError(null);
       
       const loadedExpenses = await loadExpenses(user);
+      
+      // Registrar auditoría de recarga
+      await logRead('expenses', undefined, { 
+        count: loadedExpenses.length,
+        action: 'reload_expenses'
+      });
+      
       setExpenses(loadedExpenses);
     } catch (error) {
       const errorMessage = 'Error al recargar los gastos';
@@ -295,7 +343,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, logRead]);
   
   // Retornar todas las funciones y estados disponibles
   return {
