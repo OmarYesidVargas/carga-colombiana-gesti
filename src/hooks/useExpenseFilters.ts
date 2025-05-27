@@ -21,6 +21,7 @@ export const useExpenseFilters = (
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | 'all'>('all');
   const [selectedTripId, setSelectedTripId] = useState<string | 'all'>('all');
+  const [activeTab, setActiveTab] = useState('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   // Debugging de cambios en filtros
@@ -29,9 +30,10 @@ export const useExpenseFilters = (
       searchTerm,
       selectedVehicleId,
       selectedTripId,
+      activeTab,
       isFilterOpen
     });
-  }, [searchTerm, selectedVehicleId, selectedTripId, isFilterOpen]);
+  }, [searchTerm, selectedVehicleId, selectedTripId, activeTab, isFilterOpen]);
 
   // Gastos filtrados con optimización y debugging
   const filteredExpenses = useMemo(() => {
@@ -77,7 +79,7 @@ export const useExpenseFilters = (
     console.log(`✅ [useExpenseFilters] Filtrado completado en ${(endTime - startTime).toFixed(2)}ms:`, {
       original: expenses.length,
       filtered: filtered.length,
-      filters: { searchTerm, selectedVehicleId, selectedTripId }
+      filters: { searchTerm, selectedVehicleId, selectedTripId, activeTab }
     });
     
     return filtered;
@@ -109,6 +111,7 @@ export const useExpenseFilters = (
     setSearchTerm('');
     setSelectedVehicleId('all');
     setSelectedTripId('all');
+    setActiveTab('all');
     setIsFilterOpen(false);
   }, []);
 
@@ -123,12 +126,12 @@ export const useExpenseFilters = (
       total: expenses.length,
       filtered: filteredExpenses.length,
       categories: Object.keys(expensesByCategory).length,
-      hasActiveFilters: searchTerm.trim() !== '' || selectedVehicleId !== 'all' || selectedTripId !== 'all'
+      hasActiveFilters: searchTerm.trim() !== '' || selectedVehicleId !== 'all' || selectedTripId !== 'all' || activeTab !== 'all'
     };
     
     console.log('📈 [useExpenseFilters] Estadísticas de filtros:', stats);
     return stats;
-  }, [expenses.length, filteredExpenses.length, expensesByCategory, searchTerm, selectedVehicleId, selectedTripId]);
+  }, [expenses.length, filteredExpenses.length, expensesByCategory, searchTerm, selectedVehicleId, selectedTripId, activeTab]);
 
   return {
     // Estados
@@ -138,6 +141,8 @@ export const useExpenseFilters = (
     setSelectedVehicleId,
     selectedTripId,
     setSelectedTripId,
+    activeTab,
+    setActiveTab,
     isFilterOpen,
     setIsFilterOpen,
     

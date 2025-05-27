@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Expense } from '@/types';
@@ -30,7 +29,7 @@ const ExpensesPage = () => {
   const [currentExpense, setCurrentExpense] = useState<Expense | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Usar el hook personalizado para filtros
+  // Usar el hook personalizado para filtros - CORREGIDO: pasar todos los argumentos requeridos
   const {
     searchTerm,
     selectedVehicleId,
@@ -44,7 +43,7 @@ const ExpensesPage = () => {
     setSelectedTripId,
     setActiveTab,
     setIsFilterOpen
-  } = useExpenseFilters(expenses);
+  } = useExpenseFilters(expenses, vehicles, trips);
   
   /**
    * Abre el formulario para crear o editar un gasto
