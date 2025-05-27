@@ -28,7 +28,7 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
-  // Preparar datos para el gráfico con colores consistentes
+  // Preparar datos para el gráfico con colores consistentes (SIN AMARILLO)
   const chartData = Object.entries(expensesByCategory).map(([key, value], index) => {
     const name = dataKeyMap ? (dataKeyMap[key] || key) : getCategoryLabel(key);
     const color = dataKeyMap ? 
@@ -54,7 +54,7 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
       return (
         <div className="custom-tooltip bg-white p-3 border rounded shadow">
           <p className="label font-semibold">{`${payload[0].name}`}</p>
-          <p className="intro">{formatCurrency(payload[0].value)}</p>
+          <p className="intro text-blue-600 font-medium">{formatCurrency(payload[0].value)}</p>
           <p className="desc text-xs text-muted-foreground">
             {percentage}% del total
           </p>
@@ -83,7 +83,7 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <h3 className="text-lg font-semibold mb-4">Distribución de Gastos</h3>
+      <h3 className="text-lg font-semibold mb-4 text-blue-600">Distribución de Gastos</h3>
       
       {chartData.length > 0 ? (
         <ResponsiveContainer width="100%" height={300}>

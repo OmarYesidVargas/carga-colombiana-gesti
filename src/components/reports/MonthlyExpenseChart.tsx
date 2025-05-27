@@ -74,7 +74,7 @@ const MonthlyExpenseChart: React.FC<MonthlyExpenseChartProps> = ({
       return (
         <div className="bg-white p-3 border border-gray-200 shadow-lg rounded-md">
           <p className="font-semibold text-gray-900">{label}</p>
-          <p className="text-sm text-primary font-medium">
+          <p className="text-sm text-blue-600 font-medium">
             {formatCurrency(payload[0].value)}
           </p>
         </div>
@@ -136,21 +136,21 @@ const MonthlyExpenseChart: React.FC<MonthlyExpenseChartProps> = ({
                 }}
               />
               
-              {/* Línea de gastos */}
+              {/* Línea de gastos - AZUL */}
               <Line
                 type="monotone"
                 dataKey="total"
-                stroke="#8b5cf6"
+                stroke="#3b82f6"
                 strokeWidth={3}
                 name="Total de gastos"
                 activeDot={{ 
                   r: 6, 
-                  fill: "#8b5cf6",
+                  fill: "#3b82f6",
                   stroke: "#ffffff",
                   strokeWidth: 2
                 }}
                 dot={{ 
-                  fill: "#8b5cf6", 
+                  fill: "#3b82f6", 
                   strokeWidth: 2,
                   stroke: "#ffffff",
                   r: 4 
