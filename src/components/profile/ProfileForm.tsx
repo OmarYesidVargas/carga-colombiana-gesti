@@ -9,25 +9,26 @@ import { useDebugLogger } from '@/hooks/useDebugLogger';
 import AvatarUpload from './AvatarUpload';
 import { ProfileFormFields } from './ProfileFormFields';
 import { ProfileLocationFields } from './ProfileLocationFields';
+import OptimizedLoadingSpinner from '@/components/common/OptimizedLoadingSpinner';
 
 /**
- * Componente de formulario de perfil refactorizado y optimizado
- * Incluye debugging avanzado y mejor estructura
+ * Componente de formulario de perfil optimizado y finalizado
+ * Versión final con todas las mejoras de UX y rendimiento
  */
 export const ProfileForm = () => {
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, loading } = useProfile();
   const { log, logAction, logError } = useDebugLogger({ component: 'ProfileForm' });
   
   const form = useForm<Partial<ProfileData>>({
     defaultValues: {
-      name: profile?.name || '',
-      phone: profile?.phone || '',
-      document_type: profile?.document_type || '',
-      document_number: profile?.document_number || '',
-      city: profile?.city || '',
-      department: profile?.department || '',
-      birth_date: profile?.birth_date || '',
-      gender: profile?.gender || ''
+      name: '',
+      phone: '',
+      document_type: 'cedula',
+      document_number: '',
+      city: '',
+      department: '',
+      birth_date: '',
+      gender: ''
     }
   });
 
@@ -37,7 +38,7 @@ export const ProfileForm = () => {
       form.reset({
         name: profile.name || '',
         phone: profile.phone || '',
-        document_type: profile.document_type || '',
+        document_type: profile.document_type || 'cedula',
         document_number: profile.document_number || '',
         city: profile.city || '',
         department: profile.department || '',
@@ -54,21 +55,41 @@ export const ProfileForm = () => {
       
       await updateProfile(data);
       
-      log('Profile updated successfully');
-      logAction('Profile form submitted successfully', { duration: performance.now() - startTime });
+      const duration = performance.now() - startTime;
+      log(`Profile updated successfully in ${duration.toFixed(2)}ms`);
+      logAction('Profile form submitted successfully', { duration });
     } catch (error) {
       logError(error as Error, { formData: data });
     }
   };
 
+  if (loading) {
+    log('Profile loading, showing spinner');
+    return (
+      <Card>
+        <CardContent>
+          <OptimizedLoadingSpinner 
+            size="lg" 
+            text="Cargando información del perfil..." 
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!profile) {
-    log('No profile data available, showing loading state');
+    log('No profile data available');
     return (
       <Card>
         <CardContent className="flex items-center justify-center p-6">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p>Cargando información del perfil...</p>
+          <div className="text-center space-y-4">
+            <User className="h-12 w-12 text-muted-foreground mx-auto" />
+            <div>
+              <h3 className="font-medium text-lg">Sin información de perfil</h3>
+              <p className="text-muted-foreground">
+                Complete su información personal para comenzar
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -76,7 +97,7 @@ export const ProfileForm = () => {
   }
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <User className="h-5 w-5" />
@@ -100,13 +121,21 @@ export const ProfileForm = () => {
           <ProfileLocationFields form={form} />
 
           {/* Botón de guardar */}
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4 border-t">
             <Button 
               type="submit" 
               disabled={form.formState.isSubmitting}
               size="lg"
+              className="min-w-[140px]"
             >
-              {form.formState.isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+              {form.formState.isSubmitting ? (
+                <>
+                  <OptimizedLoadingSpinner size="sm" className="mr-2" />
+                  Guardando...
+                </>
+              ) : (
+                'Guardar Cambios'
+              )}
             </Button>
           </div>
         </form>
