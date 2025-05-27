@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -8,9 +9,15 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground",
+        default: "bg-violet-50 text-violet-900 border-violet-200 [&>svg]:text-violet-600",
         destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+          "border-red-500/50 text-red-900 bg-red-50 [&>svg]:text-red-600",
+        warning:
+          "border-orange-500/50 text-orange-900 bg-orange-50 [&>svg]:text-orange-600",
+        success:
+          "border-emerald-500/50 text-emerald-900 bg-emerald-50 [&>svg]:text-emerald-600",
+        info:
+          "border-blue-500/50 text-blue-900 bg-blue-50 [&>svg]:text-blue-600",
       },
     },
     defaultVariants: {
@@ -38,7 +45,7 @@ const AlertTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h5
     ref={ref}
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
+    className={cn("mb-1 font-medium leading-none tracking-tight text-inherit", className)}
     {...props}
   />
 ))
@@ -50,7 +57,7 @@ const AlertDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm [&_p]:leading-relaxed", className)}
+    className={cn("text-sm [&_p]:leading-relaxed text-inherit opacity-90", className)}
     {...props}
   />
 ))
