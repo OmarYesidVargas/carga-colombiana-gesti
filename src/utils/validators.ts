@@ -1,23 +1,84 @@
-
 /**
- * Utilidades de Validación para TransporegistrosPlus
+ * Utilidades de Validación Internacionales para TransporegistrosPlus
  * 
- * Contiene funciones para validar datos antes de enviarlos a la base de datos
+ * Contiene funciones para validar datos según estándares internacionales
  * Estas validaciones complementan las validaciones de Zod en los formularios
  * 
+ * Características:
+ * - Soporte para múltiples países y formatos
+ * - Validaciones específicas por región
+ * - Compatibilidad con estándares internacionales
+ * - Validaciones extensibles y configurables
+ * 
  * @author TransporegistrosPlus Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import { Vehicle, Trip, Expense, Toll, TollRecord } from '@/types';
 
 /**
+ * Configuración de validación por país
+ */
+const VALIDATION_CONFIG = {
+  CO: {
+    phoneRegex: /^(\+57|57)?[1-9]\d{9}$/,
+    documentTypes: {
+      cedula: /^\d{7,10}$/,
+      cedula_extranjeria: /^\d{6,12}$/,
+      passport: /^[A-Za-z0-9]{6,12}$/
+    }
+  },
+  US: {
+    phoneRegex: /^(\+1|1)?[2-9]\d{2}[2-9]\d{2}\d{4}$/,
+    documentTypes: {
+      ssn: /^\d{3}-?\d{2}-?\d{4}$/,
+      ein: /^\d{2}-?\d{7}$/,
+      passport: /^[A-Za-z0-9]{6,9}$/,
+      driver_license: /^[A-Za-z0-9]{6,20}$/
+    }
+  },
+  MX: {
+    phoneRegex: /^(\+52|52)?[1-9]\d{9}$/,
+    documentTypes: {
+      curp: /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/,
+      rfc: /^[A-Z&Ñ]{3,4}\d{6}[A-V1-9][A-Z1-9][0-9A]$/,
+      passport: /^[A-Za-z0-9]{6,12}$/
+    }
+  },
+  BR: {
+    phoneRegex: /^(\+55|55)?[1-9]\d{10}$/,
+    documentTypes: {
+      cpf: /^\d{3}\.\d{3}\.\d{3}-\d{2}$|^\d{11}$/,
+      rg: /^[\dX]{1,2}\.?\d{3}\.?\d{3}-?[\dX]$/,
+      passport: /^[A-Za-z]{2}\d{6}$/
+    }
+  },
+  AR: {
+    phoneRegex: /^(\+54|54)?9?[1-9]\d{8,9}$/,
+    documentTypes: {
+      dni: /^\d{7,8}$/,
+      cuit: /^\d{2}-?\d{8}-?\d$/,
+      passport: /^[A-Za-z]{3}\d{6}$/
+    }
+  },
+  ES: {
+    phoneRegex: /^(\+34|34)?[6-9]\d{8}$/,
+    documentTypes: {
+      nie: /^[XYZ]\d{7}[A-Z]$/,
+      nif: /^\d{8}[A-Z]$/,
+      passport: /^[A-Z]{3}\d{6}$/
+    }
+  }
+};
+
+/**
  * Valida los datos de un vehículo antes de guardar
  * 
  * @param {Partial<Vehicle>} vehicle - Datos del vehículo a validar
+ * @param {string} country - Código del país (opcional, por defecto 'CO')
  * @returns {boolean} true si los datos son válidos
  */
-export const validateVehicle = (vehicle: Partial<Vehicle>): boolean => {
+export const validateVehicle = (vehicle: Partial<Vehicle>, country: string = 'CO'): boolean => {
   try {
     // Validaciones obligatorias
     if (!vehicle.plate || vehicle.plate.trim().length === 0) {
@@ -35,21 +96,26 @@ export const validateVehicle = (vehicle: Partial<Vehicle>): boolean => {
       return false;
     }
     
-    if (!vehicle.year || vehicle.year < 1900 || vehicle.year > new Date().getFullYear() + 1) {
+    if (!vehicle.year || vehicle.year < 1900 || vehicle.year > new Date().getFullYear() + 2) {
       console.error('Validación vehículo: Año inválido');
       return false;
     }
     
-    // Validar formato de placa (básico - puede mejorarse según país)
-    const plateRegex = /^[A-Za-z0-9\-\s]{3,10}$/;
-    if (!plateRegex.test(vehicle.plate.trim())) {
-      console.error('Validación vehículo: Formato de placa inválido');
+    // Validar formato de placa según país
+    const plateValidation = validateVehiclePlate(vehicle.plate.trim(), country);
+    if (!plateValidation.isValid) {
+      console.error('Validación vehículo:', plateValidation.error);
       return false;
     }
     
     // Validaciones opcionales
     if (vehicle.color && vehicle.color.trim().length < 2) {
       console.error('Validación vehículo: Color debe tener al menos 2 caracteres');
+      return false;
+    }
+    
+    if (vehicle.capacity && isNaN(Number(vehicle.capacity))) {
+      console.error('Validación vehículo: Capacidad debe ser un número válido');
       return false;
     }
     
@@ -61,12 +127,42 @@ export const validateVehicle = (vehicle: Partial<Vehicle>): boolean => {
 };
 
 /**
+ * Valida formato de placa según el país
+ * 
+ * @param {string} plate - Placa del vehículo
+ * @param {string} country - Código del país
+ * @returns {object} Resultado de validación con isValid y error
+ */
+export const validateVehiclePlate = (plate: string, country: string): { isValid: boolean; error?: string } => {
+  const plateRegexes: Record<string, RegExp> = {
+    CO: /^[A-Z]{3}[\s\-]?\d{2}[A-Z\d]$|^[A-Z]{2}[\s\-]?\d{3}[A-Z]$/,
+    US: /^[A-Z0-9]{2,8}$/,
+    MX: /^[A-Z]{3}[\s\-]?\d{2}[\s\-]?\d{2}$/,
+    BR: /^[A-Z]{3}[\s\-]?\d{4}$|^[A-Z]{3}[\s\-]?\d[A-Z]\d{2}$/,
+    AR: /^[A-Z]{2}[\s\-]?\d{3}[\s\-]?[A-Z]{2}$/,
+    ES: /^\d{4}[\s\-]?[A-Z]{3}$/
+  };
+  
+  const regex = plateRegexes[country] || /^[A-Za-z0-9\-\s]{3,15}$/;
+  
+  if (!regex.test(plate)) {
+    return {
+      isValid: false,
+      error: `Formato de placa inválido para ${country}`
+    };
+  }
+  
+  return { isValid: true };
+};
+
+/**
  * Valida los datos de un viaje antes de guardar
  * 
  * @param {Partial<Trip>} trip - Datos del viaje a validar
+ * @param {string} country - Código del país (opcional)
  * @returns {boolean} true si los datos son válidos
  */
-export const validateTrip = (trip: Partial<Trip>): boolean => {
+export const validateTrip = (trip: Partial<Trip>, country: string = 'CO'): boolean => {
   try {
     // Validaciones obligatorias
     if (!trip.vehicleId || trip.vehicleId.trim().length === 0) {
@@ -119,6 +215,15 @@ export const validateTrip = (trip: Partial<Trip>): boolean => {
       return false;
     }
     
+    // Validaciones específicas por país
+    if (trip.distance && country === 'US') {
+      // Convertir millas a kilómetros si es necesario
+      if (trip.distance > 10000) {
+        console.error('Validación viaje: Distancia excede el máximo permitido');
+        return false;
+      }
+    }
+    
     return true;
   } catch (error) {
     console.error('Error en validateTrip:', error);
@@ -130,9 +235,10 @@ export const validateTrip = (trip: Partial<Trip>): boolean => {
  * Valida los datos de un gasto antes de guardar
  * 
  * @param {Partial<Expense>} expense - Datos del gasto a validar
+ * @param {string} currency - Código de moneda (opcional, por defecto 'COP')
  * @returns {boolean} true si los datos son válidos
  */
-export const validateExpense = (expense: Partial<Expense>): boolean => {
+export const validateExpense = (expense: Partial<Expense>, currency: string = 'COP'): boolean => {
   try {
     // Validaciones obligatorias
     if (!expense.tripId || expense.tripId.trim().length === 0) {
@@ -168,8 +274,19 @@ export const validateExpense = (expense: Partial<Expense>): boolean => {
     }
     
     // Validar monto máximo razonable (100 millones COP)
-    if (expense.amount > 100000000) {
-      console.error('Validación gasto: Monto excede el máximo permitido');
+    const maxAmounts: Record<string, number> = {
+      COP: 100000000, // 100 millones COP
+      USD: 50000,     // 50 mil USD
+      EUR: 45000,     // 45 mil EUR
+      MXN: 1000000,   // 1 millón MXN
+      BRL: 250000,    // 250 mil BRL
+      ARS: 10000000   // 10 millones ARS
+    };
+    
+    const maxAmount = maxAmounts[currency] || maxAmounts.COP;
+    
+    if (expense.amount && expense.amount > maxAmount) {
+      console.error(`Validación gasto: Monto excede el máximo permitido para ${currency}`);
       return false;
     }
     
@@ -203,9 +320,10 @@ export const validateExpense = (expense: Partial<Expense>): boolean => {
  * Valida los datos de un peaje antes de guardar
  * 
  * @param {Partial<Toll>} toll - Datos del peaje a validar
+ * @param {string} country - Código del país (opcional)
  * @returns {boolean} true si los datos son válidos
  */
-export const validateToll = (toll: Partial<Toll>): boolean => {
+export const validateToll = (toll: Partial<Toll>, country: string = 'CO'): boolean => {
   try {
     // Validaciones obligatorias
     if (!toll.name || toll.name.trim().length < 2) {
@@ -234,8 +352,19 @@ export const validateToll = (toll: Partial<Toll>): boolean => {
     }
     
     // Validar precio máximo razonable (1 millón COP)
-    if (toll.price > 1000000) {
-      console.error('Validación peaje: Precio excede el máximo permitido');
+    const maxPrices: Record<string, number> = {
+      CO: 1000000,   // 1 millón COP
+      US: 100,       // 100 USD
+      MX: 2000,      // 2000 MXN
+      BR: 500,       // 500 BRL
+      AR: 50000,     // 50 mil ARS
+      ES: 100        // 100 EUR
+    };
+    
+    const maxPrice = maxPrices[country] || maxPrices.CO;
+    
+    if (toll.price && toll.price > maxPrice) {
+      console.error(`Validación peaje: Precio excede el máximo permitido para ${country}`);
       return false;
     }
     
@@ -257,9 +386,10 @@ export const validateToll = (toll: Partial<Toll>): boolean => {
  * Valida los datos de un registro de peaje antes de guardar
  * 
  * @param {Partial<TollRecord>} record - Datos del registro a validar
+ * @param {string} country - Código del país (opcional)
  * @returns {boolean} true si los datos son válidos
  */
-export const validateTollRecord = (record: Partial<TollRecord>): boolean => {
+export const validateTollRecord = (record: Partial<TollRecord>, country: string = 'CO'): boolean => {
   try {
     // Validaciones obligatorias
     if (!record.tripId || record.tripId.trim().length === 0) {
@@ -293,9 +423,19 @@ export const validateTollRecord = (record: Partial<TollRecord>): boolean => {
     }
     
     // Validar métodos de pago permitidos
-    const validPaymentMethods = ['efectivo', 'electronico', 'tag', 'tarjeta'];
-    if (!validPaymentMethods.includes(record.paymentMethod.toLowerCase())) {
-      console.error('Validación registro peaje: Método de pago no válido');
+    const validPaymentMethods: Record<string, string[]> = {
+      CO: ['efectivo', 'electronico', 'tag', 'tarjeta'],
+      US: ['cash', 'card', 'electronic', 'mobile'],
+      MX: ['efectivo', 'tarjeta', 'tag', 'transferencia'],
+      BR: ['dinheiro', 'cartao', 'pix', 'tag'],
+      AR: ['efectivo', 'tarjeta', 'mercadopago', 'tag'],
+      ES: ['efectivo', 'tarjeta', 'via_t', 'bizum']
+    };
+    
+    const validMethods = validPaymentMethods[country] || validPaymentMethods.CO;
+    
+    if (record.paymentMethod && !validMethods.includes(record.paymentMethod.toLowerCase())) {
+      console.error(`Validación registro peaje: Método de pago no válido para ${country}`);
       return false;
     }
     
@@ -322,49 +462,122 @@ export const validateTollRecord = (record: Partial<TollRecord>): boolean => {
 };
 
 /**
- * Valida formato de email
+ * Valida formato de email internacional
  * 
  * @param {string} email - Email a validar
  * @returns {boolean} true si el email es válido
  */
 export const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // RFC 5322 compliant regex
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   return emailRegex.test(email);
 };
 
 /**
- * Valida formato de teléfono colombiano
+ * Valida formato de teléfono internacional
  * 
  * @param {string} phone - Teléfono a validar
+ * @param {string} country - Código del país (opcional, por defecto 'CO')
  * @returns {boolean} true si el teléfono es válido
  */
-export const validateColombianPhone = (phone: string): boolean => {
-  // Acepta formatos como: 3001234567, +573001234567, (300) 123-4567
-  const phoneRegex = /^(\+57|57)?[\s\-\(\)]?[1-9]\d{2}[\s\-\(\)]?\d{3}[\s\-]?\d{4}$/;
-  return phoneRegex.test(phone.replace(/\s/g, ''));
+export const validateInternationalPhone = (phone: string, country: string = 'CO'): boolean => {
+  const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+  const config = VALIDATION_CONFIG[country as keyof typeof VALIDATION_CONFIG];
+  
+  if (config) {
+    return config.phoneRegex.test(cleanPhone);
+  }
+  
+  // Fallback para países no configurados
+  const internationalRegex = /^\+?[1-9]\d{6,14}$/;
+  return internationalRegex.test(cleanPhone);
 };
 
 /**
- * Valida número de documento colombiano
+ * Valida número de documento internacional
  * 
  * @param {string} documentNumber - Número de documento
- * @param {string} documentType - Tipo de documento (cedula, pasaporte, etc.)
+ * @param {string} documentType - Tipo de documento
+ * @param {string} country - Código del país (opcional, por defecto 'CO')
  * @returns {boolean} true si el documento es válido
  */
-export const validateColombianDocument = (documentNumber: string, documentType: string): boolean => {
+export const validateInternationalDocument = (
+  documentNumber: string, 
+  documentType: string, 
+  country: string = 'CO'
+): boolean => {
   if (!documentNumber || !documentType) return false;
   
+  const config = VALIDATION_CONFIG[country as keyof typeof VALIDATION_CONFIG];
+  
+  if (config && config.documentTypes[documentType as keyof typeof config.documentTypes]) {
+    const regex = config.documentTypes[documentType as keyof typeof config.documentTypes];
+    return regex.test(documentNumber);
+  }
+  
+  // Validaciones genéricas para documentos internacionales
   switch (documentType.toLowerCase()) {
-    case 'cedula':
-      // Cédula: 7-10 dígitos
-      return /^\d{7,10}$/.test(documentNumber);
-    case 'pasaporte':
-      // Pasaporte: 6-12 caracteres alfanuméricos
+    case 'passport':
       return /^[A-Za-z0-9]{6,12}$/.test(documentNumber);
-    case 'cedula_extranjeria':
-      // Cédula de extranjería: 6-12 dígitos
-      return /^\d{6,12}$/.test(documentNumber);
+    case 'national_id':
+      return /^[A-Za-z0-9]{6,20}$/.test(documentNumber);
+    case 'driver_license':
+      return /^[A-Za-z0-9]{6,20}$/.test(documentNumber);
     default:
-      return true; // Otros tipos de documento son aceptados sin validación específica
+      // Para tipos de documento no reconocidos, validación básica
+      return documentNumber.length >= 6 && documentNumber.length <= 20;
   }
 };
+
+/**
+ * Valida código postal internacional
+ * 
+ * @param {string} postalCode - Código postal
+ * @param {string} country - Código del país
+ * @returns {boolean} true si el código postal es válido
+ */
+export const validatePostalCode = (postalCode: string, country: string): boolean => {
+  const postalRegexes: Record<string, RegExp> = {
+    CO: /^\d{6}$/,
+    US: /^\d{5}(-\d{4})?$/,
+    MX: /^\d{5}$/,
+    BR: /^\d{5}-?\d{3}$/,
+    AR: /^[A-Z]\d{4}[A-Z]{3}$/,
+    ES: /^\d{5}$/,
+    CA: /^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/,
+    GB: /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/
+  };
+  
+  const regex = postalRegexes[country];
+  if (!regex) {
+    // Validación genérica para países no configurados
+    return /^[A-Za-z0-9\s\-]{3,10}$/.test(postalCode);
+  }
+  
+  return regex.test(postalCode);
+};
+
+/**
+ * Valida coordenadas geográficas
+ * 
+ * @param {string} coordinates - Coordenadas en formato "lat,lng"
+ * @returns {boolean} true si las coordenadas son válidas
+ */
+export const validateCoordinates = (coordinates: string): boolean => {
+  const coordRegex = /^-?\d{1,3}\.\d+,-?\d{1,3}\.\d+$/;
+  
+  if (!coordRegex.test(coordinates)) {
+    return false;
+  }
+  
+  const [lat, lng] = coordinates.split(',').map(Number);
+  
+  return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+};
+
+// Mantener compatibilidad con funciones anteriores
+export const validateColombianPhone = (phone: string): boolean => 
+  validateInternationalPhone(phone, 'CO');
+
+export const validateColombianDocument = (documentNumber: string, documentType: string): boolean => 
+  validateInternationalDocument(documentNumber, documentType, 'CO');

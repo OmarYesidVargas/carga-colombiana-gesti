@@ -1,17 +1,18 @@
 
 /**
- * Página de Registro de Usuarios para TransporegistrosPlus
+ * Página de Registro de Usuarios Internacional para TransporegistrosPlus
  * 
- * Formulario completo de registro con validaciones específicas para Colombia:
- * - Datos personales básicos
- * - Información de contacto
- * - Datos de documento de identidad
- * - Información de ubicación (departamento y ciudad)
+ * Formulario completo de registro con validaciones internacionales:
+ * - Soporte para múltiples países y documentos
+ * - Validaciones específicas por región
+ * - Información de contacto internacional
+ * - Datos de ubicación flexibles
  * - Validaciones en tiempo real con Zod
  * - Diseño responsive y accesible
+ * - Soporte multiidioma
  * 
  * @author TransporegistrosPlus Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import React, { useState } from 'react';
@@ -20,7 +21,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useAuth } from '@/context/AuthContext';
-import { validateEmail, validateColombianPhone, validateColombianDocument } from '@/utils/validators';
+import { 
+  validateEmail, 
+  validateInternationalPhone, 
+  validateInternationalDocument 
+} from '@/utils/validators';
+import { 
+  SUPPORTED_COUNTRIES, 
+  DOCUMENT_TYPES, 
+  GENDER_OPTIONS 
+} from '@/lib/constants';
 
 // Componentes UI
 import { Button } from "@/components/ui/button";
@@ -28,63 +38,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, User, Mail, Lock, Phone, MapPin, Calendar, CreditCard } from 'lucide-react';
+import { Loader2, User, Mail, Lock, Phone, MapPin, Calendar, CreditCard, Globe } from 'lucide-react';
 
 /**
- * Datos de departamentos y ciudades principales de Colombia
- * Utilizados en los selectores del formulario
- */
-const COLOMBIA_DEPARTMENTS = [
-  { value: 'antioquia', label: 'Antioquia' },
-  { value: 'atlantico', label: 'Atlántico' },
-  { value: 'bogota', label: 'Bogotá D.C.' },
-  { value: 'bolivar', label: 'Bolívar' },
-  { value: 'boyaca', label: 'Boyacá' },
-  { value: 'caldas', label: 'Caldas' },
-  { value: 'caqueta', label: 'Caquetá' },
-  { value: 'casanare', label: 'Casanare' },
-  { value: 'cauca', label: 'Cauca' },
-  { value: 'cesar', label: 'Cesar' },
-  { value: 'choco', label: 'Chocó' },
-  { value: 'cordoba', label: 'Córdoba' },
-  { value: 'cundinamarca', label: 'Cundinamarca' },
-  { value: 'huila', label: 'Huila' },
-  { value: 'la_guajira', label: 'La Guajira' },
-  { value: 'magdalena', label: 'Magdalena' },
-  { value: 'meta', label: 'Meta' },
-  { value: 'nariño', label: 'Nariño' },
-  { value: 'norte_santander', label: 'Norte de Santander' },
-  { value: 'quindio', label: 'Quindío' },
-  { value: 'risaralda', label: 'Risaralda' },
-  { value: 'santander', label: 'Santander' },
-  { value: 'sucre', label: 'Sucre' },
-  { value: 'tolima', label: 'Tolima' },
-  { value: 'valle_del_cauca', label: 'Valle del Cauca' }
-];
-
-/**
- * Tipos de documento válidos en Colombia
- */
-const DOCUMENT_TYPES = [
-  { value: 'cedula', label: 'Cédula de Ciudadanía' },
-  { value: 'cedula_extranjeria', label: 'Cédula de Extranjería' },
-  { value: 'pasaporte', label: 'Pasaporte' },
-  { value: 'tarjeta_identidad', label: 'Tarjeta de Identidad' }
-];
-
-/**
- * Opciones de género
- */
-const GENDER_OPTIONS = [
-  { value: 'masculino', label: 'Masculino' },
-  { value: 'femenino', label: 'Femenino' },
-  { value: 'otro', label: 'Otro' },
-  { value: 'prefiero_no_decir', label: 'Prefiero no decir' }
-];
-
-/**
- * Esquema de validación con Zod para el formulario de registro
- * Incluye todas las validaciones necesarias para datos colombianos
+ * Esquema de validación con Zod para el formulario de registro internacional
+ * Incluye validaciones flexibles para múltiples países
  */
 const registerSchema = z.object({
   // Datos básicos
@@ -92,7 +50,7 @@ const registerSchema = z.object({
     .string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
     .max(100, "El nombre es demasiado largo")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El nombre solo puede contener letras y espacios"),
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜçÇ\s'-]+$/, "El nombre contiene caracteres inválidos"),
   
   email: z
     .string()
@@ -108,11 +66,15 @@ const registerSchema = z.object({
     .string()
     .min(8, "Confirma tu contraseña"),
   
+  // Información de país
+  country: z
+    .string()
+    .min(1, "Selecciona tu país"),
+  
   // Datos de contacto
   phone: z
     .string()
-    .min(10, "El teléfono debe tener al menos 10 dígitos")
-    .refine((phone) => validateColombianPhone(phone), "Formato de teléfono colombiano inválido"),
+    .min(8, "El teléfono debe tener al menos 8 dígitos"),
   
   // Datos de documento
   documentType: z
@@ -122,17 +84,22 @@ const registerSchema = z.object({
   documentNumber: z
     .string()
     .min(6, "El número de documento debe tener al menos 6 caracteres")
-    .max(12, "El número de documento es demasiado largo"),
+    .max(20, "El número de documento es demasiado largo"),
   
   // Datos de ubicación
-  department: z
+  state: z
     .string()
-    .min(1, "Selecciona un departamento"),
+    .min(2, "El estado/provincia debe tener al menos 2 caracteres")
+    .max(100, "El nombre del estado/provincia es demasiado largo"),
   
   city: z
     .string()
     .min(2, "La ciudad debe tener al menos 2 caracteres")
     .max(100, "El nombre de la ciudad es demasiado largo"),
+  
+  postalCode: z
+    .string()
+    .optional(),
   
   // Datos opcionales
   birthDate: z
@@ -145,9 +112,6 @@ const registerSchema = z.object({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden",
   path: ["confirmPassword"],
-}).refine((data) => validateColombianDocument(data.documentNumber, data.documentType), {
-  message: "Número de documento inválido para el tipo seleccionado",
-  path: ["documentNumber"],
 });
 
 /**
@@ -156,7 +120,7 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 /**
- * Componente principal de la página de registro
+ * Componente principal de la página de registro internacional
  */
 const Register = () => {
   // Hooks de autenticación y navegación
@@ -164,6 +128,7 @@ const Register = () => {
   
   // Estado local para manejo de errores específicos
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string>('CO');
 
   // Configuración del formulario con react-hook-form y validación Zod
   const form = useForm<RegisterFormData>({
@@ -173,16 +138,50 @@ const Register = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      country: "CO",
       phone: "",
       documentType: "",
       documentNumber: "",
-      department: "",
+      state: "",
       city: "",
+      postalCode: "",
       birthDate: "",
       gender: ""
     },
     mode: "onChange" // Validación en tiempo real
   });
+
+  // Obtener información del país seleccionado
+  const countryInfo = SUPPORTED_COUNTRIES.find(c => c.code === selectedCountry);
+  
+  // Filtrar tipos de documento según el país
+  const availableDocumentTypes = DOCUMENT_TYPES.filter(
+    doc => doc.country === selectedCountry || doc.country === 'INTERNATIONAL'
+  );
+
+  /**
+   * Maneja el cambio de país
+   */
+  const handleCountryChange = (countryCode: string) => {
+    setSelectedCountry(countryCode);
+    form.setValue('country', countryCode);
+    form.setValue('documentType', ''); // Reset document type when country changes
+    form.setValue('documentNumber', ''); // Reset document number
+  };
+
+  /**
+   * Validación personalizada de teléfono según país
+   */
+  const validatePhoneForCountry = (phone: string) => {
+    return validateInternationalPhone(phone, selectedCountry);
+  };
+
+  /**
+   * Validación personalizada de documento según país y tipo
+   */
+  const validateDocumentForCountry = (documentNumber: string, documentType: string) => {
+    return validateInternationalDocument(documentNumber, documentType, selectedCountry);
+  };
 
   /**
    * Maneja el envío del formulario
@@ -194,7 +193,18 @@ const Register = () => {
     try {
       setSubmitError(null);
       
-      console.log('Iniciando proceso de registro con datos:', {
+      // Validaciones adicionales específicas por país
+      if (!validatePhoneForCountry(values.phone)) {
+        setSubmitError(`Formato de teléfono inválido para ${countryInfo?.name || selectedCountry}`);
+        return;
+      }
+      
+      if (!validateDocumentForCountry(values.documentNumber, values.documentType)) {
+        setSubmitError(`Número de documento inválido para el tipo seleccionado en ${countryInfo?.name || selectedCountry}`);
+        return;
+      }
+      
+      console.log('Iniciando proceso de registro internacional con datos:', {
         ...values,
         password: '[OCULTA]',
         confirmPassword: '[OCULTA]'
@@ -203,18 +213,23 @@ const Register = () => {
       // Preparar metadatos adicionales para Supabase
       const metadata = {
         phone: values.phone,
+        country: values.country,
         document_type: values.documentType,
         document_number: values.documentNumber,
-        department: values.department,
+        state: values.state,
         city: values.city,
+        postal_code: values.postalCode || null,
         birth_date: values.birthDate || null,
-        gender: values.gender || null
+        gender: values.gender || null,
+        locale: countryInfo?.locale || 'es-CO',
+        currency: countryInfo?.currency || 'COP',
+        time_zone: countryInfo?.timeZone || 'America/Bogota'
       };
       
       // Llamar al servicio de registro
       await register(values.name, values.email, values.password, metadata);
       
-      console.log('Registro completado exitosamente');
+      console.log('Registro internacional completado exitosamente');
     } catch (error: any) {
       console.error("Error durante el registro:", error);
       setSubmitError(error.message || 'Error inesperado durante el registro');
@@ -228,12 +243,15 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center px-4 py-8">
-      <Card className="w-full max-w-2xl shadow-xl">
+      <Card className="w-full max-w-3xl shadow-xl">
         {/* Encabezado del formulario */}
         <CardHeader className="space-y-1 text-center bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-t-lg">
-          <CardTitle className="text-2xl font-bold">Crear Cuenta</CardTitle>
+          <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
+            <Globe className="h-6 w-6" />
+            Crear Cuenta Internacional
+          </CardTitle>
           <CardDescription className="text-green-100">
-            Únete a TransporegistrosPlus y gestiona tus viajes de transporte
+            Únete a TransporegistrosPlus desde cualquier país
           </CardDescription>
         </CardHeader>
 
@@ -241,6 +259,49 @@ const Register = () => {
         <CardContent className="p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              
+              {/* Sección: Selección de País */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  País y Región
+                </h3>
+                
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700">País *</FormLabel>
+                      <Select 
+                        onValueChange={handleCountryChange} 
+                        defaultValue={field.value} 
+                        disabled={isLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500">
+                            <SelectValue placeholder="Selecciona tu país" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {SUPPORTED_COUNTRIES.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              {country.name} ({country.currency})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                      {countryInfo && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          Moneda: {countryInfo.currency} | Zona horaria: {countryInfo.timeZone}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               {/* Sección: Datos Personales */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
@@ -304,14 +365,14 @@ const Register = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-gray-700">Tipo de Documento *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
                           <FormControl>
                             <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500">
                               <SelectValue placeholder="Selecciona tipo de documento" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {DOCUMENT_TYPES.map((type) => (
+                            {availableDocumentTypes.map((type) => (
                               <SelectItem key={type.value} value={type.value}>
                                 {type.label}
                               </SelectItem>
@@ -418,7 +479,7 @@ const Register = () => {
                             <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <Input 
                               type="tel" 
-                              placeholder="3001234567" 
+                              placeholder={countryInfo ? `Ej: ${countryInfo.phonePrefix}1234567890` : "Número de teléfono"} 
                               {...field} 
                               disabled={isLoading}
                               className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
@@ -426,33 +487,35 @@ const Register = () => {
                           </div>
                         </FormControl>
                         <FormMessage />
+                        {countryInfo && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            Formato: {countryInfo.phonePrefix} + número local
+                          </p>
+                        )}
                       </FormItem>
                     )}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Departamento */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Estado/Provincia */}
                   <FormField
                     control={form.control}
-                    name="department"
+                    name="state"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700">Departamento *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
-                          <FormControl>
-                            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-green-500">
-                              <SelectValue placeholder="Selecciona departamento" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {COLOMBIA_DEPARTMENTS.map((dept) => (
-                              <SelectItem key={dept.value} value={dept.value}>
-                                {dept.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormLabel className="text-gray-700">Estado/Provincia *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input 
+                              placeholder="Estado o provincia" 
+                              {...field} 
+                              disabled={isLoading}
+                              className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                            />
+                          </div>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -469,12 +532,32 @@ const Register = () => {
                           <div className="relative">
                             <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <Input 
-                              placeholder="Ingresa tu ciudad" 
+                              placeholder="Tu ciudad" 
                               {...field} 
                               disabled={isLoading}
                               className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500"
                             />
                           </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Código postal */}
+                  <FormField
+                    control={form.control}
+                    name="postalCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700">Código Postal</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Código postal" 
+                            {...field} 
+                            disabled={isLoading}
+                            className="transition-all duration-200 focus:ring-2 focus:ring-green-500"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -557,7 +640,7 @@ const Register = () => {
                 size="lg"
               >
                 {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                Crear Cuenta
+                Crear Cuenta Internacional
               </Button>
             </form>
           </Form>
