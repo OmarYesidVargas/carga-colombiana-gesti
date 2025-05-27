@@ -28,12 +28,27 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
     navigate('/register');
   };
   
-  const handleLogout = () => {
-    if (onLogout) onLogout();
+  const handleLogout = async () => {
+    if (onLogout) {
+      try {
+        await onLogout();
+      } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+      }
+    }
   };
   
   const handleSettings = () => {
-    navigate('/settings');
+    // TODO: Implementar página de configuración
+    console.log('Configuración - pendiente de implementar');
+  };
+  
+  const handleLogoClick = () => {
+    if (userEmail) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
   };
   
   return (
@@ -49,9 +64,10 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
       flex-shrink-0
     ">
       <div className="flex items-center min-w-0 flex-1">
-        <div 
-          className="cursor-pointer flex items-center min-w-0" 
-          onClick={() => navigate(userEmail ? '/dashboard' : '/')}
+        <button 
+          className="cursor-pointer flex items-center min-w-0 focus:outline-none" 
+          onClick={handleLogoClick}
+          aria-label="Ir al inicio"
         >
           <span className="
             text-base sm:text-lg lg:text-xl 
@@ -62,7 +78,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             Transpo<span className="text-secondary">registros</span>
             <span className="text-primary font-bold">Plus</span>
           </span>
-        </div>
+        </button>
       </div>
       
       <div className="flex items-center flex-shrink-0 ml-2">
@@ -89,7 +105,10 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent 
+              align="end" 
+              className="w-56 z-50 bg-background border border-border shadow-lg"
+            >
               <DropdownMenuLabel className="max-w-[200px] truncate">
                 {userEmail}
               </DropdownMenuLabel>

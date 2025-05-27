@@ -19,19 +19,21 @@ const AuthRoute = ({ children }: AuthRouteProps) => {
   }, [isLoading, isAuthenticated]);
 
   if (isLoading) {
-    // Mientras se verifica la autenticación, mostrar un indicador de carga
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex justify-center items-center min-h-screen bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-sm text-muted-foreground">Verificando autenticación...</p>
+        </div>
       </div>
     );
   }
 
-  return isAuthenticated ? (
-    <>{children}</>
-  ) : (
-    <Navigate to="/login" state={{ from: location.pathname }} replace />
-  );
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  return <>{children}</>;
 };
 
 export default AuthRoute;

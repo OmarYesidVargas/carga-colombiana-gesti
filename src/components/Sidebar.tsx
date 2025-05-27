@@ -20,10 +20,8 @@ const AppSidebar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const isMobile = useMobile();
   
-  // Class for active links
   const activeClass = "bg-primary/10 text-primary font-medium border-r-2 border-primary";
   
-  // Class for links
   const linkClass = `
     flex items-center gap-2 sm:gap-3
     py-2.5 sm:py-3 
@@ -46,9 +44,15 @@ const AppSidebar = () => {
     { to: "/reports", icon: BarChart, label: "Reportes" }
   ];
 
+  // Cerrar sidebar cuando cambie a desktop
+  React.useEffect(() => {
+    if (!isMobile && isOpen) {
+      setIsOpen(false);
+    }
+  }, [isMobile, isOpen]);
+
   return (
     <>
-      {/* Overlay for mobile devices */}
       {isMobile && isOpen && (
         <div 
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
@@ -56,7 +60,6 @@ const AppSidebar = () => {
         />
       )}
       
-      {/* Button to open/close on mobile */}
       {isMobile && (
         <Button 
           variant="outline" 
@@ -70,19 +73,16 @@ const AppSidebar = () => {
             hover:bg-primary hover:text-primary-foreground
           "
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </Button>
       )}
     
-      {/* Sidebar */}
       <aside
         className={cn(
-          // Base styles
           "bg-card border-r border-border flex-shrink-0 flex flex-col",
-          // Desktop styles
           "hidden lg:flex lg:w-64",
-          // Mobile styles
           isMobile && [
             "fixed left-0 top-14 bottom-0 z-40",
             "w-72 max-w-[85vw]",
@@ -90,9 +90,7 @@ const AppSidebar = () => {
             "shadow-xl",
             !isOpen && "-translate-x-full",
             isOpen && "translate-x-0"
-          ],
-          // Tablet styles  
-          !isMobile && "lg:relative lg:translate-x-0"
+          ]
         )}
       >
         <div className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
@@ -111,7 +109,6 @@ const AppSidebar = () => {
           ))}
         </div>
         
-        {/* Footer del sidebar en móvil */}
         {isMobile && (
           <div className="p-4 border-t border-border">
             <Button 

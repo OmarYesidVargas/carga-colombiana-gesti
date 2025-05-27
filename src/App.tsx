@@ -27,7 +27,7 @@ import { useEffect } from "react";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutos
+      staleTime: 5 * 60 * 1000,
       retry: 1,
     },
   },
@@ -35,7 +35,8 @@ const queryClient = new QueryClient({
 
 // Obtener el basename según el entorno
 const getBasename = () => {
-  if (import.meta.env.PROD) {
+  // Solo usar basename en producción y cuando estamos en GitHub Pages
+  if (import.meta.env.PROD && window.location.hostname.includes('github.io')) {
     return "/transporegistrosplus";
   }
   return "";
@@ -43,7 +44,6 @@ const getBasename = () => {
 
 function App() {
   useEffect(() => {
-    // Inicializar configuración de la aplicación
     initializeApp();
   }, []);
 
@@ -68,16 +68,12 @@ function App() {
           <AuthProvider>
             <DataProvider>
               <Routes>
-                {/* Ruta principal sin Layout */}
                 <Route path="/" element={<Index />} />
-                
-                {/* Rutas de autenticación sin Layout */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 
-                {/* Rutas protegidas con Layout */}
                 <Route path="/dashboard" element={
                   <AuthRoute>
                     <Layout>
@@ -142,7 +138,6 @@ function App() {
                   </AuthRoute>
                 } />
                 
-                {/* Ruta 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </DataProvider>

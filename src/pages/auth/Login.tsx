@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,6 +23,10 @@ const formSchema = z.object({
 
 const Login = () => {
   const { login, isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+  
+  // Obtener la ruta desde donde vino el usuario
+  const from = location.state?.from || '/dashboard';
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,9 +44,9 @@ const Login = () => {
     }
   };
 
-  // Si el usuario ya está autenticado, redirigir al dashboard
+  // Si el usuario ya está autenticado, redirigir
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to={from} replace />;
   }
 
   return (

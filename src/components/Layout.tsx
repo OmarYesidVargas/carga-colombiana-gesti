@@ -25,8 +25,9 @@ const Layout = ({ children }: LayoutProps) => {
           p-3 sm:p-4 md:p-6 lg:p-8
           ${isMobile ? 'pb-20' : ''}
           min-h-0
+          w-full
         `}>
-          <div className="w-full max-w-full">
+          <div className="w-full max-w-full mx-auto">
             {children}
           </div>
         </main>
