@@ -14,13 +14,21 @@ const Layout = ({ children }: LayoutProps) => {
   const isMobile = useMobile();
   
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="min-h-screen w-full flex flex-col bg-background">
       <Header userEmail={user?.email} onLogout={logout} />
       
-      <div className="relative flex flex-1 w-full">
+      <div className="flex flex-1 w-full overflow-hidden">
         <AppSidebar />
-        <main className={`flex-1 p-4 sm:p-6 md:p-8 ${isMobile ? 'pb-20' : ''}`}>
-          {children}
+        <main className={`
+          flex-1 
+          overflow-y-auto 
+          p-3 sm:p-4 md:p-6 lg:p-8
+          ${isMobile ? 'pb-20' : ''}
+          min-h-0
+        `}>
+          <div className="w-full max-w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

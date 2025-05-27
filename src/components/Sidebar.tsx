@@ -9,7 +9,6 @@ import {
   BarChart,
   CalendarClock,
   CreditCard,
-  Home,
   LayoutDashboard,
   Menu,
   Truck,
@@ -22,17 +21,37 @@ const AppSidebar = () => {
   const isMobile = useMobile();
   
   // Class for active links
-  const activeClass = "bg-primary/10 text-primary font-medium";
+  const activeClass = "bg-primary/10 text-primary font-medium border-r-2 border-primary";
   
   // Class for links
-  const linkClass = "flex items-center gap-2 py-2 px-4 rounded-md w-full transition-colors text-sm";
+  const linkClass = `
+    flex items-center gap-2 sm:gap-3
+    py-2.5 sm:py-3 
+    px-3 sm:px-4 
+    rounded-l-md 
+    w-full 
+    transition-all duration-200
+    text-sm sm:text-base
+    hover:bg-muted/50
+    focus:outline-none focus:ring-2 focus:ring-primary/20
+  `;
   
+  const menuItems = [
+    { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { to: "/vehicles", icon: Truck, label: "Vehículos" },
+    { to: "/trips", icon: ArrowLeftRight, label: "Viajes" },
+    { to: "/expenses", icon: CreditCard, label: "Gastos" },
+    { to: "/tolls", icon: Milestone, label: "Peajes" },
+    { to: "/toll-records", icon: CalendarClock, label: "Registros de Peajes" },
+    { to: "/reports", icon: BarChart, label: "Reportes" }
+  ];
+
   return (
     <>
       {/* Overlay for mobile devices */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-20"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -42,106 +61,69 @@ const AppSidebar = () => {
         <Button 
           variant="outline" 
           size="icon"
-          className="fixed bottom-4 right-4 z-30 rounded-full shadow-lg"
+          className="
+            fixed bottom-4 right-4 z-50 
+            rounded-full shadow-lg
+            h-12 w-12
+            border-2 border-primary/20
+            bg-background/95 backdrop-blur-sm
+            hover:bg-primary hover:text-primary-foreground
+          "
           onClick={() => setIsOpen(!isOpen)}
         >
-          {isOpen ? <X size={18} /> : <Menu size={18} />}
+          {isOpen ? <X size={20} /> : <Menu size={20} />}
         </Button>
       )}
     
       {/* Sidebar */}
       <aside
         className={cn(
-          "h-[calc(100vh-4rem)] bg-card w-64 border-r flex-shrink-0 py-2 flex flex-col",
-          isMobile && "fixed left-0 top-16 z-20 transition-transform duration-300 shadow-lg",
-          isMobile && !isOpen && "-translate-x-full"
+          // Base styles
+          "bg-card border-r border-border flex-shrink-0 flex flex-col",
+          // Desktop styles
+          "hidden lg:flex lg:w-64",
+          // Mobile styles
+          isMobile && [
+            "fixed left-0 top-14 bottom-0 z-40",
+            "w-72 max-w-[85vw]",
+            "transition-transform duration-300 ease-in-out",
+            "shadow-xl",
+            !isOpen && "-translate-x-full",
+            isOpen && "translate-x-0"
+          ],
+          // Tablet styles  
+          !isMobile && "lg:relative lg:translate-x-0"
         )}
       >
-        <div className="flex flex-col gap-1 p-2">
-          {/* Dashboard */}
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              cn(linkClass, isActive && activeClass)
-            }
-            onClick={() => isMobile && setIsOpen(false)}
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            <span>Dashboard</span>
-          </NavLink>
-          
-          {/* Vehicles */}
-          <NavLink
-            to="/vehicles"
-            className={({ isActive }) =>
-              cn(linkClass, isActive && activeClass)
-            }
-            onClick={() => isMobile && setIsOpen(false)}
-          >
-            <Truck className="h-4 w-4" />
-            <span>Vehículos</span>
-          </NavLink>
-          
-          {/* Trips */}
-          <NavLink
-            to="/trips"
-            className={({ isActive }) =>
-              cn(linkClass, isActive && activeClass)
-            }
-            onClick={() => isMobile && setIsOpen(false)}
-          >
-            <ArrowLeftRight className="h-4 w-4" />
-            <span>Viajes</span>
-          </NavLink>
-          
-          {/* Expenses */}
-          <NavLink
-            to="/expenses"
-            className={({ isActive }) =>
-              cn(linkClass, isActive && activeClass)
-            }
-            onClick={() => isMobile && setIsOpen(false)}
-          >
-            <CreditCard className="h-4 w-4" />
-            <span>Gastos</span>
-          </NavLink>
-          
-          {/* Tolls */}
-          <NavLink
-            to="/tolls"
-            className={({ isActive }) =>
-              cn(linkClass, isActive && activeClass)
-            }
-            onClick={() => isMobile && setIsOpen(false)}
-          >
-            <Milestone className="h-4 w-4" />
-            <span>Peajes</span>
-          </NavLink>
-          
-          {/* Toll Records */}
-          <NavLink
-            to="/toll-records"
-            className={({ isActive }) =>
-              cn(linkClass, isActive && activeClass)
-            }
-            onClick={() => isMobile && setIsOpen(false)}
-          >
-            <CalendarClock className="h-4 w-4" />
-            <span>Registros de Peajes</span>
-          </NavLink>
-          
-          {/* Reports */}
-          <NavLink
-            to="/reports/expenses"
-            className={({ isActive }) =>
-              cn(linkClass, isActive && activeClass)
-            }
-            onClick={() => isMobile && setIsOpen(false)}
-          >
-            <BarChart className="h-4 w-4" />
-            <span>Reportes</span>
-          </NavLink>
+        <div className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                cn(linkClass, isActive && activeClass)
+              }
+              onClick={() => isMobile && setIsOpen(false)}
+            >
+              <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+              <span className="truncate">{item.label}</span>
+            </NavLink>
+          ))}
         </div>
+        
+        {/* Footer del sidebar en móvil */}
+        {isMobile && (
+          <div className="p-4 border-t border-border">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start"
+              onClick={() => setIsOpen(false)}
+            >
+              <X className="mr-2 h-4 w-4" />
+              Cerrar menú
+            </Button>
+          </div>
+        )}
       </aside>
     </>
   );
