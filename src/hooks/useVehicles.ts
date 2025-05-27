@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle } from '@/types';
@@ -87,7 +88,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
     try {
       console.log('🚗 Intentando agregar vehículo:', vehicleData);
       
-      // Crear objeto con datos normalizados
+      // Crear objeto con datos normalizados y type casting para fuelType
       const normalizedVehicle = {
         ...vehicleData,
         plate: vehicleData.plate?.trim().toUpperCase() || '',
@@ -95,7 +96,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         model: vehicleData.model?.trim() || '',
         year: typeof vehicleData.year === 'string' ? parseInt(vehicleData.year, 10) : vehicleData.year,
         color: vehicleData.color?.trim() || null,
-        fuelType: vehicleData.fuelType?.trim() || null,
+        fuelType: (vehicleData.fuelType?.trim() || null) as Vehicle['fuelType'],
         capacity: vehicleData.capacity?.trim() || null
       };
       
@@ -119,7 +120,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       const vehicleToSave = {
         ...normalizedVehicle,
         userId: user.id
-      };
+      } as Vehicle;
       
       console.log('💾 Preparando para guardar vehículo:', vehicleToSave);
       
@@ -183,7 +184,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         return;
       }
       
-      // Normalizar datos
+      // Normalizar datos con type casting
       const normalizedData = {
         ...vehicleData,
         plate: vehicleData.plate?.trim().toUpperCase(),
@@ -191,7 +192,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         model: vehicleData.model?.trim(),
         year: typeof vehicleData.year === 'string' ? parseInt(vehicleData.year, 10) : vehicleData.year,
         color: vehicleData.color?.trim() || null,
-        fuelType: vehicleData.fuelType?.trim() || null,
+        fuelType: vehicleData.fuelType ? vehicleData.fuelType as Vehicle['fuelType'] : undefined,
         capacity: vehicleData.capacity?.trim() || null
       };
       
@@ -246,7 +247,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       }, normalizedData, { action: 'update_vehicle' });
       
       setVehicles(prev => 
-        prev.map(v => v.id === id ? { ...v, ...normalizedData } : v)
+        prev.map(v => v.id === id ? { ...v, ...normalizedData } as Vehicle : v)
       );
       
       toast.success('Vehículo actualizado correctamente');

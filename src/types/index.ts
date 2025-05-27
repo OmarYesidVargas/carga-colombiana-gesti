@@ -53,6 +53,7 @@ export interface Expense {
   amount: number;
   description: string;
   date: string;
+  receiptUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -143,3 +144,24 @@ export const expenseCategoryColors = {
   food: '#22c55e',
   other: '#6b7280'
 } as const;
+
+// Tipos para validaciones internacionales
+export interface CountryInfo {
+  code: string;
+  name: string;
+  currency: string;
+  phonePrefix: string;
+  locale: string;
+  timeZone: string;
+}
+
+export interface DocumentType {
+  value: string;
+  label: string;
+  country: string;
+}
+
+export interface GenderOption {
+  value: string;
+  label: string;
+}

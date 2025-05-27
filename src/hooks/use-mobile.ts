@@ -24,5 +24,5 @@ export function useMobile() {
   return isMobile
 }
 
-// Alias para compatibilidad
+// Alias para compatibilidad con shadcn/ui sidebar
 export const useIsMobile = useMobile

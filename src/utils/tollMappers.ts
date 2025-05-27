@@ -17,8 +17,8 @@ export const mapTollFromDB = (toll: any): Toll => {
     price: parseFloat(toll.price) || 0,
     category: toll.category || '',
     route: toll.route || '',
-    coordinates: toll.coordinates || null,
-    description: toll.description || null,
+    coordinates: toll.coordinates || undefined,
+    description: toll.description || undefined,
     createdAt: toll.created_at,
     updatedAt: toll.updated_at
   };
@@ -58,9 +58,10 @@ export const mapTollRecordFromDB = (record: any): TollRecord => {
     tollId: record.toll_id,
     date: record.date,
     price: parseFloat(record.price) || 0,
+    amount: parseFloat(record.price) || 0, // amount es igual a price para compatibilidad
     paymentMethod: record.payment_method || 'efectivo',
-    receipt: record.receipt || null,
-    notes: record.notes || null,
+    receipt: record.receipt || undefined,
+    notes: record.notes || undefined,
     createdAt: record.created_at,
     updatedAt: record.updated_at
   };

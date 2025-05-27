@@ -1,154 +1,142 @@
 
 /**
- * Utilidades de validación para TransporegistrosPlus
- * Funciones reutilizables para validar datos de entrada
+ * Validadores para TransporegistrosPlus
+ * Incluye validaciones locales e internacionales
  */
 
-import { VALIDATION_RULES } from '@/lib/constants';
-
-/**
- * Valida que un objeto tiene todas las propiedades requeridas
- */
-export const validateRequiredFields = (obj: any, requiredFields: string[]): boolean => {
-  if (!obj || typeof obj !== 'object') return false;
-  
-  return requiredFields.every(field => {
-    const value = obj[field];
-    return value !== null && value !== undefined && value !== '';
-  });
-};
-
-/**
- * Valida formato de placa colombiana
- */
-export const validatePlate = (plate: string): boolean => {
-  if (!plate || typeof plate !== 'string') return false;
-  
-  const cleanPlate = plate.replace(/[-\s]/g, '').toUpperCase();
-  
-  // Formato colombiano: ABC123 o ABC1234
-  const plateRegex = /^[A-Z]{3}\d{3,4}$/;
-  return plateRegex.test(cleanPlate);
-};
-
-/**
- * Valida año de vehículo
- */
-export const validateYear = (year: number): boolean => {
-  return year >= VALIDATION_RULES.minYear && year <= VALIDATION_RULES.maxYear;
-};
-
-/**
- * Valida distancia de viaje
- */
-export const validateDistance = (distance: number): boolean => {
-  return distance > 0 && distance <= VALIDATION_RULES.maxDistance;
-};
-
-/**
- * Valida monto de gasto
- */
-export const validateAmount = (amount: number): boolean => {
-  return amount > 0 && amount <= VALIDATION_RULES.maxAmount;
-};
-
-/**
- * Valida fecha de vencimiento
- */
-export const validateExpiryDate = (date: string): boolean => {
-  if (!date) return true; // Opcional
-  
-  const expiryDate = new Date(date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  return expiryDate >= today;
-};
-
-/**
- * Valida formato de email
- */
+// Validaciones básicas existentes
 export const validateEmail = (email: string): boolean => {
-  if (!email || typeof email !== 'string') return false;
-  
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-/**
- * Valida datos de vehículo
- */
-export const validateVehicle = (vehicle: any): boolean => {
-  const requiredFields = ['plate', 'brand', 'model', 'year', 'capacity', 'fuelType'];
-  
-  if (!validateRequiredFields(vehicle, requiredFields)) return false;
-  if (!validatePlate(vehicle.plate)) return false;
-  if (!validateYear(parseInt(vehicle.year))) return false;
-  
-  return true;
+export const validatePlate = (plate: string): boolean => {
+  // Formato colombiano: ABC123 o ABC12D
+  const plateRegex = /^[A-Z]{3}[0-9]{2}[A-Z0-9]?$/;
+  return plateRegex.test(plate.toUpperCase());
 };
 
-/**
- * Valida datos de viaje
- */
-export const validateTrip = (trip: any): boolean => {
-  const requiredFields = ['vehicleId', 'startDate', 'origin', 'destination', 'distance'];
+export const validateYear = (year: number): boolean => {
+  const currentYear = new Date().getFullYear();
+  return year >= 1900 && year <= currentYear + 1;
+};
+
+export const validateVehicle = (vehicle: any): boolean => {
+  if (!vehicle) return false;
   
-  if (!validateRequiredFields(trip, requiredFields)) return false;
-  if (!validateDistance(parseFloat(trip.distance))) return false;
+  const requiredFields = ['plate', 'brand', 'model', 'year'];
   
-  // Validar fechas
-  const startDate = new Date(trip.startDate);
-  if (isNaN(startDate.getTime())) return false;
+  for (const field of requiredFields) {
+    if (!vehicle[field] || (typeof vehicle[field] === 'string' && vehicle[field].trim() === '')) {
+      return false;
+    }
+  }
   
-  if (trip.endDate) {
-    const endDate = new Date(trip.endDate);
-    if (isNaN(endDate.getTime()) || endDate < startDate) return false;
+  if (!validateYear(vehicle.year)) {
+    return false;
+  }
+  
+  if (!validatePlate(vehicle.plate)) {
+    return false;
   }
   
   return true;
 };
 
-/**
- * Valida datos de gasto
- */
+export const validateTrip = (trip: any): boolean => {
+  if (!trip) return false;
+  
+  const requiredFields = ['vehicleId', 'origin', 'destination', 'startDate', 'distance'];
+  
+  for (const field of requiredFields) {
+    if (!trip[field] || (typeof trip[field] === 'string' && trip[field].trim() === '')) {
+      return false;
+    }
+  }
+  
+  // Validar que la distancia sea un número positivo
+  const distance = typeof trip.distance === 'string' ? parseFloat(trip.distance) : trip.distance;
+  if (isNaN(distance) || distance <= 0) {
+    return false;
+  }
+  
+  return true;
+};
+
 export const validateExpense = (expense: any): boolean => {
-  const requiredFields = ['tripId', 'vehicleId', 'category', 'amount', 'description', 'date'];
+  if (!expense) return false;
   
-  if (!validateRequiredFields(expense, requiredFields)) return false;
-  if (!validateAmount(parseFloat(expense.amount))) return false;
+  const requiredFields = ['category', 'amount', 'description', 'date'];
   
-  // Validar fecha
-  const expenseDate = new Date(expense.date);
-  if (isNaN(expenseDate.getTime())) return false;
+  for (const field of requiredFields) {
+    if (!expense[field] || (typeof expense[field] === 'string' && expense[field].trim() === '')) {
+      return false;
+    }
+  }
   
-  return true;
-};
-
-/**
- * Valida datos de peaje
- */
-export const validateToll = (toll: any): boolean => {
-  const requiredFields = ['name', 'location', 'category', 'price', 'route'];
-  
-  if (!validateRequiredFields(toll, requiredFields)) return false;
-  if (!validateAmount(parseFloat(toll.price))) return false;
+  // Validar que el monto sea un número positivo
+  const amount = typeof expense.amount === 'string' ? parseFloat(expense.amount) : expense.amount;
+  if (isNaN(amount) || amount <= 0) {
+    return false;
+  }
   
   return true;
 };
 
-/**
- * Valida datos de registro de peaje
- */
-export const validateTollRecord = (record: any): boolean => {
-  const requiredFields = ['tollId', 'tripId', 'vehicleId', 'amount', 'date'];
+// Validaciones internacionales
+export const validateInternationalPhone = (phone: string, countryCode: string): boolean => {
+  // Validación básica para números internacionales
+  const phoneRegex = /^\+?[1-9]\d{7,14}$/;
+  const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
   
-  if (!validateRequiredFields(record, requiredFields)) return false;
-  if (!validateAmount(parseFloat(record.amount))) return false;
+  // Validaciones específicas por país
+  switch (countryCode) {
+    case 'CO': // Colombia
+      return /^(\+57)?[13][0-9]{9}$/.test(cleanPhone);
+    case 'US': // Estados Unidos
+      return /^(\+1)?[2-9][0-9]{9}$/.test(cleanPhone);
+    case 'MX': // México
+      return /^(\+52)?[1-9][0-9]{9}$/.test(cleanPhone);
+    case 'ES': // España
+      return /^(\+34)?[6-9][0-9]{8}$/.test(cleanPhone);
+    default:
+      return phoneRegex.test(cleanPhone);
+  }
+};
+
+export const validateInternationalDocument = (documentNumber: string, documentType: string, countryCode: string): boolean => {
+  const cleanDoc = documentNumber.replace(/[\s\-\.]/g, '');
   
-  // Validar fecha
-  const recordDate = new Date(record.date);
-  if (isNaN(recordDate.getTime())) return false;
-  
-  return true;
+  switch (documentType) {
+    case 'cedula':
+      if (countryCode === 'CO') {
+        return /^[1-9][0-9]{6,9}$/.test(cleanDoc);
+      }
+      return /^[0-9]{6,12}$/.test(cleanDoc);
+    
+    case 'passport':
+      return /^[A-Z0-9]{6,12}$/i.test(cleanDoc);
+    
+    case 'driver_license':
+      return /^[A-Z0-9]{5,15}$/i.test(cleanDoc);
+    
+    case 'tax_id':
+      if (countryCode === 'US') {
+        return /^[0-9]{3}-?[0-9]{2}-?[0-9]{4}$/.test(cleanDoc);
+      }
+      return /^[0-9A-Z]{8,15}$/i.test(cleanDoc);
+    
+    default:
+      return cleanDoc.length >= 6 && cleanDoc.length <= 20;
+  }
+};
+
+export const validateColombiaCedula = (cedula: string): boolean => {
+  const cleanCedula = cedula.replace(/\D/g, '');
+  return /^[1-9][0-9]{6,9}$/.test(cleanCedula);
+};
+
+export const validateColombiaPhone = (phone: string): boolean => {
+  const cleanPhone = phone.replace(/\D/g, '');
+  return /^[13][0-9]{9}$/.test(cleanPhone) || /^[0-9]{7}$/.test(cleanPhone);
 };

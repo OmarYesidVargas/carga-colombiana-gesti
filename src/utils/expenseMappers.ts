@@ -13,8 +13,8 @@ export const mapExpenseFromDB = (expense: any): Expense => {
     category: expense.category,
     amount: expense.amount,
     date: expense.date,
-    description: expense.description || null,
-    receiptUrl: expense.receipt_url || null,
+    description: expense.description || '',
+    receiptUrl: expense.receipt_url || undefined,
     createdAt: expense.created_at,
     updatedAt: expense.updated_at
   };

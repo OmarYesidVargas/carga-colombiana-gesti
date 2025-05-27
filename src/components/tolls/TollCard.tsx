@@ -69,7 +69,7 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">
-              {formatCurrency(Number(toll.price))}
+              {formatCurrency(toll.price)}
             </p>
             <p className="text-xs text-gray-500">Tarifa oficial</p>
           </div>
