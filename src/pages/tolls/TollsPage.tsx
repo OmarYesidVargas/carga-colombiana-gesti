@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Button } from '@/components/ui/button';
@@ -116,24 +115,25 @@ const TollsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold">Peajes</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold text-gray-900">Peajes</h1>
+          <p className="text-gray-600 mt-1">
             Administra los peajes de las rutas más frecuentes
           </p>
         </div>
         
-        <Button onClick={() => handleOpenForm()}>
+        <Button onClick={() => handleOpenForm()} className="bg-blue-500 hover:bg-blue-600 text-white">
           <Plus className="mr-2 h-4 w-4" /> 
           Agregar Peaje
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Resumen de peajes */}
-        <div className="md:col-span-1">
+        <div className="lg:col-span-1">
           <TollSummary 
             tollRecords={tollRecords} 
             tolls={tolls}
@@ -143,87 +143,99 @@ const TollsPage = () => {
         </div>
         
         {/* Lista de peajes */}
-        <div className="md:col-span-3 space-y-4">
+        <div className="lg:col-span-3 space-y-6">
           {/* Búsqueda */}
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="relative w-full sm:max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar peajes..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
+          <Card className="bg-white border border-gray-200 shadow-sm">
+            <CardContent className="p-4">
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar peajes..."
+                  className="pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
           
           {/* Pestañas por ruta o lista completa */}
-          <Tabs defaultValue="all">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">Todos los peajes</TabsTrigger>
-              {tollsByRoute.slice(0, 3).map((routeData) => (
-                <TabsTrigger key={routeData.route} value={routeData.route}>
-                  {routeData.route}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            
-            <TabsContent value="all">
-              {filteredTolls.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredTolls.map((toll) => (
-                    <TollCard
-                      key={toll.id}
-                      toll={toll}
-                      onEdit={handleOpenForm}
-                      onDelete={handleDeleteClick}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="py-10 text-center">
-                    <p className="text-muted-foreground">
-                      No se encontraron peajes. Agrega tu primer peaje para comenzar.
-                    </p>
-                    <Button 
-                      onClick={() => handleOpenForm()} 
-                      className="mt-4"
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <Tabs defaultValue="all" className="w-full">
+              <div className="border-b border-gray-200 px-6 pt-4">
+                <TabsList className="bg-gray-100">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                    Todos los peajes
+                  </TabsTrigger>
+                  {tollsByRoute.slice(0, 3).map((routeData) => (
+                    <TabsTrigger 
+                      key={routeData.route} 
+                      value={routeData.route}
+                      className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
                     >
-                      <Plus className="mr-2 h-4 w-4" /> 
-                      Agregar Peaje
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-            
-            {tollsByRoute.map((routeData) => (
-              <TabsContent key={routeData.route} value={routeData.route}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {routeData.tolls.map((toll) => (
-                    <TollCard
-                      key={toll.id}
-                      toll={toll}
-                      onEdit={handleOpenForm}
-                      onDelete={handleDeleteClick}
-                    />
+                      {routeData.route}
+                    </TabsTrigger>
                   ))}
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
+                </TabsList>
+              </div>
+              
+              <div className="p-6">
+                <TabsContent value="all" className="mt-0">
+                  {filteredTolls.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {filteredTolls.map((toll) => (
+                        <TollCard
+                          key={toll.id}
+                          toll={toll}
+                          onEdit={handleOpenForm}
+                          onDelete={handleDeleteClick}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500 mb-4">
+                        No se encontraron peajes. Agrega tu primer peaje para comenzar.
+                      </p>
+                      <Button 
+                        onClick={() => handleOpenForm()} 
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> 
+                        Agregar Peaje
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                {tollsByRoute.map((routeData) => (
+                  <TabsContent key={routeData.route} value={routeData.route} className="mt-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {routeData.tolls.map((toll) => (
+                        <TollCard
+                          key={toll.id}
+                          toll={toll}
+                          onEdit={handleOpenForm}
+                          onDelete={handleDeleteClick}
+                        />
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </div>
+            </Tabs>
+          </div>
         </div>
       </div>
       
       {/* Diálogo de formulario */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[550px]">
+        <DialogContent className="sm:max-w-[550px] bg-white">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-gray-900">
               {currentToll ? 'Editar Peaje' : 'Agregar Peaje'}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-600">
               {currentToll 
                 ? 'Modifica los detalles del peaje seleccionado.' 
                 : 'Registra un nuevo peaje para tus rutas frecuentes.'}
@@ -241,18 +253,20 @@ const TollsPage = () => {
       
       {/* Diálogo de confirmación para eliminar */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-gray-900">¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
               Esta acción no se puede deshacer. El peaje será eliminado permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="border-gray-300 text-gray-700 hover:bg-gray-100">
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-500 text-white hover:bg-red-600"
             >
               Eliminar
             </AlertDialogAction>

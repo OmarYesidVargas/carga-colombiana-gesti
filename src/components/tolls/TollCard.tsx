@@ -23,42 +23,42 @@ const formatCurrency = (amount: number) => {
 
 const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
+    <Card className="h-full bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <CardHeader className="pb-3">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <CardTitle className="text-base sm:text-lg break-words mr-2">{toll.name}</CardTitle>
-          <Badge className="bg-emerald-500 shrink-0">{toll.category}</Badge>
+          <CardTitle className="text-base sm:text-lg break-words mr-2 text-gray-900">{toll.name}</CardTitle>
+          <Badge className="bg-blue-500 text-white hover:bg-blue-600 shrink-0">{toll.category}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="pb-3 space-y-2">
+      <CardContent className="pb-4 space-y-3">
         <div className="flex items-start gap-2">
-          <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-          <div className="break-words">
-            <p className="text-sm font-medium">{toll.location}</p>
-            <p className="text-xs text-muted-foreground">{toll.route}</p>
+          <MapPin className="h-4 w-4 mt-0.5 text-gray-500 flex-shrink-0" />
+          <div className="break-words flex-1">
+            <p className="text-sm font-medium text-gray-900">{toll.location}</p>
+            <p className="text-xs text-gray-600">{toll.route}</p>
             {toll.coordinates && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-500">
                 Coord: {toll.coordinates}
               </p>
             )}
           </div>
         </div>
         
-        <div className="pt-1">
-          <p className="text-lg font-semibold currency-cop">
+        <div className="pt-2 border-t border-gray-100">
+          <p className="text-lg font-semibold text-gray-900">
             {formatCurrency(toll.price)}
           </p>
           {toll.description && (
-            <p className="text-sm text-muted-foreground mt-1 break-words">{toll.description}</p>
+            <p className="text-sm text-gray-600 mt-2 break-words">{toll.description}</p>
           )}
         </div>
       </CardContent>
-      <CardFooter className="pt-0 flex justify-end gap-2 flex-wrap">
+      <CardFooter className="pt-0 flex justify-end gap-2 flex-wrap bg-gray-50 border-t border-gray-100">
         <Button 
           variant="outline" 
           size="sm" 
           onClick={() => onEdit(toll)}
-          className="flex-1 sm:flex-none"
+          className="flex-1 sm:flex-none border-gray-300 text-gray-700 hover:bg-gray-100"
         >
           <Pencil className="h-4 w-4 mr-1" /> Editar
         </Button>
@@ -66,7 +66,7 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
           variant="destructive"
           size="sm"
           onClick={() => onDelete(toll.id)}
-          className="flex-1 sm:flex-none"
+          className="flex-1 sm:flex-none bg-red-500 hover:bg-red-600"
         >
           <Trash2 className="h-4 w-4 mr-1" /> Eliminar
         </Button>

@@ -20,8 +20,8 @@ const Layout = ({ children }: LayoutProps) => {
       <div className="min-h-screen w-full flex bg-gray-50">
         <AppSidebar />
         <SidebarInset className="flex-1 flex flex-col min-w-0">
-          <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white shadow-sm px-4">
-            <SidebarTrigger className="h-9 w-9 p-0 hover:bg-gray-100 rounded-md flex items-center justify-center">
+          <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b border-gray-200 bg-white shadow-sm px-4">
+            <SidebarTrigger className="h-9 w-9 p-0 hover:bg-gray-100 rounded-md flex items-center justify-center border border-gray-300">
               <Menu className="h-5 w-5 text-gray-600" />
               <span className="sr-only">Toggle Sidebar</span>
             </SidebarTrigger>
