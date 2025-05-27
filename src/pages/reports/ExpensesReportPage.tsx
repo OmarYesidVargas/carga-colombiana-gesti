@@ -11,10 +11,14 @@ import ExpenseReportFilters from '@/components/reports/ExpenseReportFilters';
 import ExpenseReportCharts from '@/components/reports/ExpenseReportCharts';
 import ExpenseReportTable from '@/components/reports/ExpenseReportTable';
 
+/**
+ * Página principal del reporte de gastos con diseño completamente responsivo
+ * Organiza y presenta toda la información de gastos de manera adaptativa
+ */
 const ExpensesReportPage = () => {
   const { vehicles, trips, expenses, exportToCSV } = useData();
   
-  // Use custom hook for filtering and calculations
+  // Utilizar hook personalizado para filtrado y cálculos de gastos
   const {
     vehicleFilter,
     setVehicleFilter,
@@ -29,14 +33,17 @@ const ExpensesReportPage = () => {
     expensesByVehicle
   } = useExpenseReport(expenses);
   
-  // Función para exportar datos
+  /**
+   * Función para exportar datos a CSV con formato legible
+   * Prepara los datos con información completa para exportación
+   */
   const handleExportData = () => {
     if (filteredExpenses.length === 0) {
       toast.error('No hay datos para exportar');
       return;
     }
     
-    // Preparar datos para exportar (formato más legible)
+    // Preparar datos para exportar con formato más legible
     const dataToExport = filteredExpenses.map(expense => {
       const trip = trips.find(t => t.id === expense.tripId);
       const vehicle = vehicles.find(v => v.id === expense.vehicleId);
@@ -56,14 +63,14 @@ const ExpensesReportPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header section */}
+    <div className="space-y-4 sm:space-y-6">
+      {/* Sección de encabezado - Responsivo con título y botón de exportación */}
       <ExpenseReportHeader 
         onExport={handleExportData} 
         totalExpenses={totalExpenses}
       />
       
-      {/* Filters section */}
+      {/* Sección de filtros - Se adapta a diferentes pantallas */}
       <ExpenseReportFilters
         vehicles={vehicles}
         vehicleFilter={vehicleFilter}
@@ -75,10 +82,10 @@ const ExpensesReportPage = () => {
         resetFilters={resetFilters}
       />
       
-      {/* Results */}
+      {/* Resultados del reporte */}
       {filteredExpenses.length > 0 ? (
-        <div className="space-y-6">
-          {/* Charts and summary */}
+        <div className="space-y-4 sm:space-y-6">
+          {/* Gráficos y resúmenes - Layout responsivo */}
           <ExpenseReportCharts 
             expenses={filteredExpenses}
             vehicles={vehicles}
@@ -87,7 +94,7 @@ const ExpensesReportPage = () => {
             expensesByVehicle={expensesByVehicle}
           />
           
-          {/* Expenses table */}
+          {/* Tabla de gastos - Vista responsiva */}
           <ExpenseReportTable
             expenses={filteredExpenses}
             vehicles={vehicles}
@@ -96,8 +103,9 @@ const ExpensesReportPage = () => {
           />
         </div>
       ) : (
-        <div className="text-center py-10">
-          <p className="text-muted-foreground">
+        // Mensaje cuando no hay datos - Centrado y responsivo
+        <div className="text-center py-10 sm:py-16">
+          <p className="text-muted-foreground text-sm sm:text-base">
             No se encontraron gastos que coincidan con los filtros seleccionados.
           </p>
         </div>

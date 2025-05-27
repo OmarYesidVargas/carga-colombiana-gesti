@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useMobile } from '@/hooks/use-mobile';
 
-// Categorías de gastos con etiquetas en español
+// Categorías de gastos con etiquetas traducidas al español
 export const expenseCategories = [
   { value: 'all', label: 'Todas las categorías' },
   { value: 'fuel', label: 'Combustible' },
@@ -36,6 +36,10 @@ interface ExpenseReportFiltersProps {
   resetFilters: () => void;
 }
 
+/**
+ * Componente de filtros responsivo para reportes de gastos
+ * Se adapta automáticamente a dispositivos móviles y desktop
+ */
 const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
   vehicles,
   vehicleFilter,
@@ -50,36 +54,41 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Filtros</CardTitle>
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg sm:text-xl">Filtros</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Grid responsivo de filtros - 1 columna en móvil, 2 en tablet, 3 en desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium mb-1 block">
+          {/* Filtro de vehículos */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium block">
               Vehículo
             </label>
             <Select value={vehicleFilter} onValueChange={setVehicleFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar vehículo" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los vehículos</SelectItem>
                 {vehicles.map((vehicle) => (
                   <SelectItem key={vehicle.id} value={vehicle.id}>
-                    {vehicle.plate} - {vehicle.brand} {vehicle.model}
+                    <span className="truncate">
+                      {vehicle.plate} - {vehicle.brand} {vehicle.model}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           
-          <div>
-            <label className="text-sm font-medium mb-1 block">
+          {/* Filtro de categorías */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium block">
               Categoría
             </label>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
               <SelectContent>
@@ -92,82 +101,100 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
             </Select>
           </div>
           
-          <div>
-            <label className="text-sm font-medium mb-1 block">
+          {/* Filtro de rango de fechas */}
+          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+            <label className="text-sm font-medium block">
               Rango de fechas
             </label>
-            <div className="grid gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !dateRange && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !dateRange && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
                     {dateRange?.from ? (
                       dateRange.to ? (
                         <>
-                          {format(dateRange.from, "P", { locale: es })} -{" "}
-                          {format(dateRange.to, "P", { locale: es })}
+                          {format(dateRange.from, "dd/MM/yy", { locale: es })} -{" "}
+                          {format(dateRange.to, "dd/MM/yy", { locale: es })}
                         </>
                       ) : (
-                        format(dateRange.from, "P", { locale: es })
+                        format(dateRange.from, "dd/MM/yyyy", { locale: es })
                       )
                     ) : (
                       <span>Seleccionar fechas</span>
                     )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange?.from}
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    locale={es}
-                    numberOfMonths={isMobile ? 1 : 2}
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  locale={es}
+                  numberOfMonths={isMobile ? 1 : 2}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
         
-        {/* Chips con los filtros activos */}
+        {/* Chips con los filtros activos - Se apilan en móvil */}
         <div className="flex flex-wrap gap-2">
           {vehicleFilter !== 'all' && (
-            <Badge variant="secondary" className="cursor-pointer" onClick={() => setVehicleFilter('all')}>
-              {vehicles.find(v => v.id === vehicleFilter)?.plate || vehicleFilter}
+            <Badge 
+              variant="secondary" 
+              className="cursor-pointer text-xs" 
+              onClick={() => setVehicleFilter('all')}
+            >
+              <span className="truncate max-w-[100px] sm:max-w-[150px]">
+                {vehicles.find(v => v.id === vehicleFilter)?.plate || vehicleFilter}
+              </span>
               <span className="ml-1">×</span>
             </Badge>
           )}
           
           {categoryFilter !== 'all' && (
-            <Badge variant="secondary" className="cursor-pointer" onClick={() => setCategoryFilter('all')}>
+            <Badge 
+              variant="secondary" 
+              className="cursor-pointer text-xs" 
+              onClick={() => setCategoryFilter('all')}
+            >
               {expenseCategories.find(c => c.value === categoryFilter)?.label || categoryFilter}
               <span className="ml-1">×</span>
             </Badge>
           )}
           
           {dateRange && (
-            <Badge variant="secondary" className="cursor-pointer" onClick={() => setDateRange(undefined)}>
-              {dateRange.from && format(dateRange.from, "dd/MM/yyyy", { locale: es })}
-              {dateRange.to && ` - ${format(dateRange.to, "dd/MM/yyyy", { locale: es })}`}
+            <Badge 
+              variant="secondary" 
+              className="cursor-pointer text-xs" 
+              onClick={() => setDateRange(undefined)}
+            >
+              <span className="truncate max-w-[120px]">
+                {dateRange.from && format(dateRange.from, "dd/MM/yy", { locale: es })}
+                {dateRange.to && ` - ${format(dateRange.to, "dd/MM/yy", { locale: es })}`}
+              </span>
               <span className="ml-1">×</span>
             </Badge>
           )}
           
+          {/* Botón para limpiar todos los filtros */}
           {(vehicleFilter !== 'all' || categoryFilter !== 'all' || dateRange) && (
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={resetFilters}
-              className="text-xs h-6"
+              className="text-xs h-6 px-2"
             >
               Limpiar filtros
             </Button>
