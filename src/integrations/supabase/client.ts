@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 import { APP_CONFIG } from '@/lib/constants'
 
-// Configuración del cliente Supabase optimizada para producción
+// Configuración del cliente Supabase optimizada para móvil
 export const supabase = createClient<Database>(
   APP_CONFIG.supabase.url,
   APP_CONFIG.supabase.anonKey,
@@ -13,7 +13,10 @@ export const supabase = createClient<Database>(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce'
+      flowType: 'pkce',
+      // Configuración específica para móvil
+      storageKey: 'transporegistros-auth-token',
+      debug: import.meta.env.DEV
     },
     global: {
       headers: {
@@ -27,11 +30,20 @@ export const supabase = createClient<Database>(
   }
 )
 
-// Configurar manejo de errores globales
+// Configurar manejo de errores globales mejorado para móvil
 supabase.auth.onAuthStateChange((event, session) => {
+  console.log('🔄 Auth state change:', event, session?.user?.email || 'No user');
+  
   if (event === 'SIGNED_OUT') {
-    // Limpiar datos locales al cerrar sesión
-    localStorage.removeItem('supabase.auth.token')
+    // Limpiar datos locales al cerrar sesión de forma más agresiva
+    try {
+      localStorage.removeItem('supabase.auth.token')
+      localStorage.removeItem('transporegistros-auth-token')
+      localStorage.clear() // Limpiar todo el localStorage en móvil
+      console.log('🧹 Local storage cleared successfully')
+    } catch (error) {
+      console.warn('⚠️ Error clearing localStorage:', error)
+    }
   }
   
   if (event === 'TOKEN_REFRESHED') {

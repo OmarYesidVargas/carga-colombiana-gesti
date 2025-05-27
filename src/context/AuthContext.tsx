@@ -88,11 +88,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * - Redirección automática basada en el estado
    */
   useEffect(() => {
+    let mounted = true;
+
     // Configurar listener para cambios de estado de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('Cambio de estado de autenticación:', event, newSession?.user?.email);
         
+        if (!mounted) return;
+
         // Actualizar estado local
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -105,7 +109,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             break;
             
           case 'SIGNED_IN':
-            if (newSession) {
+            if (newSession && mounted) {
               // Redirigir al dashboard solo si estamos en páginas de autenticación
               const currentPath = location.pathname;
               const authPages = ['/login', '/register'];
@@ -116,11 +120,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             break;
             
           case 'SIGNED_OUT':
-            // Redirigir al login solo si estamos en páginas protegidas
-            const currentPath = location.pathname;
-            const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
-            if (!publicPaths.includes(currentPath)) {
-              navigate('/login');
+            if (mounted) {
+              // Redirigir al login solo si estamos en páginas protegidas
+              const currentPath = location.pathname;
+              const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
+              if (!publicPaths.includes(currentPath)) {
+                navigate('/login');
+              }
             }
             break;
             
@@ -132,25 +138,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     );
 
     // Verificar si existe una sesión activa al cargar la aplicación
-    supabase.auth.getSession()
-      .then(({ data: { session: currentSession }, error }) => {
+    const getInitialSession = async () => {
+      try {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
         if (error) {
           console.error('Error al obtener sesión:', error);
           toast.error('Error al verificar la sesión');
         }
         
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-      })
-      .catch((error) => {
+        if (mounted) {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+        }
+      } catch (error) {
         console.error('Error inesperado al obtener sesión:', error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    getInitialSession();
 
     // Cleanup: remover listener al desmontar
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate, location.pathname]);
@@ -292,22 +306,78 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   /**
-   * Función para cerrar sesión del usuario actual
+   * Función para cerrar sesión del usuario actual mejorada para móvil
    * 
    * Limpia toda la información de sesión y redirige al usuario
    */
   const logout = async (): Promise<void> => {
     try {
+      console.log('🔄 Iniciando proceso de logout...');
+      
+      // Verificar si hay una sesión activa
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (!currentSession) {
+        console.log('⚠️ No hay sesión activa para cerrar');
+        // Aún así limpiar el estado local y localStorage
+        setSession(null);
+        setUser(null);
+        
+        // Limpiar localStorage de forma agresiva
+        try {
+          localStorage.removeItem('supabase.auth.token');
+          localStorage.removeItem('transporegistros-auth-token');
+          console.log('🧹 Local storage limpiado');
+        } catch (error) {
+          console.warn('⚠️ Error limpiando localStorage:', error);
+        }
+        
+        toast.success('Sesión cerrada exitosamente');
+        return;
+      }
+      
+      console.log('🔐 Cerrando sesión activa:', currentSession.user?.email);
+      
+      // Cerrar sesión en Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        throw error;
+        console.error('❌ Error al cerrar sesión:', error);
+        
+        // Si hay error, aún así limpiar el estado local
+        setSession(null);
+        setUser(null);
+        
+        // Limpiar localStorage manualmente
+        try {
+          localStorage.removeItem('supabase.auth.token');
+          localStorage.removeItem('transporegistros-auth-token');
+          console.log('🧹 Local storage limpiado manualmente');
+        } catch (storageError) {
+          console.warn('⚠️ Error limpiando localStorage:', storageError);
+        }
+        
+        toast.error('Error al cerrar sesión, pero se limpió la sesión local');
+        return;
       }
       
+      console.log('✅ Sesión cerrada exitosamente');
       toast.success('Sesión cerrada exitosamente');
     } catch (error: any) {
-      console.error('Error al cerrar sesión:', error);
-      toast.error(error.message || 'Error al cerrar sesión');
+      console.error('❌ Error inesperado al cerrar sesión:', error);
+      
+      // En caso de error inesperado, forzar limpieza local
+      setSession(null);
+      setUser(null);
+      
+      try {
+        localStorage.clear();
+        console.log('🧹 Local storage completamente limpiado por error');
+      } catch (storageError) {
+        console.warn('⚠️ Error limpiando localStorage:', storageError);
+      }
+      
+      toast.error('Sesión cerrada localmente debido a un error');
     }
   };
 
