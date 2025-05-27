@@ -93,14 +93,6 @@ export const useUtils = () => {
       // Crear workbook con configuración mínima y segura
       const workbook = XLSX.utils.book_new();
       
-      // Configurar propiedades básicas sin caracteres especiales
-      workbook.Props = {
-        Title: 'Reporte',
-        Subject: 'Datos exportados',
-        Author: 'TransporegistrosPlus',
-        CreatedDate: new Date()
-      };
-      
       // Añadir worksheet con nombre simple
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Hoja1');
       
@@ -109,15 +101,7 @@ export const useUtils = () => {
       // Escribir archivo con configuración optimizada para compatibilidad
       const wbout = XLSX.write(workbook, {
         bookType: 'xlsx',
-        type: 'array',
-        compression: false,  // Sin compresión para mayor compatibilidad
-        bookSST: false,      // Sin tabla de strings compartidos
-        cellStyles: false,   // Sin estilos
-        cellNF: false,       // Sin formato de números
-        cellHTML: false,     // Sin HTML
-        cellFormula: false,  // Sin fórmulas
-        cellDates: false,    // Sin fechas especiales
-        Props: false         // Propiedades mínimas
+        type: 'array'
       });
       
       console.log('💾 Archivo generado correctamente');
