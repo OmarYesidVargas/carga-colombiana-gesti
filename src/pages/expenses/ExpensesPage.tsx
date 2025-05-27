@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Expense } from '@/types';
@@ -198,23 +199,23 @@ const ExpensesPage = () => {
         </div>
         
         {/* Layout responsivo mejorado */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 lg:gap-6">
           {/* Resumen de gastos - responsive */}
-          <div className="lg:col-span-1 order-2 lg:order-1">
+          <div className="lg:col-span-4 xl:col-span-3 order-2 lg:order-1">
             <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg h-fit">
               <ExpenseSummary 
-                expenses={expenses} 
+                expenses={filteredExpenses} 
                 vehicles={vehicles}
                 trips={trips}
-                title="Resumen general"
+                title="Resumen de gastos filtrados"
               />
             </div>
           </div>
           
           {/* Lista de gastos - responsive */}
-          <div className="lg:col-span-3 order-1 lg:order-2 space-y-4 sm:space-y-6">
+          <div className="lg:col-span-8 xl:col-span-9 order-1 lg:order-2 space-y-4 sm:space-y-6">
             {/* Filtros de búsqueda mejorados y responsivos */}
-            <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg">
+            <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg p-4 sm:p-6">
               <ExpenseFilters
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
