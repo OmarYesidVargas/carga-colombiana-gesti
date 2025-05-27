@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -218,7 +219,7 @@ const ExpenseForm = ({
                     {...field}
                     type="number"
                     min="0"
-                    step="1000"
+                    step="1"
                     placeholder="0"
                     className="pl-8"
                   />

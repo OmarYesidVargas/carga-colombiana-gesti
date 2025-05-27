@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -278,7 +279,7 @@ const TollRecordForm = ({
                       {...field}
                       type="number"
                       min="0"
-                      step="100"
+                      step="1"
                       placeholder="0"
                       className="pl-8"
                       disabled={isSubmitting}
