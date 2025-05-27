@@ -10,7 +10,7 @@
  * - Redirección automática basada en el estado de autenticación
  * 
  * @author TransporegistrosPlus Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -44,9 +44,6 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 /**
  * Hook personalizado para acceder al contexto de autenticación
- * 
- * @returns {AuthContextType} Objeto con propiedades y métodos de autenticación
- * @throws {Error} Si se usa fuera de un AuthProvider
  */
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
@@ -64,10 +61,7 @@ interface AuthProviderProps {
 }
 
 /**
- * Proveedor del contexto de autenticación
- * 
- * Gestiona el estado global de autenticación y proporciona funciones
- * para iniciar sesión, registrarse y cerrar sesión
+ * Proveedor del contexto de autenticación optimizado
  */
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Estados locales para manejar la información de autenticación
@@ -80,12 +74,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const location = useLocation();
 
   /**
-   * Efecto principal que gestiona los cambios de estado de autenticación
-   * 
-   * Se ejecuta al montar el componente y configura:
-   * - Listener para cambios de autenticación
-   * - Verificación de sesión existente
-   * - Redirección automática basada en el estado
+   * Efecto principal optimizado que gestiona los cambios de estado de autenticación
    */
   useEffect(() => {
     let mounted = true;
@@ -93,7 +82,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Configurar listener para cambios de estado de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        console.log('Cambio de estado de autenticación:', event, newSession?.user?.email);
+        if (import.meta.env.DEV) {
+          console.log('Cambio de estado de autenticación:', event, newSession?.user?.email);
+        }
         
         if (!mounted) return;
 
@@ -103,14 +94,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         // Manejar diferentes eventos de autenticación
         switch (event) {
-          case 'PASSWORD_RECOVERY':
-            // Evento de recuperación de contraseña - no redirigir automáticamente
-            console.log('Evento de recuperación de contraseña detectado');
-            break;
-            
           case 'SIGNED_IN':
             if (newSession && mounted) {
-              // Redirigir al dashboard solo si estamos en páginas de autenticación
               const currentPath = location.pathname;
               const authPages = ['/login', '/register'];
               if (authPages.includes(currentPath)) {
@@ -121,17 +106,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             
           case 'SIGNED_OUT':
             if (mounted) {
-              // Redirigir al login solo si estamos en páginas protegidas
               const currentPath = location.pathname;
               const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
               if (!publicPaths.includes(currentPath)) {
                 navigate('/login');
               }
             }
-            break;
-            
-          default:
-            // Otros eventos no requieren acción específica
             break;
         }
       }
@@ -142,9 +122,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       try {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
-        if (error) {
+        if (error && import.meta.env.DEV) {
           console.error('Error al obtener sesión:', error);
-          toast.error('Error al verificar la sesión');
         }
         
         if (mounted) {
@@ -152,7 +131,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setUser(currentSession?.user ?? null);
         }
       } catch (error) {
-        console.error('Error inesperado al obtener sesión:', error);
+        if (import.meta.env.DEV) {
+          console.error('Error inesperado al obtener sesión:', error);
+        }
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -170,17 +151,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [navigate, location.pathname]);
 
   /**
-   * Función para iniciar sesión con email y contraseña
-   * 
-   * @param {string} email - Correo electrónico del usuario
-   * @param {string} password - Contraseña del usuario
-   * @throws {Error} Si las credenciales son incorrectas o hay un error de conexión
+   * Función optimizada para iniciar sesión
    */
   const login = async (email: string, password: string): Promise<void> => {
     try {
       setIsLoading(true);
       
-      // Validaciones básicas antes de enviar la petición
+      // Validaciones básicas
       if (!email || !password) {
         throw new Error('Email y contraseña son requeridos');
       }
@@ -200,7 +177,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       });
       
       if (error) {
-        // Manejar errores específicos de Supabase
+        // Manejar errores específicos
         let errorMessage = 'Error al iniciar sesión';
         
         switch (error.message) {
@@ -223,8 +200,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       toast.success('¡Has iniciado sesión exitosamente!');
     } catch (error: any) {
-      console.error('Error al iniciar sesión:', error);
-      // Re-lanzar el error para que el componente pueda manejarlo
+      if (import.meta.env.DEV) {
+        console.error('Error al iniciar sesión:', error);
+      }
       throw error;
     } finally {
       setIsLoading(false);
@@ -232,13 +210,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   /**
-   * Función para registrar un nuevo usuario
-   * 
-   * @param {string} name - Nombre completo del usuario
-   * @param {string} email - Correo electrónico del usuario
-   * @param {string} password - Contraseña del usuario
-   * @param {any} metadata - Datos adicionales del usuario (opcional)
-   * @throws {Error} Si hay un error en el registro
+   * Función optimizada para registrar un nuevo usuario
    */
   const register = async (name: string, email: string, password: string, metadata?: any): Promise<void> => {
     try {
@@ -298,7 +270,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       toast.success('¡Registro exitoso! Por favor revisa tu correo para confirmar tu cuenta.');
       navigate('/login');
     } catch (error: any) {
-      console.error('Error al registrarse:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error al registrarse:', error);
+      }
       throw error;
     } finally {
       setIsLoading(false);
@@ -306,43 +280,49 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   /**
-   * Función para cerrar sesión del usuario actual mejorada para móvil
-   * 
-   * Limpia toda la información de sesión y redirige al usuario
+   * Función optimizada para cerrar sesión
    */
   const logout = async (): Promise<void> => {
     try {
-      console.log('🔄 Iniciando proceso de logout...');
+      if (import.meta.env.DEV) {
+        console.log('🔄 Iniciando proceso de logout...');
+      }
       
       // Verificar si hay una sesión activa
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       
       if (!currentSession) {
-        console.log('⚠️ No hay sesión activa para cerrar');
-        // Aún así limpiar el estado local y localStorage
+        // Limpiar estado local aunque no haya sesión
         setSession(null);
         setUser(null);
         
-        // Limpiar localStorage de forma agresiva
+        // Limpiar localStorage selectivamente
         try {
-          localStorage.removeItem('supabase.auth.token');
-          localStorage.removeItem('transporegistros-auth-token');
-          console.log('🧹 Local storage limpiado');
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.includes('supabase') || key.includes('auth'))) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => localStorage.removeItem(key));
         } catch (error) {
-          console.warn('⚠️ Error limpiando localStorage:', error);
+          if (import.meta.env.DEV) {
+            console.warn('⚠️ Error limpiando localStorage:', error);
+          }
         }
         
         toast.success('Sesión cerrada exitosamente');
         return;
       }
       
-      console.log('🔐 Cerrando sesión activa:', currentSession.user?.email);
-      
       // Cerrar sesión en Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('❌ Error al cerrar sesión:', error);
+        if (import.meta.env.DEV) {
+          console.error('❌ Error al cerrar sesión:', error);
+        }
         
         // Si hay error, aún así limpiar el estado local
         setSession(null);
@@ -350,31 +330,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         
         // Limpiar localStorage manualmente
         try {
-          localStorage.removeItem('supabase.auth.token');
-          localStorage.removeItem('transporegistros-auth-token');
-          console.log('🧹 Local storage limpiado manualmente');
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.includes('supabase') || key.includes('auth'))) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => localStorage.removeItem(key));
         } catch (storageError) {
-          console.warn('⚠️ Error limpiando localStorage:', storageError);
+          if (import.meta.env.DEV) {
+            console.warn('⚠️ Error limpiando localStorage:', storageError);
+          }
         }
         
         toast.error('Error al cerrar sesión, pero se limpió la sesión local');
         return;
       }
       
-      console.log('✅ Sesión cerrada exitosamente');
       toast.success('Sesión cerrada exitosamente');
     } catch (error: any) {
-      console.error('❌ Error inesperado al cerrar sesión:', error);
+      if (import.meta.env.DEV) {
+        console.error('❌ Error inesperado al cerrar sesión:', error);
+      }
       
       // En caso de error inesperado, forzar limpieza local
       setSession(null);
       setUser(null);
       
       try {
-        localStorage.clear();
-        console.log('🧹 Local storage completamente limpiado por error');
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.includes('supabase') || key.includes('auth'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
       } catch (storageError) {
-        console.warn('⚠️ Error limpiando localStorage:', storageError);
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ Error limpiando localStorage:', storageError);
+        }
       }
       
       toast.error('Sesión cerrada localmente debido a un error');

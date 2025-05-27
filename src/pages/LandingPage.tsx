@@ -40,46 +40,66 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <section className="bg-gradient-to-b from-primary/20 to-background pt-12 pb-20 px-4 md:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            TransporegistrosPlus
-          </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-            Gestiona tus vehículos, viajes y gastos de transporte de forma sencilla e intuitiva
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/register">
-              <Button size="lg" className="gap-2">
-                <Shield className="h-5 w-5" />
-                Comenzar Ahora
-              </Button>
-            </Link>
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      {/* Header */}
+      <header className="w-full p-4 bg-white/80 backdrop-blur-sm border-b">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-blue-600">TransporegistrosPlus</h1>
+          <div className="flex gap-2">
             <Link to="/login">
-              <Button size="lg" variant="outline" className="gap-2">
-                Iniciar Sesión
-              </Button>
+              <Button variant="outline">Iniciar Sesión</Button>
             </Link>
+            <Link to="/register">
+              <Button>Registrarse</Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="flex-1 py-16 px-4 md:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="mb-8">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              TransporegistrosPlus
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-600 mb-10 max-w-3xl mx-auto">
+              La solución integral para gestionar tu operación de transporte. 
+              Controla vehículos, viajes, gastos y genera reportes profesionales.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+              <Link to="/register">
+                <Button size="lg" className="gap-2 min-w-[200px]">
+                  <Shield className="h-5 w-5" />
+                  Comenzar Gratis
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button size="lg" variant="outline" className="gap-2 min-w-[200px]">
+                  Iniciar Sesión
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-16 px-4 md:px-6 lg:px-8">
+      {/* Features Section */}
+      <section className="py-16 px-4 md:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            Todas las herramientas que necesitas
-          </h2>
+          <h3 className="text-3xl font-bold text-center mb-12">
+            Funcionalidades Principales
+          </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="border border-primary/20 hover:shadow-md transition-all">
-                <CardContent className="pt-6 flex flex-col items-center text-center">
-                  <div className="p-3 bg-primary/20 rounded-full mb-4">
-                    <feature.icon className="h-8 w-8 text-primary" />
+              <Card key={index} className="border border-blue-100 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="pt-6 flex flex-col items-center text-center h-full">
+                  <div className="p-3 bg-blue-100 rounded-full mb-4">
+                    <feature.icon className="h-8 w-8 text-blue-600" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">
+                  <h4 className="text-xl font-semibold mb-3">{feature.title}</h4>
+                  <p className="text-gray-600 flex-1">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -89,37 +109,39 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="bg-secondary/10 py-16 px-4 md:px-6 lg:px-8">
+      {/* CTA Section */}
+      <section className="py-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6">
+          <h3 className="text-3xl font-bold mb-6">
             ¿Listo para optimizar tu operación de transporte?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Regístrate hoy y comienza a gestionar tus vehículos, viajes y gastos de manera eficiente.
+          </h3>
+          <p className="text-xl text-gray-600 mb-8">
+            Únete a profesionales del transporte que ya optimizan su gestión con TransporegistrosPlus.
           </p>
           <Link to="/register">
-            <Button size="lg">
-              Comenzar Gratis
+            <Button size="lg" className="min-w-[250px]">
+              Comenzar Ahora - Es Gratis
             </Button>
           </Link>
         </div>
       </section>
 
-      <footer className="bg-muted py-10 px-4 md:px-6 lg:px-8 mt-auto">
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-10 px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-lg font-bold mb-2">TransporegistrosPlus</p>
-          <p className="text-sm text-muted-foreground">
-            Diseñado especialmente para el mercado colombiano de transporte
+          <p className="text-sm text-gray-400 mb-6">
+            Sistema profesional de gestión de transportes para el mercado colombiano
           </p>
-          <div className="flex justify-center gap-6 mt-6">
-            <Link to="/login" className="text-muted-foreground hover:text-primary">
+          <div className="flex justify-center gap-6">
+            <Link to="/login" className="text-gray-400 hover:text-blue-400 transition-colors">
               Iniciar Sesión
             </Link>
-            <Link to="/register" className="text-muted-foreground hover:text-primary">
+            <Link to="/register" className="text-gray-400 hover:text-blue-400 transition-colors">
               Registrarse
             </Link>
           </div>
-          <p className="text-xs text-muted-foreground mt-8">
+          <p className="text-xs text-gray-500 mt-8">
             © {new Date().getFullYear()} TransporegistrosPlus. Todos los derechos reservados.
           </p>
         </div>

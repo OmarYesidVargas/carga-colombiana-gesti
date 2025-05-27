@@ -14,7 +14,7 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      // Configuración específica para móvil
+      // Configuración específica para móvil mejorada
       storageKey: 'transporegistros-auth-token',
       debug: import.meta.env.DEV
     },
@@ -26,37 +26,58 @@ export const supabase = createClient<Database>(
     },
     db: {
       schema: 'public'
+    },
+    // Configuración adicional para estabilidad
+    realtime: {
+      params: {
+        eventsPerSecond: 2
+      }
     }
   }
 )
 
 // Configurar manejo de errores globales mejorado para móvil
 supabase.auth.onAuthStateChange((event, session) => {
-  console.log('🔄 Auth state change:', event, session?.user?.email || 'No user');
+  if (import.meta.env.DEV) {
+    console.log('🔄 Auth state change:', event, session?.user?.email || 'No user');
+  }
   
   if (event === 'SIGNED_OUT') {
     // Limpiar datos locales al cerrar sesión de forma más agresiva
     try {
       localStorage.removeItem('supabase.auth.token')
       localStorage.removeItem('transporegistros-auth-token')
-      localStorage.clear() // Limpiar todo el localStorage en móvil
-      console.log('🧹 Local storage cleared successfully')
+      // En móvil, ser más selectivo con la limpieza
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('supabase') || key.includes('auth'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      if (import.meta.env.DEV) {
+        console.log('🧹 Local storage cleared successfully');
+      }
     } catch (error) {
       console.warn('⚠️ Error clearing localStorage:', error)
     }
   }
   
-  if (event === 'TOKEN_REFRESHED') {
+  if (event === 'TOKEN_REFRESHED' && import.meta.env.DEV) {
     console.log('🔄 Token de autenticación renovado')
   }
   
-  if (event === 'SIGNED_IN') {
+  if (event === 'SIGNED_IN' && import.meta.env.DEV) {
     console.log('✅ Usuario autenticado:', session?.user?.email)
   }
 })
 
-// Verificar conexión con Supabase
+// Verificar conexión con Supabase solo en desarrollo
 const healthCheck = async () => {
+  if (!import.meta.env.DEV) return;
+  
   try {
     const { data, error } = await supabase.from('vehicles').select('count').limit(1)
     if (error) {
@@ -69,8 +90,8 @@ const healthCheck = async () => {
   }
 }
 
-// Ejecutar verificación en producción
-if (import.meta.env.PROD) {
+// Ejecutar verificación solo en desarrollo
+if (import.meta.env.DEV) {
   healthCheck()
 }
 
