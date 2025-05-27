@@ -35,12 +35,12 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 255 255 255;
+    --sidebar-foreground: 222.2 84% 4.9%;
     --sidebar-primary: 255 70% 75%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 255 70% 75%;
   }
@@ -96,5 +96,25 @@
   /* Estilo para el formato de placas vehiculares */
   .vehicle-plate {
     @apply font-mono uppercase tracking-wider;
+  }
+
+  /* Estilos específicos para el sidebar para asegurar visibilidad */
+  [data-sidebar="sidebar"] {
+    background-color: hsl(var(--sidebar-background));
+    color: hsl(var(--sidebar-foreground));
+  }
+
+  [data-sidebar="menu-button"] {
+    color: hsl(var(--sidebar-foreground)) !important;
+  }
+
+  [data-sidebar="menu-button"]:hover {
+    background-color: hsl(var(--sidebar-accent)) !important;
+    color: hsl(var(--sidebar-accent-foreground)) !important;
+  }
+
+  [data-sidebar="group-label"] {
+    color: hsl(var(--sidebar-foreground)) !important;
+    opacity: 0.8;
   }
 }

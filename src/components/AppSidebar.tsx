@@ -45,7 +45,9 @@ export function AppSidebar() {
     <Sidebar collapsible="offcanvas">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navegación</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground font-medium">
+            Navegación
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -55,15 +57,15 @@ export function AppSidebar() {
                       to={item.to}
                       onClick={handleLinkClick}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all w-full ${
+                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all w-full no-underline ${
                           isActive 
-                            ? "bg-primary text-primary-foreground font-medium" 
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm" 
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         }`
                       }
                     >
                       <item.icon className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate font-medium">{item.label}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
