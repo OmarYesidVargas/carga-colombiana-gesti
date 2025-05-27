@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -19,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, FileText } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import DocumentUpload from './DocumentUpload';
 
 // Esquema de validación para el formulario
@@ -133,297 +133,307 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Información básica del vehículo */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Información del Vehículo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="plate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Placa *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      placeholder="ABC123" 
-                      className="uppercase vehicle-plate"
-                      maxLength={7}
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
+        <ScrollArea className="flex-1 max-h-[70vh] pr-4">
+          <div className="space-y-4">
+            {/* Información básica del vehículo */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Información del Vehículo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <FormField
+                  control={form.control}
+                  name="plate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Placa *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          placeholder="ABC123" 
+                          className="uppercase vehicle-plate h-9"
+                          maxLength={7}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="brand"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Marca *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Marca" className="h-9" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="model"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Modelo *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Modelo" className="h-9" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="year"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Año *</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value.toString()}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="Año" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[200px]">
+                            {years.map((year) => (
+                              <SelectItem key={year} value={year}>
+                                {year}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="color"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Color</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Color" className="h-9" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="fuelType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Combustible</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="Tipo" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {fuelTypes.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="capacity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Capacidad de Carga</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Ej: 5 Toneladas" className="h-9" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Documentación Colombia */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Documentación Colombia
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* SOAT */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-muted-foreground">SOAT</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="soatExpiryDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm flex items-center gap-2">
+                            Vencimiento
+                            {isExpired(field.value) && (
+                              <span className="text-xs bg-red-100 text-red-700 px-1 py-0.5 rounded">VENCIDO</span>
+                            )}
+                            {isExpiringSoon(field.value) && !isExpired(field.value) && (
+                              <span className="text-xs bg-yellow-100 text-yellow-700 px-1 py-0.5 rounded">PRÓXIMO</span>
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              type="date"
+                              className={`h-9 ${
+                                isExpired(field.value) 
+                                  ? "border-red-500" 
+                                  : isExpiringSoon(field.value) 
+                                    ? "border-yellow-500" 
+                                    : ""
+                              }`}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="brand"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Marca *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Marca del vehículo" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="model"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Modelo *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Modelo del vehículo" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Año *</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar año" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="max-h-[200px]">
-                        {years.map((year) => (
-                          <SelectItem key={year} value={year}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Color</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Color (opcional)" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="fuelType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo de Combustible</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {fuelTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="capacity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Capacidad de Carga</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Ej: 5 Toneladas (opcional)" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Documentación Colombia */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Documentación Vehicular Colombia
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* SOAT */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="soatExpiryDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Vencimiento SOAT
-                      {isExpired(field.value) && (
-                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">VENCIDO</span>
+                    
+                    <FormField
+                      control={form.control}
+                      name="soatInsuranceCompany"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">Aseguradora</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-9">
+                                <SelectValue placeholder="Seleccionar" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {colombianInsurers.map((insurer) => (
+                                <SelectItem key={insurer.value} value={insurer.value}>
+                                  {insurer.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                      {isExpiringSoon(field.value) && !isExpired(field.value) && (
-                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">PRÓXIMO A VENCER</span>
-                      )}
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="date"
-                        className={
-                          isExpired(field.value) 
-                            ? "border-red-500" 
-                            : isExpiringSoon(field.value) 
-                              ? "border-yellow-500" 
-                              : ""
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="soatInsuranceCompany"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Aseguradora SOAT</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar aseguradora" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {colombianInsurers.map((insurer) => (
-                          <SelectItem key={insurer.value} value={insurer.value}>
-                            {insurer.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    />
+                  </div>
 
-            <DocumentUpload
-              label="Documento SOAT"
-              documentType="soat"
-              currentUrl={form.watch('soatDocumentUrl')}
-              vehicleId={initialData?.id}
-              userId={user?.id || ''}
-              onUploadComplete={(url) => form.setValue('soatDocumentUrl', url)}
-              onRemove={() => form.setValue('soatDocumentUrl', '')}
-            />
+                  <DocumentUpload
+                    label="Documento SOAT"
+                    documentType="soat"
+                    currentUrl={form.watch('soatDocumentUrl')}
+                    vehicleId={initialData?.id}
+                    userId={user?.id || ''}
+                    onUploadComplete={(url) => form.setValue('soatDocumentUrl', url)}
+                    onRemove={() => form.setValue('soatDocumentUrl', '')}
+                  />
+                </div>
 
-            {/* Tecnomecánica */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="technoExpiryDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Vencimiento Tecnomecánica
-                      {isExpired(field.value) && (
-                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">VENCIDO</span>
+                {/* Tecnomecánica */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-muted-foreground">Tecnomecánica</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="technoExpiryDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm flex items-center gap-2">
+                            Vencimiento
+                            {isExpired(field.value) && (
+                              <span className="text-xs bg-red-100 text-red-700 px-1 py-0.5 rounded">VENCIDO</span>
+                            )}
+                            {isExpiringSoon(field.value) && !isExpired(field.value) && (
+                              <span className="text-xs bg-yellow-100 text-yellow-700 px-1 py-0.5 rounded">PRÓXIMO</span>
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              type="date"
+                              className={`h-9 ${
+                                isExpired(field.value) 
+                                  ? "border-red-500" 
+                                  : isExpiringSoon(field.value) 
+                                    ? "border-yellow-500" 
+                                    : ""
+                              }`}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                      {isExpiringSoon(field.value) && !isExpired(field.value) && (
-                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">PRÓXIMO A VENCER</span>
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="technoCenter"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">Centro Diagnóstico</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Centro (opcional)" className="h-9" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="date"
-                        className={
-                          isExpired(field.value) 
-                            ? "border-red-500" 
-                            : isExpiringSoon(field.value) 
-                              ? "border-yellow-500" 
-                              : ""
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="technoCenter"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Centro Diagnóstico</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Nombre del centro (opcional)" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    />
+                  </div>
 
-            <DocumentUpload
-              label="Certificado Tecnomecánica"
-              documentType="techno"
-              currentUrl={form.watch('technoDocumentUrl')}
-              vehicleId={initialData?.id}
-              userId={user?.id || ''}
-              onUploadComplete={(url) => form.setValue('technoDocumentUrl', url)}
-              onRemove={() => form.setValue('technoDocumentUrl', '')}
-            />
-          </CardContent>
-        </Card>
+                  <DocumentUpload
+                    label="Certificado Tecnomecánica"
+                    documentType="techno"
+                    currentUrl={form.watch('technoDocumentUrl')}
+                    vehicleId={initialData?.id}
+                    userId={user?.id || ''}
+                    onUploadComplete={(url) => form.setValue('technoDocumentUrl', url)}
+                    onRemove={() => form.setValue('technoDocumentUrl', '')}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </ScrollArea>
         
-        <DialogFooter>
+        <DialogFooter className="mt-4 pt-4 border-t">
           <Button 
             type="button" 
             variant="outline" 

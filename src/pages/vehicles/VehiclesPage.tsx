@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Button } from '@/components/ui/button';
@@ -34,8 +33,6 @@ const VehiclesPage = () => {
   const [currentVehicle, setCurrentVehicle] = useState<Vehicle | null>(null);
   const [vehicleToDelete, setVehicleToDelete] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Estado para la búsqueda
   const [searchQuery, setSearchQuery] = useState('');
   
   const handleOpenForm = (vehicle?: Vehicle) => {
@@ -56,7 +53,6 @@ const VehiclesPage = () => {
     setIsSubmitting(true);
     
     try {
-      // Convertir year a número
       vehicleData.year = parseInt(vehicleData.year, 10);
       
       if (currentVehicle) {
@@ -86,7 +82,6 @@ const VehiclesPage = () => {
     }
   };
   
-  // Filtrar vehículos según la búsqueda
   const filteredVehicles = vehicles.filter(vehicle => {
     const query = searchQuery.toLowerCase().trim();
     return (
@@ -113,7 +108,7 @@ const VehiclesPage = () => {
               Nuevo Vehículo
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle>
                 {currentVehicle ? 'Editar Vehículo' : 'Agregar Nuevo Vehículo'}
