@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Button } from '@/components/ui/button';
@@ -129,8 +128,8 @@ const VehiclesPage = () => {
               Nuevo Vehículo
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px] max-h-[95vh] overflow-hidden">
-            <DialogHeader>
+          <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[800px] p-0 gap-0">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle>
                 {currentVehicle ? 'Editar Vehículo' : 'Agregar Nuevo Vehículo'}
               </DialogTitle>
@@ -141,12 +140,14 @@ const VehiclesPage = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <VehicleForm
-              initialData={currentVehicle || undefined}
-              onSubmit={handleSubmitVehicle}
-              onCancel={handleCloseForm}
-              isSubmitting={isSubmitting}
-            />
+            <div className="flex-1 overflow-hidden px-6 pb-6">
+              <VehicleForm
+                initialData={currentVehicle || undefined}
+                onSubmit={handleSubmitVehicle}
+                onCancel={handleCloseForm}
+                isSubmitting={isSubmitting}
+              />
+            </div>
           </DialogContent>
         </Dialog>
       </div>

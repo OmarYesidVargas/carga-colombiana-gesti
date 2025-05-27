@@ -126,38 +126,41 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
   }
 
   return (
-    <div className="h-full overflow-hidden">
+    <div className="h-full overflow-hidden flex flex-col">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="h-full flex flex-col">
-          <div className="flex-1 overflow-y-auto px-1">
+          <div className="flex-1 overflow-y-auto">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="basic" className="flex items-center gap-2">
-                  <Car className="h-4 w-4" />
-                  Información Básica
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="basic" className="flex items-center gap-1 text-xs sm:text-sm">
+                  <Car className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Información</span>
+                  <span className="xs:hidden">Info</span>
                 </TabsTrigger>
-                <TabsTrigger value="documentation" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Documentación
+                <TabsTrigger value="documentation" className="flex items-center gap-1 text-xs sm:text-sm">
+                  <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Documentación</span>
+                  <span className="xs:hidden">Docs</span>
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="basic" className="space-y-6 mt-6">
+              <TabsContent value="basic" className="space-y-4 mt-0">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Datos del Vehículo</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Datos del Vehículo</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <FormField
                         control={form.control}
                         name="plate"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Placa *</FormLabel>
+                            <FormLabel className="text-sm">Placa *</FormLabel>
                             <FormControl>
                               <Input 
                                 placeholder="ABC123" 
+                                className="h-9"
                                 {...field} 
                                 onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                               />
@@ -172,11 +175,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                         name="year"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Año *</FormLabel>
+                            <FormLabel className="text-sm">Año *</FormLabel>
                             <FormControl>
                               <Input 
                                 type="number" 
                                 placeholder="2024"
+                                className="h-9"
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                               />
@@ -191,9 +195,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                         name="brand"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Marca *</FormLabel>
+                            <FormLabel className="text-sm">Marca *</FormLabel>
                             <FormControl>
-                              <Input placeholder="Toyota" {...field} />
+                              <Input placeholder="Toyota" className="h-9" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -205,9 +209,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                         name="model"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Modelo *</FormLabel>
+                            <FormLabel className="text-sm">Modelo *</FormLabel>
                             <FormControl>
-                              <Input placeholder="Corolla" {...field} />
+                              <Input placeholder="Corolla" className="h-9" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -219,9 +223,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                         name="color"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Color</FormLabel>
+                            <FormLabel className="text-sm">Color</FormLabel>
                             <FormControl>
-                              <Input placeholder="Blanco" {...field} />
+                              <Input placeholder="Blanco" className="h-9" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -233,11 +237,11 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                         name="fuelType"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Tipo de Combustible</FormLabel>
+                            <FormLabel className="text-sm">Combustible</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Seleccionar combustible" />
+                                <SelectTrigger className="h-9">
+                                  <SelectValue placeholder="Seleccionar" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -257,10 +261,10 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                         control={form.control}
                         name="capacity"
                         render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>Capacidad</FormLabel>
+                          <FormItem className="sm:col-span-2">
+                            <FormLabel className="text-sm">Capacidad</FormLabel>
                             <FormControl>
-                              <Input placeholder="5 pasajeros" {...field} />
+                              <Input placeholder="5 pasajeros" className="h-9" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -271,33 +275,34 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 </Card>
               </TabsContent>
 
-              <TabsContent value="documentation" className="space-y-6 mt-6">
+              <TabsContent value="documentation" className="space-y-4 mt-0">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>SOAT</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">SOAT</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <FormField
                         control={form.control}
                         name="soatExpiryDate"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
-                            <FormLabel>Fecha de Vencimiento</FormLabel>
+                            <FormLabel className="text-sm">Vencimiento</FormLabel>
                             <Popover>
                               <PopoverTrigger asChild>
                                 <FormControl>
                                   <Button
                                     variant="outline"
+                                    size="sm"
                                     className={cn(
-                                      "w-full pl-3 text-left font-normal",
+                                      "w-full justify-start text-left font-normal h-9",
                                       !field.value && "text-muted-foreground"
                                     )}
                                   >
                                     {field.value ? (
                                       format(field.value, "dd/MM/yyyy", { locale: es })
                                     ) : (
-                                      <span>Seleccionar fecha</span>
+                                      <span>Fecha</span>
                                     )}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                   </Button>
@@ -323,9 +328,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                         name="soatInsuranceCompany"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Aseguradora</FormLabel>
+                            <FormLabel className="text-sm">Aseguradora</FormLabel>
                             <FormControl>
-                              <Input placeholder="Nombre de la aseguradora" {...field} />
+                              <Input placeholder="Aseguradora" className="h-9" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -346,31 +351,32 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                 </Card>
 
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Tecnomecánica</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Tecnomecánica</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <FormField
                         control={form.control}
                         name="technoExpiryDate"
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
-                            <FormLabel>Fecha de Vencimiento</FormLabel>
+                            <FormLabel className="text-sm">Vencimiento</FormLabel>
                             <Popover>
                               <PopoverTrigger asChild>
                                 <FormControl>
                                   <Button
                                     variant="outline"
+                                    size="sm"
                                     className={cn(
-                                      "w-full pl-3 text-left font-normal",
+                                      "w-full justify-start text-left font-normal h-9",
                                       !field.value && "text-muted-foreground"
                                     )}
                                   >
                                     {field.value ? (
                                       format(field.value, "dd/MM/yyyy", { locale: es })
                                     ) : (
-                                      <span>Seleccionar fecha</span>
+                                      <span>Fecha</span>
                                     )}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                   </Button>
@@ -396,9 +402,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                         name="technoCenter"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Centro de Revisión</FormLabel>
+                            <FormLabel className="text-sm">Centro de Revisión</FormLabel>
                             <FormControl>
-                              <Input placeholder="Nombre del centro" {...field} />
+                              <Input placeholder="Centro" className="h-9" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -421,15 +427,24 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
             </Tabs>
           </div>
 
-          <Separator className="my-4" />
-
-          <div className="flex justify-end gap-2 px-1">
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Guardando...' : (initialData ? 'Actualizar' : 'Guardar')}
-            </Button>
+          <div className="mt-4 pt-4 border-t bg-background">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel}
+                className="h-9"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="h-9"
+              >
+                {isSubmitting ? 'Guardando...' : (initialData ? 'Actualizar' : 'Guardar')}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
