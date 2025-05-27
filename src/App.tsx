@@ -41,23 +41,23 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <DataProvider>
-            <Toaster 
-              position="top-right"
-              expand={false}
-              richColors
-              closeButton
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  color: 'hsl(var(--foreground))',
-                }
-              }}
-            />
-            <BrowserRouter basename="/transporegistrosplus">
+        <Toaster 
+          position="top-right"
+          expand={false}
+          richColors
+          closeButton
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: 'hsl(var(--background))',
+              border: '1px solid hsl(var(--border))',
+              color: 'hsl(var(--foreground))',
+            }
+          }}
+        />
+        <BrowserRouter basename="/transporegistrosplus">
+          <AuthProvider>
+            <DataProvider>
               <Routes>
                 {/* Rutas públicas */}
                 <Route path="/" element={<Index />} />
@@ -118,9 +118,9 @@ function App() {
                 {/* Ruta 404 */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </DataProvider>
-        </AuthProvider>
+            </DataProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
