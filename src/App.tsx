@@ -33,6 +33,14 @@ const queryClient = new QueryClient({
   },
 });
 
+// Obtener el basename según el entorno
+const getBasename = () => {
+  if (import.meta.env.PROD) {
+    return "/transporegistrosplus";
+  }
+  return "";
+};
+
 function App() {
   useEffect(() => {
     // Inicializar configuración de la aplicación
@@ -56,7 +64,7 @@ function App() {
             }
           }}
         />
-        <BrowserRouter basename="/transporegistrosplus">
+        <BrowserRouter basename={getBasename()}>
           <AuthProvider>
             <DataProvider>
               <Routes>
