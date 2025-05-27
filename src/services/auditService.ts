@@ -25,7 +25,7 @@ const getAuditContext = (): AuditContext => {
 };
 
 /**
- * Registra una operación en el log de auditoría
+ * Registra una operación en el log de auditoría de forma silenciosa
  * 
  * @param {User | null} user - Usuario que realiza la operación
  * @param {CreateAuditLogParams} params - Parámetros del log de auditoría
@@ -35,9 +35,8 @@ export const createAuditLog = async (
   user: User | null,
   params: CreateAuditLogParams
 ): Promise<boolean> => {
-  // Si no hay usuario, no registrar auditoría para evitar errores
+  // Si no hay usuario, no registrar auditoría
   if (!user) {
-    console.log('Auditoría omitida: usuario no autenticado');
     return false;
   }
 
@@ -62,19 +61,12 @@ export const createAuditLog = async (
       created_at: new Date().toISOString()
     };
 
-    console.log('Intentando registrar auditoría:', {
-      usuario: user.email || 'Usuario',
-      tabla: params.tableName,
-      operación: params.operation,
-      registro: params.recordId
-    });
-
-    // Usar edge function para insertar audit log con timeout
+    // Timeout más corto y manejo silencioso de errores
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-audit-log', {
+      const { error } = await supabase.functions.invoke('create-audit-log', {
         body: { audit_data: auditData },
         headers: {
           'Content-Type': 'application/json'
@@ -82,28 +74,21 @@ export const createAuditLog = async (
       });
 
       clearTimeout(timeoutId);
-
-      if (error) {
-        console.error('Error al crear log de auditoría:', error);
-        return false;
-      }
-
-      console.log('Auditoría registrada exitosamente');
-      return true;
+      return !error;
     } catch (fetchError) {
       clearTimeout(timeoutId);
-      console.error('Error de conexión en auditoría:', fetchError);
+      // Silenciar errores de red para no afectar UX
       return false;
     }
 
   } catch (error) {
-    console.error('Error inesperado en auditoría:', error);
+    // Silenciar todos los errores de auditoría
     return false;
   }
 };
 
 /**
- * Registra una operación de lectura (READ)
+ * Registra una operación de lectura (READ) - Deshabilitada para rendimiento
  */
 export const auditRead = async (
   user: User | null,
@@ -112,12 +97,6 @@ export const auditRead = async (
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
   // No hacer auditoría de lecturas para reducir carga
-  // await createAuditLog(user, {
-  //   tableName,
-  //   operation: 'READ',
-  //   recordId,
-  //   additionalInfo
-  // });
 };
 
 /**
@@ -130,13 +109,16 @@ export const auditCreate = async (
   newValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  await createAuditLog(user, {
-    tableName,
-    operation: 'CREATE',
-    recordId,
-    newValues,
-    additionalInfo
-  });
+  // Ejecutar de forma asíncrona sin bloquear la UI
+  setTimeout(() => {
+    createAuditLog(user, {
+      tableName,
+      operation: 'CREATE',
+      recordId,
+      newValues,
+      additionalInfo
+    });
+  }, 0);
 };
 
 /**
@@ -150,14 +132,17 @@ export const auditUpdate = async (
   newValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  await createAuditLog(user, {
-    tableName,
-    operation: 'UPDATE',
-    recordId,
-    oldValues,
-    newValues,
-    additionalInfo
-  });
+  // Ejecutar de forma asíncrona sin bloquear la UI
+  setTimeout(() => {
+    createAuditLog(user, {
+      tableName,
+      operation: 'UPDATE',
+      recordId,
+      oldValues,
+      newValues,
+      additionalInfo
+    });
+  }, 0);
 };
 
 /**
@@ -170,13 +155,16 @@ export const auditDelete = async (
   oldValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  await createAuditLog(user, {
-    tableName,
-    operation: 'DELETE',
-    recordId,
-    oldValues,
-    additionalInfo
-  });
+  // Ejecutar de forma asíncrona sin bloquear la UI
+  setTimeout(() => {
+    createAuditLog(user, {
+      tableName,
+      operation: 'DELETE',
+      recordId,
+      oldValues,
+      additionalInfo
+    });
+  }, 0);
 };
 
 /**
@@ -198,13 +186,11 @@ export const getAuditLogs = async (
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('Error al obtener logs de auditoría:', error);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.error('Error inesperado al obtener logs:', error);
     return [];
   }
 };
