@@ -22,19 +22,23 @@ interface TripDateFieldsProps {
 }
 
 /**
- * Componente optimizado para campos de fecha con debugging mejorado
- * Permite seleccionar fechas desde 30 días atrás hasta 1 año en el futuro
- * Incluye validación coherente entre fechas de inicio y fin
+ * Componente optimizado para campos de fecha con validación corregida
+ * Permite seleccionar fechas desde 30 días atrás hasta hoy (incluido) para fecha de inicio
+ * Y hasta 1 año en el futuro para fecha de fin
  */
 const TripDateFields = ({ form }: TripDateFieldsProps) => {
   const { log, logAction } = useDebugLogger({ component: 'TripDateFields' });
   
   const today = new Date();
+  today.setHours(23, 59, 59, 999); // Fin del día de hoy
+  
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  thirtyDaysAgo.setHours(0, 0, 0, 0); // Inicio del día hace 30 días
   
   const oneYearFromNow = new Date();
   oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+  oneYearFromNow.setHours(23, 59, 59, 999); // Fin del día en 1 año
 
   React.useEffect(() => {
     log('Date fields initialized', {
@@ -94,8 +98,17 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
                   selected={field.value}
                   onSelect={(date) => handleStartDateChange(date, field.onChange)}
                   disabled={(date) => {
-                    // Permitir desde hace 30 días hasta 1 año en el futuro
-                    return date < thirtyDaysAgo || date > oneYearFromNow;
+                    // Permitir desde hace 30 días hasta HOY (incluido)
+                    const currentDate = new Date(date);
+                    currentDate.setHours(0, 0, 0, 0);
+                    
+                    const minDate = new Date(thirtyDaysAgo);
+                    minDate.setHours(0, 0, 0, 0);
+                    
+                    const maxDate = new Date();
+                    maxDate.setHours(23, 59, 59, 999);
+                    
+                    return currentDate < minDate || currentDate > maxDate;
                   }}
                   initialFocus
                   locale={es}
@@ -141,11 +154,27 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
                   disabled={(date) => {
                     // La fecha de fin debe ser posterior o igual a la fecha de inicio
                     const startDate = form.getValues('startDate');
+                    const currentDate = new Date(date);
+                    currentDate.setHours(0, 0, 0, 0);
+                    
                     if (startDate) {
-                      return date < startDate || date > oneYearFromNow;
+                      const startDateCompare = new Date(startDate);
+                      startDateCompare.setHours(0, 0, 0, 0);
+                      
+                      const maxDate = new Date(oneYearFromNow);
+                      maxDate.setHours(23, 59, 59, 999);
+                      
+                      return currentDate < startDateCompare || currentDate > maxDate;
                     }
-                    // Si no hay fecha de inicio, permitir desde hace 30 días hasta 1 año en el futuro
-                    return date < thirtyDaysAgo || date > oneYearFromNow;
+                    
+                    // Si no hay fecha de inicio, permitir desde hoy hasta 1 año en el futuro
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    const maxDate = new Date(oneYearFromNow);
+                    maxDate.setHours(23, 59, 59, 999);
+                    
+                    return currentDate < today || currentDate > maxDate;
                   }}
                   initialFocus
                   locale={es}

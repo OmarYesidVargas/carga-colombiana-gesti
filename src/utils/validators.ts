@@ -176,7 +176,7 @@ export const validateVehiclePlate = (plate: string, country: string): { isValid:
 };
 
 /**
- * Valida los datos de un viaje antes de guardar - más permisivo con fechas
+ * Valida los datos de un viaje antes de guardar - validación corregida para fechas
  * 
  * @param {Partial<Trip>} trip - Datos del viaje a validar
  * @param {string} country - Código del país (opcional)
@@ -212,26 +212,42 @@ export const validateTrip = (trip: Partial<Trip>, country: string = 'CO'): boole
       return false;
     }
     
-    // Validar fechas de manera más permisiva
+    // Validar fechas de manera más permisiva - permitir el día actual
     const startDate = new Date(trip.startDate);
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const oneYearFromNow = new Date();
-    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
     
-    if (startDate < thirtyDaysAgo || startDate > oneYearFromNow) {
-      console.error('❌ Validación viaje: Fecha de inicio debe estar entre 30 días atrás y 1 año en el futuro');
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Fin del día actual
+    
+    // Comparar solo fechas, no horas
+    const startDateOnly = new Date(startDate);
+    startDateOnly.setHours(12, 0, 0, 0);
+    
+    if (startDateOnly < thirtyDaysAgo || startDateOnly > today) {
+      console.error('❌ Validación viaje: Fecha de inicio debe estar entre 30 días atrás y hoy (incluido)');
       return false;
     }
     
     // Validar fecha de fin si existe
     if (trip.endDate) {
       const endDate = new Date(trip.endDate);
-      if (endDate < startDate) {
+      const endDateOnly = new Date(endDate);
+      endDateOnly.setHours(12, 0, 0, 0);
+      
+      const startDateCompare = new Date(startDate);
+      startDateCompare.setHours(12, 0, 0, 0);
+      
+      if (endDateOnly < startDateCompare) {
         console.error('❌ Validación viaje: Fecha de fin no puede ser anterior a fecha de inicio');
         return false;
       }
-      if (endDate > oneYearFromNow) {
+      
+      const oneYearFromNow = new Date();
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+      
+      if (endDateOnly > oneYearFromNow) {
         console.error('❌ Validación viaje: Fecha de fin no puede ser más de 1 año en el futuro');
         return false;
       }

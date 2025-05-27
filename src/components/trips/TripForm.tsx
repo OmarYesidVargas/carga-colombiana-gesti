@@ -20,15 +20,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TripDateFields from './TripDateFields';
 
-// Esquema de validación para el formulario
+// Esquema de validación corregido para el formulario
 const formSchema = z.object({
   vehicleId: z.string().min(1, 'Debe seleccionar un vehículo'),
   startDate: z.date({
     required_error: 'La fecha de inicio es requerida',
+  }).refine((date) => {
+    // Permitir desde hace 30 días hasta hoy
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+    
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    
+    const checkDate = new Date(date);
+    checkDate.setHours(12, 0, 0, 0); // Mediodía para evitar problemas de timezone
+    
+    return checkDate >= thirtyDaysAgo && checkDate <= today;
+  }, {
+    message: "La fecha de inicio debe estar entre 30 días atrás y hoy"
   }),
-  endDate: z.date({
-    required_error: 'La fecha de fin es requerida',
-  }).optional(),
+  endDate: z.date().optional(),
   origin: z.string().min(3, 'El origen debe tener al menos 3 caracteres'),
   destination: z.string().min(3, 'El destino debe tener al menos 3 caracteres'),
   distance: z.string()
@@ -43,9 +56,20 @@ const formSchema = z.object({
   notes: z.string().optional(),
 })
 .refine(
-  (data) => !data.endDate || data.startDate <= data.endDate,
+  (data) => {
+    if (!data.endDate) return true;
+    
+    // Comparar solo las fechas, no las horas
+    const startDate = new Date(data.startDate);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(data.endDate);
+    endDate.setHours(0, 0, 0, 0);
+    
+    return endDate >= startDate;
+  },
   {
-    message: "La fecha de fin debe ser posterior a la fecha de inicio",
+    message: "La fecha de fin debe ser posterior o igual a la fecha de inicio",
     path: ["endDate"],
   }
 );
@@ -60,23 +84,6 @@ interface TripFormProps {
   isSubmitting?: boolean;
 }
 
-/**
- * Componente de formulario para crear y editar viajes
- * 
- * Características:
- * - Validación con Zod y React Hook Form
- * - Selector de vehículo dinámico
- * - Campos de fecha con calendario
- * - Validación de fechas (fin después de inicio)
- * - Diseño responsivo y compacto
- * - ScrollArea para evitar desbordamiento
- * 
- * @param initialData - Datos iniciales para edición
- * @param vehicles - Lista de vehículos disponibles
- * @param onSubmit - Función ejecutada al enviar el formulario
- * @param onCancel - Función ejecutada al cancelar
- * @param isSubmitting - Estado de envío del formulario
- */
 const TripForm = ({ initialData, vehicles, onSubmit, onCancel, isSubmitting = false }: TripFormProps) => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -92,6 +99,7 @@ const TripForm = ({ initialData, vehicles, onSubmit, onCancel, isSubmitting = fa
   });
 
   const handleSubmit = (data: FormData) => {
+    console.log('Submitting trip form with data:', data);
     onSubmit({
       ...data,
       distance: data.distance,
