@@ -33,11 +33,13 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, isMobile } = useSidebar();
 
   const handleLinkClick = () => {
-    // Cerrar el sidebar en mobile cuando se hace clic en un enlace
-    setOpenMobile(false);
+    // Cerrar sidebar en móvil cuando se hace clic en un enlace
+    if (isMobile) {
+      setOpenMobile(false);
+    }
   };
 
   return (
@@ -54,15 +56,15 @@ export function AppSidebar() {
                       to={item.to}
                       onClick={handleLinkClick}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
+                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all w-full ${
                           isActive 
                             ? "bg-primary text-primary-foreground font-medium" 
                             : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                         }`
                       }
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.label}</span>
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{item.label}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
