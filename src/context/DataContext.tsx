@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { Vehicle, Trip, Expense, Toll, TollRecord } from '@/types';
@@ -75,9 +76,19 @@ export const useData = (): DataContextType => {
  */
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { user } = useAuth();
   
-  // Usar los hooks personalizados para cada entidad
+  // Verificar que AuthContext esté disponible antes de continuar
+  let user;
+  try {
+    const authContext = useAuth();
+    user = authContext.user;
+  } catch (error) {
+    console.error('AuthContext not available:', error);
+    // Proporcionar valores por defecto mientras AuthContext se inicializa
+    user = null;
+  }
+  
+  // Usar los hooks personalizados para cada entidad solo cuando el usuario esté disponible
   const vehiclesHook = useVehicles(user, setIsLoading);
   const tripsHook = useTrips(user, setIsLoading);
   const expensesHook = useExpenses(user, setIsLoading);
