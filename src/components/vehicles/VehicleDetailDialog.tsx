@@ -64,8 +64,8 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
     return { status: 'valid', color: 'green', icon: CheckCircle, text: 'Vigente' };
   };
 
-  // Función mejorada para verificar si hay documento
-  const hasDocument = (url?: string): boolean => {
+  // Función mejorada para verificar si hay documento - PARÁMETRO REQUERIDO PRIMERO
+  const hasDocument = (url: string | undefined): boolean => {
     if (!url) {
       console.log('📋 URL no definida');
       return false;
@@ -87,13 +87,13 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
     return isValidUrl;
   };
 
-  const handleViewDocument = (url?: string) => {
+  const handleViewDocument = (url: string | undefined) => {
     if (hasDocument(url)) {
       viewDocument(url!);
     }
   };
 
-  const handleDownloadDocument = (url?: string, type: string) => {
+  const handleDownloadDocument = (url: string | undefined, type: string) => {
     if (hasDocument(url)) {
       const filename = `${type}_${vehicle.plate}_${Date.now()}.pdf`;
       downloadDocument(url!, filename);
