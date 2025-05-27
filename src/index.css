@@ -102,50 +102,61 @@
 }
 
 @layer components {
-  /* Hover effects con colores originales */
+  /* Hover effects específicos por tipo de elemento */
   
-  /* Botones y elementos interactivos */
-  button:hover,
-  .hover\:bg-accent:hover,
-  [role="button"]:hover {
-    background-color: #f5f3ff !important;
-  }
-  
-  .hover\:bg-muted:hover {
-    background-color: #f8fafc !important;
-  }
-  
-  .hover\:bg-gray-50:hover {
-    background-color: #f9fafb !important;
-  }
-  
-  .hover\:bg-gray-100:hover {
-    background-color: #f3f4f6 !important;
-  }
-  
-  .hover\:bg-slate-50:hover {
-    background-color: #f8fafc !important;
-  }
-  
-  .hover\:bg-slate-100:hover {
-    background-color: #f1f5f9 !important;
-  }
-  
-  /* Cards y contenedores */
-  .hover\:bg-card:hover {
-    background-color: #ffffff !important;
-  }
-  
-  /* Links y navegación */
-  a:hover,
+  /* Links y navegación - solo para elementos no-button */
+  a:not(button):hover,
   .hover\:text-primary:hover {
     color: #8b5cf6 !important;
   }
   
-  /* Sidebar específico */
-  .sidebar-menu-button:hover,
-  [data-sidebar="menu-button"]:hover {
+  /* Elementos de tabla y cards */
+  tr:hover,
+  .hover\:bg-muted\/50:hover {
+    background-color: #f8fafc !important;
+  }
+  
+  /* Items de menu y navegación - solo para elementos específicos */
+  .menu-item:hover,
+  [role="menuitem"]:hover:not(button) {
     background-color: #f5f3ff !important;
+  }
+  
+  /* Dropdown items - solo para elementos específicos */
+  .dropdown-item:hover:not(button) {
+    background-color: #f5f3ff !important;
+  }
+  
+  /* Sidebar específico - solo para elementos de navegación */
+  .sidebar-menu-button:hover:not(button),
+  [data-sidebar="menu-button"]:hover:not(button) {
+    background-color: #f5f3ff !important;
+  }
+  
+  /* Cards y contenedores - solo para elementos no-button */
+  .hover\:bg-card:hover:not(button) {
+    background-color: #ffffff !important;
+  }
+  
+  /* Elementos de fondo neutros */
+  .hover\:bg-muted:hover:not(button) {
+    background-color: #f8fafc !important;
+  }
+  
+  .hover\:bg-gray-50:hover:not(button) {
+    background-color: #f9fafb !important;
+  }
+  
+  .hover\:bg-gray-100:hover:not(button) {
+    background-color: #f3f4f6 !important;
+  }
+  
+  .hover\:bg-slate-50:hover:not(button) {
+    background-color: #f8fafc !important;
+  }
+  
+  .hover\:bg-slate-100:hover:not(button) {
+    background-color: #f1f5f9 !important;
   }
   
   /* Focus states con violeta */
@@ -155,23 +166,6 @@
   
   .focus\:border-primary:focus {
     border-color: #8b5cf6 !important;
-  }
-  
-  /* Elementos de tabla */
-  tr:hover,
-  .hover\:bg-muted\/50:hover {
-    background-color: #f8fafc !important;
-  }
-  
-  /* Menu items */
-  .menu-item:hover,
-  [role="menuitem"]:hover {
-    background-color: #f5f3ff !important;
-  }
-  
-  /* Dropdown items */
-  .dropdown-item:hover {
-    background-color: #f5f3ff !important;
   }
 }
 
@@ -200,7 +194,7 @@
   color: #ffffff !important;
 }
 
-/* Ripple effects */
-.ripple:hover {
+/* Ripple effects - solo para elementos no-button */
+.ripple:hover:not(button) {
   background-color: #f5f3ff !important;
 }
