@@ -16,6 +16,9 @@ import { Input } from '@/components/ui/input';
 import { Toll } from '@/types';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import TollBasicInfo from './TollBasicInfo';
+import TollLocationInfo from './TollLocationInfo';
 
 // Esquema de validación para el formulario
 const formSchema = z.object({
@@ -45,6 +48,21 @@ interface TollFormProps {
   isSubmitting?: boolean;
 }
 
+/**
+ * Componente de formulario para crear y editar peajes
+ * 
+ * Características:
+ * - Validación con Zod y React Hook Form
+ * - Campos organizados por secciones
+ * - Formateo automático de precio en COP
+ * - Diseño responsivo y compacto
+ * - ScrollArea para evitar desbordamiento
+ * 
+ * @param initialData - Datos iniciales para edición
+ * @param onSubmit - Función ejecutada al enviar el formulario
+ * @param onCancel - Función ejecutada al cancelar
+ * @param isSubmitting - Estado de envío del formulario
+ */
 const TollForm = ({ 
   initialData, 
   onSubmit, 
@@ -73,124 +91,33 @@ const TollForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nombre del Peaje *</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Ej: Peaje Chusacá" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Ubicación *</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Ej: Cundinamarca" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="route"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Ruta *</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Ej: Bogotá-Girardot" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Categoría *</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Ej: I, II, III, etc." />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Precio (COP) *</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
-                    <Input
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
+        <ScrollArea className="flex-1 max-h-[60vh] pr-4">
+          <div className="space-y-4">
+            <TollBasicInfo form={form} />
+            <TollLocationInfo form={form} />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Descripción (opcional)</FormLabel>
+                  <FormControl>
+                    <Textarea
                       {...field}
-                      type="number"
-                      min="0"
-                      step="100"
-                      placeholder="0"
-                      className="pl-8"
+                      placeholder="Información adicional sobre el peaje"
+                      className="h-16 resize-none"
                     />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </ScrollArea>
         
-        <FormField
-          control={form.control}
-          name="coordinates"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Coordenadas (opcional)</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Ej: 4.5371, -74.2861" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descripción (opcional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  placeholder="Información adicional sobre el peaje"
-                  className="h-20"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <DialogFooter>
+        <DialogFooter className="mt-4 pt-4 border-t">
           <Button 
             type="button" 
             variant="outline" 

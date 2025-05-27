@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,17 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 
+/**
+ * Página principal de gestión de vehículos
+ * 
+ * Características:
+ * - Listado de vehículos con búsqueda
+ * - Creación y edición de vehículos
+ * - Eliminación con confirmación
+ * - Gestión de documentación colombiana (SOAT, tecnomecánica)
+ * - Alertas de vencimiento
+ * - Diseño responsivo
+ */
 const VehiclesPage = () => {
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useData();
   
@@ -108,7 +120,7 @@ const VehiclesPage = () => {
               Nuevo Vehículo
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden">
+          <DialogContent className="sm:max-w-[700px] max-h-[95vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle>
                 {currentVehicle ? 'Editar Vehículo' : 'Agregar Nuevo Vehículo'}
@@ -136,7 +148,7 @@ const VehiclesPage = () => {
           placeholder="Buscar por placa, marca o modelo..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-md"
+          className="max-w-md h-9"
         />
       </div>
       

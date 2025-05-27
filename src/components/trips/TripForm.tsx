@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -14,14 +15,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Trip, Vehicle } from '@/types';
 import { DialogFooter } from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import TripDateFields from './TripDateFields';
 
 // Esquema de validación para el formulario
 const formSchema = z.object({
@@ -63,6 +60,23 @@ interface TripFormProps {
   isSubmitting?: boolean;
 }
 
+/**
+ * Componente de formulario para crear y editar viajes
+ * 
+ * Características:
+ * - Validación con Zod y React Hook Form
+ * - Selector de vehículo dinámico
+ * - Campos de fecha con calendario
+ * - Validación de fechas (fin después de inicio)
+ * - Diseño responsivo y compacto
+ * - ScrollArea para evitar desbordamiento
+ * 
+ * @param initialData - Datos iniciales para edición
+ * @param vehicles - Lista de vehículos disponibles
+ * @param onSubmit - Función ejecutada al enviar el formulario
+ * @param onCancel - Función ejecutada al cancelar
+ * @param isSubmitting - Estado de envío del formulario
+ */
 const TripForm = ({ initialData, vehicles, onSubmit, onCancel, isSubmitting = false }: TripFormProps) => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -86,182 +100,107 @@ const TripForm = ({ initialData, vehicles, onSubmit, onCancel, isSubmitting = fa
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="vehicleId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Vehículo *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar vehículo" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {vehicles.map((vehicle) => (
-                    <SelectItem key={vehicle.id} value={vehicle.id}>
-                      {vehicle.plate} - {vehicle.brand} {vehicle.model}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="startDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Fecha de inicio *</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
+        <ScrollArea className="flex-1 max-h-[60vh] pr-4">
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="vehicleId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Vehículo *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", { locale: es })
-                        ) : (
-                          <span>Seleccionar fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder="Seleccionar vehículo" />
+                      </SelectTrigger>
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      locale={es}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="endDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Fecha de fin</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+                    <SelectContent>
+                      {vehicles.map((vehicle) => (
+                        <SelectItem key={vehicle.id} value={vehicle.id}>
+                          {vehicle.plate} - {vehicle.brand} {vehicle.model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <TripDateFields form={form} />
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="origin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Origen *</FormLabel>
                     <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", { locale: es })
-                        ) : (
-                          <span>Seleccionar fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
+                      <Input {...field} placeholder="Lugar de origen" className="h-9" />
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value ? field.value : undefined}
-                      onSelect={field.onChange}
-                      initialFocus
-                      locale={es}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="destination"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Destino *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Lugar de destino" className="h-9" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="distance"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Distancia (km) *</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      min="0"
+                      placeholder="Distancia en kilómetros"
+                      className="h-9"
                     />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Notas adicionales</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Escriba cualquier información adicional sobre el viaje"
+                      className="h-16 resize-none"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </ScrollArea>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="origin"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Origen *</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Lugar de origen" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="destination"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Destino *</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Lugar de destino" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="distance"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Distancia (km) *</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="number"
-                  min="0"
-                  placeholder="Distancia en kilómetros"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notas adicionales</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  placeholder="Escriba cualquier información adicional sobre el viaje"
-                  className="h-20"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <DialogFooter>
+        <DialogFooter className="mt-4 pt-4 border-t">
           <Button 
             type="button" 
             variant="outline" 

@@ -11,7 +11,6 @@ import {
   DialogDescription
 } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import TripCard from '@/components/trips/TripCard';
 import TripForm from '@/components/trips/TripForm';
 import { Trip } from '@/types';
@@ -26,8 +25,24 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { useNavigate } from 'react-router-dom';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import TripsFilters from '@/components/trips/TripsFilters';
+import TripsHeader from '@/components/trips/TripsHeader';
 
+/**
+ * Página principal de gestión de viajes
+ * 
+ * Características:
+ * - Listado de viajes con filtros avanzados
+ * - Creación y edición de viajes
+ * - Eliminación con confirmación
+ * - Navegación a detalles de viaje
+ * - Diseño responsivo
+ * 
+ * Filtros disponibles:
+ * - Búsqueda por origen/destino
+ * - Filtro por vehículo
+ * - Filtro por estado (activo/completado)
+ */
 const TripsPage = () => {
   const { vehicles, trips, addTrip, updateTrip, deleteTrip } = useData();
   const navigate = useNavigate();
@@ -61,7 +76,6 @@ const TripsPage = () => {
     setIsSubmitting(true);
     
     try {
-      // Convertir distance a número
       tripData.distance = parseFloat(tripData.distance);
       
       if (currentTrip) {
@@ -102,11 +116,9 @@ const TripsPage = () => {
       trip.origin.toLowerCase().includes(query) ||
       trip.destination.toLowerCase().includes(query);
     
-    // Filtrar por vehículo
     const matchesVehicle = 
       vehicleFilter === 'all' || trip.vehicleId === vehicleFilter;
     
-    // Filtrar por estado (activo/inactivo)
     const isActive = !trip.endDate || new Date() <= new Date(trip.endDate);
     const matchesStatus = 
       statusFilter === 'all' || 
@@ -118,83 +130,42 @@ const TripsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Viajes</h1>
-          <p className="text-muted-foreground">
-            Gestiona los viajes de tus vehículos
-          </p>
-        </div>
-        
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => handleOpenForm()}>
-              <Plus className="mr-2 h-4 w-4" /> 
-              Nuevo Viaje
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>
-                {currentTrip ? 'Editar Viaje' : 'Agregar Nuevo Viaje'}
-              </DialogTitle>
-              <DialogDescription>
-                {currentTrip 
-                  ? 'Modifica la información del viaje seleccionado.' 
-                  : 'Completa la información para registrar un nuevo viaje.'}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <TripForm
-              initialData={currentTrip || undefined}
-              vehicles={vehicles}
-              onSubmit={handleSubmitTrip}
-              onCancel={handleCloseForm}
-              isSubmitting={isSubmitting}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      <TripsHeader onNewTrip={() => handleOpenForm()} />
       
-      {/* Filtros y búsqueda */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <Input
-            placeholder="Buscar por origen o destino..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+      {/* Diálogo del formulario */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>
+              {currentTrip ? 'Editar Viaje' : 'Agregar Nuevo Viaje'}
+            </DialogTitle>
+            <DialogDescription>
+              {currentTrip 
+                ? 'Modifica la información del viaje seleccionado.' 
+                : 'Completa la información para registrar un nuevo viaje.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <TripForm
+            initialData={currentTrip || undefined}
+            vehicles={vehicles}
+            onSubmit={handleSubmitTrip}
+            onCancel={handleCloseForm}
+            isSubmitting={isSubmitting}
           />
-        </div>
-        
-        <div>
-          <Select value={vehicleFilter} onValueChange={setVehicleFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filtrar por vehículo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los vehículos</SelectItem>
-              {vehicles.map((vehicle) => (
-                <SelectItem key={vehicle.id} value={vehicle.id}>
-                  {vehicle.plate} - {vehicle.brand} {vehicle.model}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filtrar por estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="active">Viajes activos</SelectItem>
-              <SelectItem value="completed">Viajes completados</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Filtros */}
+      <TripsFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        vehicleFilter={vehicleFilter}
+        onVehicleFilterChange={setVehicleFilter}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        vehicles={vehicles}
+      />
       
       {/* Lista de viajes */}
       {filteredTrips.length > 0 ? (
