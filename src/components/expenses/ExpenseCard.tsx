@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/utils/formatters';
 
 interface ExpenseCardProps {
   expense: Expense;
@@ -17,17 +18,10 @@ interface ExpenseCardProps {
   onDelete: (expenseId: string) => void;
 }
 
-// Función para formateador de moneda colombiana
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-CO', { 
-    style: 'currency', 
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0 
-  }).format(amount);
-};
-
-// Mapeo de categorías a etiquetas en español
+/**
+ * Mapeo de categorías a etiquetas en español
+ * Proporciona traducciones legibles para las categorías de gastos
+ */
 const categoryLabels: Record<string, string> = {
   fuel: 'Combustible',
   toll: 'Peaje',
@@ -37,8 +31,16 @@ const categoryLabels: Record<string, string> = {
   other: 'Otros',
 };
 
+/**
+ * Componente de tarjeta para mostrar información de un gasto
+ * Incluye detalles del gasto, categoría, fecha y acciones de edición/eliminación
+ */
 const ExpenseCard = ({ expense, trip, vehicle, onEdit, onDelete }: ExpenseCardProps) => {
-  // Obtener el color basado en la categoría
+  /**
+   * Obtiene los estilos de color basados en la categoría del gasto
+   * @param category - Categoría del gasto
+   * @returns Objeto con estilos de color para background, border y text
+   */
   const getCategoryColor = (category: string) => {
     return {
       backgroundColor: `${expenseCategoryColors[category as keyof typeof expenseCategoryColors]}15`,
@@ -59,8 +61,8 @@ const ExpenseCard = ({ expense, trip, vehicle, onEdit, onDelete }: ExpenseCardPr
               >
                 {categoryLabels[expense.category]}
               </Badge>
-              <h3 className="text-xl font-semibold currency-cop">
-                {formatCurrency(expense.amount).replace('COP', '').trim()}
+              <h3 className="text-xl font-semibold">
+                {formatCurrency(expense.amount)}
               </h3>
             </div>
             
@@ -72,10 +74,16 @@ const ExpenseCard = ({ expense, trip, vehicle, onEdit, onDelete }: ExpenseCardPr
             )}
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => onEdit(expense)}>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(expense)} title="Editar gasto">
               <Edit className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => onDelete(expense.id)}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-destructive" 
+              onClick={() => onDelete(expense.id)}
+              title="Eliminar gasto"
+            >
               <Trash className="h-4 w-4" />
             </Button>
           </div>

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TollRecord, Toll, Trip, Vehicle } from '@/types';
+import { formatCurrency } from '@/utils/formatters';
 
 interface TollSummaryProps {
   tollRecords: TollRecord[];
@@ -11,15 +12,10 @@ interface TollSummaryProps {
   title?: string;
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-CO', { 
-    style: 'currency', 
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0 
-  }).format(amount);
-};
-
+/**
+ * Componente que muestra un resumen detallado de peajes
+ * Incluye estadísticas por viaje, vehículo y peajes más frecuentes
+ */
 const TollSummary = ({ 
   tollRecords, 
   tolls = [], 
@@ -27,6 +23,7 @@ const TollSummary = ({
   vehicles = [], 
   title = "Resumen de peajes" 
 }: TollSummaryProps) => {
+  // Calcular el total de gastos en peajes
   const totalTollExpenses = tollRecords.reduce((sum, record) => sum + record.price, 0);
   
   // Calcular peajes por viaje
@@ -99,7 +96,7 @@ const TollSummary = ({
         <div className="space-y-6">
           {/* Total de peajes */}
           <div className="text-center">
-            <h3 className="text-2xl font-bold currency-cop">
+            <h3 className="text-2xl font-bold">
               {formatCurrency(totalTollExpenses)}
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -121,7 +118,7 @@ const TollSummary = ({
                         <span>{toll.name}</span>
                         <span className="text-xs text-muted-foreground ml-2">({toll.count})</span>
                       </div>
-                      <span className="font-medium currency-cop">
+                      <span className="font-medium">
                         {formatCurrency(toll.totalAmount)}
                       </span>
                     </div>
@@ -141,7 +138,7 @@ const TollSummary = ({
                   .map((vehicle) => (
                     <div key={vehicle.id} className="flex items-center justify-between">
                       <span className="vehicle-plate">{vehicle.plate}</span>
-                      <span className="font-medium currency-cop">
+                      <span className="font-medium">
                         {formatCurrency(vehicle.totalTolls)}
                       </span>
                     </div>
@@ -164,7 +161,7 @@ const TollSummary = ({
                         {trip.origin} → {trip.destination}
                         {trip.vehicle && <span className="text-xs ml-1">({trip.vehicle.plate})</span>}
                       </span>
-                      <span className="font-medium currency-cop">
+                      <span className="font-medium">
                         {formatCurrency(trip.totalTolls)}
                       </span>
                     </div>

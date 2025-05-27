@@ -6,6 +6,7 @@ import { Expense, Trip, Vehicle } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { expenseCategories } from './ExpenseReportFilters';
+import { formatCurrency } from '@/utils/formatters';
 
 interface ExpenseReportTableProps {
   expenses: Expense[];
@@ -14,16 +15,10 @@ interface ExpenseReportTableProps {
   totalExpenses: number;
 }
 
-// Format currency helper function
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-CO', { 
-    style: 'currency', 
-    currency: 'COP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0 
-  }).format(amount);
-};
-
+/**
+ * Componente de tabla para mostrar el detalle de gastos en reportes
+ * Presenta información detallada de cada gasto con formato tabular
+ */
 const ExpenseReportTable: React.FC<ExpenseReportTableProps> = ({
   expenses,
   vehicles,
@@ -72,7 +67,7 @@ const ExpenseReportTable: React.FC<ExpenseReportTableProps> = ({
                     <td className="py-3 px-4 max-w-[200px] truncate">
                       {expense.description || '-'}
                     </td>
-                    <td className="py-3 px-4 text-right font-medium currency-cop">
+                    <td className="py-3 px-4 text-right font-medium">
                       {formatCurrency(expense.amount)}
                     </td>
                   </tr>
@@ -82,7 +77,7 @@ const ExpenseReportTable: React.FC<ExpenseReportTableProps> = ({
             <tfoot>
               <tr className="border-t border-t-2">
                 <td className="py-3 px-4 font-semibold" colSpan={5}>Total</td>
-                <td className="py-3 px-4 text-right font-bold currency-cop">
+                <td className="py-3 px-4 text-right font-bold">
                   {formatCurrency(totalExpenses)}
                 </td>
               </tr>

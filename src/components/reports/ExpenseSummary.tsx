@@ -15,7 +15,12 @@ interface ExpenseSummaryProps {
   title?: string;
 }
 
+/**
+ * Componente que muestra un resumen detallado de gastos
+ * Incluye totales por categoría, vehículo y viaje
+ */
 const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos" }: ExpenseSummaryProps) => {
+  // Calcular el total de gastos
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   
   // Calcular gastos por vehículo
@@ -98,7 +103,7 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
         <div className="space-y-6">
           {/* Total de gastos */}
           <div className="text-center">
-            <h3 className="text-2xl font-bold currency-cop">
+            <h3 className="text-2xl font-bold">
               {formatCurrency(totalExpenses)}
             </h3>
             <p className="text-sm text-muted-foreground">
@@ -119,7 +124,7 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
                     />
                     <span>{category.label}</span>
                   </div>
-                  <span className="font-medium currency-cop">
+                  <span className="font-medium">
                     {formatCurrency(category.amount)}
                   </span>
                 </div>
@@ -138,7 +143,7 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
                   .map((vehicle) => (
                     <div key={vehicle.id} className="flex items-center justify-between">
                       <span className="vehicle-plate">{vehicle.plate}</span>
-                      <span className="font-medium currency-cop">
+                      <span className="font-medium">
                         {formatCurrency(vehicle.totalExpenses)}
                       </span>
                     </div>
@@ -161,7 +166,7 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
                         {trip.origin} → {trip.destination}
                         {trip.vehicle && <span className="text-xs ml-1">({trip.vehicle.plate})</span>}
                       </span>
-                      <span className="font-medium currency-cop">
+                      <span className="font-medium">
                         {formatCurrency(trip.totalExpenses)}
                       </span>
                     </div>

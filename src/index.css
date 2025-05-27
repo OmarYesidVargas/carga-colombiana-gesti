@@ -93,11 +93,6 @@
     @apply bg-background text-foreground;
   }
 
-  /* Clase para formatear moneda colombiana */
-  .currency-cop {
-    @apply before:content-['$'] before:mr-1;
-  }
-
   /* Estilo para el formato de placas vehiculares */
   .vehicle-plate {
     @apply font-mono uppercase tracking-wider;
