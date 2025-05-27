@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Vehicle } from '@/types';
 import {
@@ -130,9 +129,10 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
     const isValidUrl = trimmedUrl.startsWith('data:') || 
                       trimmedUrl.startsWith('http://') || 
                       trimmedUrl.startsWith('https://') ||
-                      trimmedUrl.startsWith('/storage/');
+                      trimmedUrl.startsWith('/storage/') ||
+                      trimmedUrl.includes('supabase.co');
     
-    console.log(`📋 Verificando documento: ${trimmedUrl} -> ${isValidUrl}`);
+    console.log(`📋 Verificando documento: ${trimmedUrl.substring(0, 50)}... -> ${isValidUrl}`);
     return isValidUrl;
   };
 
@@ -142,8 +142,8 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
   console.log('🚗 Vehicle data in detail dialog:', {
     id: vehicle.id,
     plate: vehicle.plate,
-    soatDocumentUrl: vehicle.soatDocumentUrl,
-    technoDocumentUrl: vehicle.technoDocumentUrl,
+    soatDocumentUrl: vehicle.soatDocumentUrl ? `${vehicle.soatDocumentUrl.substring(0, 50)}...` : 'NO URL',
+    technoDocumentUrl: vehicle.technoDocumentUrl ? `${vehicle.technoDocumentUrl.substring(0, 50)}...` : 'NO URL',
     hasSoatDoc: hasDocument(vehicle.soatDocumentUrl),
     hasTechnoDoc: hasDocument(vehicle.technoDocumentUrl)
   });

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle } from '@/types';
@@ -149,6 +148,10 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       } as Vehicle;
       
       console.log('💾 Preparando para guardar vehículo:', vehicleToSave);
+      console.log('📄 URLs de documentos a guardar:', {
+        soatDocumentUrl: vehicleToSave.soatDocumentUrl,
+        technoDocumentUrl: vehicleToSave.technoDocumentUrl
+      });
       
       const newVehicle = mapVehicleToDB(vehicleToSave);
       
@@ -157,7 +160,26 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       const { data, error } = await supabase
         .from('vehicles')
         .insert(newVehicle)
-        .select()
+        .select(`
+          id,
+          user_id,
+          plate,
+          brand,
+          model,
+          year,
+          color,
+          fuel_type,
+          capacity,
+          image_url,
+          soat_expiry_date,
+          techno_expiry_date,
+          soat_document_url,
+          techno_document_url,
+          soat_insurance_company,
+          techno_center,
+          created_at,
+          updated_at
+        `)
         .single();
       
       if (error) {
@@ -175,7 +197,15 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         return;
       }
       
+      console.log('💾 Vehículo guardado en DB:', data);
+      
       const mappedVehicle = mapVehicleFromDB(data);
+      
+      console.log('✅ Vehículo mapeado final:', mappedVehicle);
+      console.log('📄 URLs finales guardadas:', {
+        soatDocumentUrl: mappedVehicle.soatDocumentUrl,
+        technoDocumentUrl: mappedVehicle.technoDocumentUrl
+      });
       
       // Registrar auditoría de creación
       await logCreate('vehicles', mappedVehicle.id, {

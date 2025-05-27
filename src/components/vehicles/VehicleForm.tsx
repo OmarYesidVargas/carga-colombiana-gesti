@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -120,6 +119,15 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
   const handleSubmit = (data: FormData) => {
     console.log('📝 Datos del formulario enviados:', data);
     
+    // Verificar que las URLs de documentos estén presentes
+    const soatDocumentUrl = form.getValues('soatDocumentUrl');
+    const technoDocumentUrl = form.getValues('technoDocumentUrl');
+    
+    console.log('📄 URLs de documentos en el formulario:', {
+      soatDocumentUrl,
+      technoDocumentUrl
+    });
+    
     const submitData = {
       ...data,
       year: parseInt(data.year, 10), // Asegurar que el año sea número
@@ -131,9 +139,17 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
       technoExpiryDate: data.technoExpiryDate ? new Date(data.technoExpiryDate) : undefined,
       soatInsuranceCompany: data.soatInsuranceCompany || undefined,
       technoCenter: data.technoCenter || undefined,
+      // Asegurar que las URLs se incluyan en los datos a enviar
+      soatDocumentUrl: soatDocumentUrl || undefined,
+      technoDocumentUrl: technoDocumentUrl || undefined,
     };
     
     console.log('🚀 Datos procesados para envío:', submitData);
+    console.log('📄 URLs de documentos incluidas:', {
+      soatDocumentUrl: submitData.soatDocumentUrl,
+      technoDocumentUrl: submitData.technoDocumentUrl
+    });
+    
     onSubmit(submitData);
   };
 
@@ -386,8 +402,14 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                     currentUrl={form.watch('soatDocumentUrl')}
                     vehicleId={initialData?.id}
                     userId={user?.id || ''}
-                    onUploadComplete={(url) => form.setValue('soatDocumentUrl', url)}
-                    onRemove={() => form.setValue('soatDocumentUrl', '')}
+                    onUploadComplete={(url) => {
+                      console.log('📄 SOAT documento subido:', url);
+                      form.setValue('soatDocumentUrl', url);
+                    }}
+                    onRemove={() => {
+                      console.log('🗑️ SOAT documento removido');
+                      form.setValue('soatDocumentUrl', '');
+                    }}
                   />
                 </div>
 
@@ -448,8 +470,14 @@ const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: 
                     currentUrl={form.watch('technoDocumentUrl')}
                     vehicleId={initialData?.id}
                     userId={user?.id || ''}
-                    onUploadComplete={(url) => form.setValue('technoDocumentUrl', url)}
-                    onRemove={() => form.setValue('technoDocumentUrl', '')}
+                    onUploadComplete={(url) => {
+                      console.log('📄 Tecnomecánica documento subido:', url);
+                      form.setValue('technoDocumentUrl', url);
+                    }}
+                    onRemove={() => {
+                      console.log('🗑️ Tecnomecánica documento removido');
+                      form.setValue('technoDocumentUrl', '');
+                    }}
                   />
                 </div>
               </CardContent>
