@@ -1,4 +1,3 @@
-
 import { Vehicle } from '@/types';
 
 /**
@@ -9,7 +8,14 @@ export const mapVehicleFromDB = (vehicle: any): Vehicle => {
     throw new Error('Datos de vehículo inválidos');
   }
 
-  return {
+  console.log('🔄 Mapeando vehículo desde DB:', {
+    id: vehicle.id,
+    plate: vehicle.plate,
+    soat_document_url: vehicle.soat_document_url,
+    techno_document_url: vehicle.techno_document_url
+  });
+
+  const mappedVehicle = {
     id: vehicle.id,
     userId: vehicle.user_id,
     plate: vehicle.plate || '',
@@ -20,7 +26,7 @@ export const mapVehicleFromDB = (vehicle: any): Vehicle => {
     fuelType: vehicle.fuel_type || null,
     capacity: vehicle.capacity || null,
     imageUrl: vehicle.image_url || null,
-    // Nuevos campos para Colombia
+    // Nuevos campos para Colombia - asegurar que se mapeen correctamente
     soatExpiryDate: vehicle.soat_expiry_date ? new Date(vehicle.soat_expiry_date) : undefined,
     technoExpiryDate: vehicle.techno_expiry_date ? new Date(vehicle.techno_expiry_date) : undefined,
     soatDocumentUrl: vehicle.soat_document_url || undefined,
@@ -30,6 +36,15 @@ export const mapVehicleFromDB = (vehicle: any): Vehicle => {
     createdAt: vehicle.created_at,
     updatedAt: vehicle.updated_at
   };
+
+  console.log('✅ Vehículo mapeado:', {
+    id: mappedVehicle.id,
+    plate: mappedVehicle.plate,
+    soatDocumentUrl: mappedVehicle.soatDocumentUrl,
+    technoDocumentUrl: mappedVehicle.technoDocumentUrl
+  });
+
+  return mappedVehicle;
 };
 
 /**

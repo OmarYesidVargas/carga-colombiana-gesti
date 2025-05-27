@@ -20,21 +20,45 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
     
     try {
       setGlobalLoading(true);
+      console.log('🔍 Cargando vehículos desde DB...');
+      
       const { data, error } = await supabase
         .from('vehicles')
-        .select('*')
+        .select(`
+          id,
+          user_id,
+          plate,
+          brand,
+          model,
+          year,
+          color,
+          fuel_type,
+          capacity,
+          image_url,
+          soat_expiry_date,
+          techno_expiry_date,
+          soat_document_url,
+          techno_document_url,
+          soat_insurance_company,
+          techno_center,
+          created_at,
+          updated_at
+        `)
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error al cargar vehículos:', error);
+        console.error('❌ Error al cargar vehículos:', error);
         toast.error('Error al cargar los vehículos');
         return;
       }
       
       if (!data) {
+        console.log('📭 No hay datos de vehículos');
         setVehicles([]);
         return;
       }
+      
+      console.log('📊 Datos raw de vehículos:', data);
       
       const mappedVehicles = data
         .filter(vehicle => vehicle && typeof vehicle === 'object')
@@ -42,11 +66,13 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
           try {
             return mapVehicleFromDB(vehicle);
           } catch (error) {
-            console.error('Error al mapear vehículo:', error, vehicle);
+            console.error('❌ Error al mapear vehículo:', error, vehicle);
             return null;
           }
         })
         .filter(Boolean) as Vehicle[];
+      
+      console.log('✅ Vehículos mapeados:', mappedVehicles);
       
       // Registrar auditoría de lectura
       await logRead('vehicles', undefined, { 
@@ -56,7 +82,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       
       setVehicles(mappedVehicles);
     } catch (error) {
-      console.error('Error inesperado al cargar vehículos:', error);
+      console.error('❌ Error inesperado al cargar vehículos:', error);
       toast.error('Error inesperado al cargar vehículos');
     } finally {
       setGlobalLoading(false);

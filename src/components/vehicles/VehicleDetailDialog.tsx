@@ -64,7 +64,7 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
 
   const openDocument = (url?: string) => {
     if (!url) {
-      console.warn('No document URL provided');
+      console.warn('❌ No document URL provided');
       return;
     }
     
@@ -87,13 +87,13 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
         window.open(url, '_blank');
       }
     } catch (error) {
-      console.error('Error al abrir documento:', error);
+      console.error('❌ Error al abrir documento:', error);
     }
   };
 
   const downloadDocument = (url?: string, type: string = 'documento') => {
     if (!url) {
-      console.warn('No document URL provided for download');
+      console.warn('❌ No document URL provided for download');
       return;
     }
     
@@ -109,15 +109,31 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
         window.open(url, '_blank');
       }
     } catch (error) {
-      console.error('Error al descargar documento:', error);
+      console.error('❌ Error al descargar documento:', error);
     }
   };
 
-  // Función para verificar si hay documento
+  // Función mejorada para verificar si hay documento
   const hasDocument = (url?: string) => {
-    const result = url && url.trim() !== '';
-    console.log(`📋 Verificando documento: ${url} -> ${result}`);
-    return result;
+    if (!url) {
+      console.log('📋 No hay URL de documento');
+      return false;
+    }
+    
+    const trimmedUrl = url.trim();
+    if (trimmedUrl === '') {
+      console.log('📋 URL de documento vacía');
+      return false;
+    }
+    
+    // Verificar si es una URL válida (base64 o HTTP/HTTPS)
+    const isValidUrl = trimmedUrl.startsWith('data:') || 
+                      trimmedUrl.startsWith('http://') || 
+                      trimmedUrl.startsWith('https://') ||
+                      trimmedUrl.startsWith('/storage/');
+    
+    console.log(`📋 Verificando documento: ${trimmedUrl} -> ${isValidUrl}`);
+    return isValidUrl;
   };
 
   const soatStatus = getDocumentStatus(vehicle.soatExpiryDate);
