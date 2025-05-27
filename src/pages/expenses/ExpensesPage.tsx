@@ -17,8 +17,7 @@ import ExpenseDialogs from '@/components/expenses/ExpenseDialogs';
 import { useExpenseFilters } from '@/hooks/useExpenseFilters';
 
 /**
- * Página de gestión de gastos con diseño responsivo mejorado
- * Permite visualizar, crear, editar y eliminar gastos
+ * Página de gestión de gastos con manejo de errores mejorado
  */
 const ExpensesPage = () => {
   const { expenses, trips, vehicles, addExpense, updateExpense, deleteExpense, exportToCSV } = useData();
@@ -67,21 +66,63 @@ const ExpensesPage = () => {
   };
   
   /**
-   * Maneja el envío del formulario de gastos
+   * Maneja el envío del formulario de gastos con validación completa
    */
   const handleFormSubmit = async (data: any) => {
+    console.log('📝 [ExpensesPage] Iniciando guardado de gasto:', data);
     setIsSubmitting(true);
     
     try {
-      // Convertir amount a número
+      // Validar que los datos estén completos
+      if (!data.tripId) {
+        toast.error('Debe seleccionar un viaje');
+        return;
+      }
+
+      if (!data.category) {
+        toast.error('Debe seleccionar una categoría');
+        return;
+      }
+
+      if (!data.amount || isNaN(Number(data.amount)) || Number(data.amount) <= 0) {
+        toast.error('Debe ingresar un monto válido mayor a 0');
+        return;
+      }
+
+      if (!data.date) {
+        toast.error('Debe seleccionar una fecha');
+        return;
+      }
+
+      // Buscar el viaje para obtener el vehicleId
+      const selectedTrip = trips.find(trip => trip.id === data.tripId);
+      if (!selectedTrip) {
+        toast.error('El viaje seleccionado no es válido');
+        return;
+      }
+
+      // Buscar el vehículo
+      const selectedVehicle = vehicles.find(vehicle => vehicle.id === selectedTrip.vehicleId);
+      if (!selectedVehicle) {
+        toast.error('El vehículo del viaje seleccionado no es válido');
+        return;
+      }
+
+      // Preparar datos del gasto
       const expenseData = {
-        ...data,
-        amount: parseFloat(data.amount),
-        // Añadir vehicleId del viaje seleccionado
-        vehicleId: trips.find(trip => trip.id === data.tripId)?.vehicleId
+        tripId: data.tripId,
+        vehicleId: selectedTrip.vehicleId,
+        category: data.category,
+        amount: Number(data.amount), // Convertir explícitamente a número
+        date: data.date.toISOString(), // Convertir fecha a ISO string
+        description: data.description || ''
       };
+
+      console.log('✅ [ExpensesPage] Datos preparados para guardar:', expenseData);
       
       if (currentExpense) {
+        // Actualizar gasto existente
+        console.log('🔄 [ExpensesPage] Actualizando gasto existente:', currentExpense.id);
         const success = await updateExpense(currentExpense.id, expenseData);
         if (success) {
           toast.success('Gasto actualizado correctamente');
@@ -90,13 +131,19 @@ const ExpensesPage = () => {
           toast.error('Error al actualizar el gasto');
         }
       } else {
-        await addExpense(expenseData);
-        toast.success('Gasto agregado correctamente');
-        handleCloseForm();
+        // Crear nuevo gasto
+        console.log('✨ [ExpensesPage] Creando nuevo gasto');
+        const newExpense = await addExpense(expenseData);
+        if (newExpense) {
+          toast.success('Gasto agregado correctamente');
+          handleCloseForm();
+        } else {
+          toast.error('Error al agregar el gasto');
+        }
       }
-    } catch (error) {
-      console.error('Error al guardar gasto:', error);
-      toast.error('Error al guardar el gasto');
+    } catch (error: any) {
+      console.error('❌ [ExpensesPage] Error al guardar gasto:', error);
+      toast.error(`Error al guardar el gasto: ${error.message || 'Error desconocido'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -116,13 +163,18 @@ const ExpensesPage = () => {
   const confirmDelete = async () => {
     if (expenseToDelete) {
       try {
-        await deleteExpense(expenseToDelete);
-        toast.success('Gasto eliminado correctamente');
-        setIsDeleteDialogOpen(false);
-        setExpenseToDelete(null);
-      } catch (error) {
-        console.error('Error al eliminar gasto:', error);
-        toast.error('Error al eliminar el gasto');
+        console.log('🗑️ [ExpensesPage] Eliminando gasto:', expenseToDelete);
+        const success = await deleteExpense(expenseToDelete);
+        if (success) {
+          toast.success('Gasto eliminado correctamente');
+          setIsDeleteDialogOpen(false);
+          setExpenseToDelete(null);
+        } else {
+          toast.error('Error al eliminar el gasto');
+        }
+      } catch (error: any) {
+        console.error('❌ [ExpensesPage] Error al eliminar gasto:', error);
+        toast.error(`Error al eliminar el gasto: ${error.message || 'Error desconocido'}`);
       }
     }
   };

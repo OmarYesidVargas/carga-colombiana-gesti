@@ -34,7 +34,7 @@ const expenseCategories = [
   { value: 'other', label: 'Otros' },
 ];
 
-// Esquema de validación para el formulario
+// Esquema de validación mejorado
 const formSchema = z.object({
   tripId: z.string().min(1, 'Debe seleccionar un viaje'),
   category: z.string().refine(
@@ -45,9 +45,10 @@ const formSchema = z.object({
     required_error: 'La fecha es requerida',
   }),
   amount: z.string()
+    .min(1, 'El monto es requerido')
     .refine(
       (val) => !isNaN(Number(val)),
-      { message: 'El monto debe ser un número' }
+      { message: 'El monto debe ser un número válido' }
     )
     .refine(
       (val) => Number(val) > 0,
@@ -89,12 +90,36 @@ const ExpenseForm = ({
   });
 
   const handleSubmit = (data: FormData) => {
-    // No es necesario convertir el monto a número aquí, lo haremos en el componente que recibe los datos
-    onSubmit(data);
-  };
+    try {
+      console.log('📝 [ExpenseForm] Enviando datos del formulario:', data);
+      
+      // Validar que el viaje existe
+      const selectedTrip = trips.find(trip => trip.id === data.tripId);
+      if (!selectedTrip) {
+        form.setError('tripId', { message: 'El viaje seleccionado no es válido' });
+        return;
+      }
 
-  // Filtrar viajes por vehículo (si es necesario)
-  const filteredTrips = trips;
+      // Validar que el vehículo del viaje existe
+      const selectedVehicle = vehicles.find(vehicle => vehicle.id === selectedTrip.vehicleId);
+      if (!selectedVehicle) {
+        form.setError('tripId', { message: 'El vehículo del viaje seleccionado no es válido' });
+        return;
+      }
+
+      // Validar monto
+      const amount = Number(data.amount);
+      if (isNaN(amount) || amount <= 0) {
+        form.setError('amount', { message: 'El monto debe ser un número válido mayor a 0' });
+        return;
+      }
+
+      console.log('✅ [ExpenseForm] Validaciones pasadas, enviando datos');
+      onSubmit(data);
+    } catch (error) {
+      console.error('❌ [ExpenseForm] Error en validación del formulario:', error);
+    }
+  };
 
   // Encontrar vehículos para los viajes
   const getTripVehicle = (tripId: string) => {
@@ -102,6 +127,12 @@ const ExpenseForm = ({
     if (!trip) return null;
     return vehicles.find(v => v.id === trip.vehicleId);
   };
+
+  // Filtrar viajes válidos (que tengan vehículo asignado)
+  const validTrips = trips.filter(trip => {
+    const vehicle = getTripVehicle(trip.id);
+    return vehicle !== null;
+  });
 
   return (
     <Form {...form}>
@@ -115,7 +146,7 @@ const ExpenseForm = ({
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
-                disabled={!!selectedTripId}
+                disabled={!!selectedTripId || isSubmitting}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -123,15 +154,21 @@ const ExpenseForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {filteredTrips.map((trip) => {
-                    const vehicle = getTripVehicle(trip.id);
-                    return (
-                      <SelectItem key={trip.id} value={trip.id}>
-                        {trip.origin} → {trip.destination} 
-                        {vehicle && ` (${vehicle.plate})`}
-                      </SelectItem>
-                    );
-                  })}
+                  {validTrips.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      No hay viajes disponibles
+                    </div>
+                  ) : (
+                    validTrips.map((trip) => {
+                      const vehicle = getTripVehicle(trip.id);
+                      return (
+                        <SelectItem key={trip.id} value={trip.id}>
+                          {trip.origin} → {trip.destination} 
+                          {vehicle && ` (${vehicle.plate})`}
+                        </SelectItem>
+                      );
+                    })
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -146,7 +183,11 @@ const ExpenseForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Categoría *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                  disabled={isSubmitting}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar categoría" />
@@ -180,6 +221,7 @@ const ExpenseForm = ({
                           "w-full pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
+                        disabled={isSubmitting}
                       >
                         {field.value ? (
                           format(field.value, "PPP", { locale: es })
@@ -197,6 +239,7 @@ const ExpenseForm = ({
                       onSelect={field.onChange}
                       initialFocus
                       locale={es}
+                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                     />
                   </PopoverContent>
                 </Popover>
@@ -222,6 +265,7 @@ const ExpenseForm = ({
                     step="1"
                     placeholder="0"
                     className="pl-8"
+                    disabled={isSubmitting}
                   />
                 </div>
               </FormControl>
@@ -241,6 +285,7 @@ const ExpenseForm = ({
                   {...field}
                   placeholder="Detalles adicionales sobre el gasto"
                   className="h-20"
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <FormMessage />
@@ -259,9 +304,9 @@ const ExpenseForm = ({
           </Button>
           <Button 
             type="submit" 
-            disabled={isSubmitting}
+            disabled={isSubmitting || validTrips.length === 0}
           >
-            {initialData?.id ? 'Actualizar' : 'Registrar'} Gasto
+            {isSubmitting ? 'Guardando...' : (initialData?.id ? 'Actualizar' : 'Registrar')} Gasto
           </Button>
         </DialogFooter>
       </form>
