@@ -63,6 +63,12 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         .filter(vehicle => vehicle && typeof vehicle === 'object')
         .map(vehicle => {
           try {
+            console.log('🔄 Mapeando vehículo individual:', {
+              id: vehicle.id,
+              plate: vehicle.plate,
+              soat_document_url: vehicle.soat_document_url,
+              techno_document_url: vehicle.techno_document_url
+            });
             return mapVehicleFromDB(vehicle);
           } catch (error) {
             console.error('❌ Error al mapear vehículo:', error, vehicle);
@@ -71,7 +77,12 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         })
         .filter(Boolean) as Vehicle[];
       
-      console.log('✅ Vehículos mapeados:', mappedVehicles);
+      console.log('✅ Vehículos mapeados finales:', mappedVehicles.map(v => ({
+        id: v.id,
+        plate: v.plate,
+        soatDocumentUrl: v.soatDocumentUrl,
+        technoDocumentUrl: v.technoDocumentUrl
+      })));
       
       // Registrar auditoría de lectura
       await logRead('vehicles', undefined, { 
@@ -112,6 +123,10 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
     
     try {
       console.log('🚗 Intentando agregar vehículo:', vehicleData);
+      console.log('📄 URLs de documentos recibidas:', {
+        soatDocumentUrl: vehicleData.soatDocumentUrl,
+        technoDocumentUrl: vehicleData.technoDocumentUrl
+      });
       
       // Crear objeto con datos normalizados y type casting para fuelType
       const normalizedVehicle = {
@@ -122,10 +137,17 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         year: typeof vehicleData.year === 'string' ? parseInt(vehicleData.year, 10) : vehicleData.year,
         color: vehicleData.color?.trim() || null,
         fuelType: (vehicleData.fuelType?.trim() || null) as Vehicle['fuelType'],
-        capacity: vehicleData.capacity?.trim() || null
+        capacity: vehicleData.capacity?.trim() || null,
+        // Asegurar que las URLs de documentos se mantengan
+        soatDocumentUrl: vehicleData.soatDocumentUrl || null,
+        technoDocumentUrl: vehicleData.technoDocumentUrl || null
       };
       
-      console.log('🔄 Vehículo normalizado:', normalizedVehicle);
+      console.log('🔄 Vehículo normalizado:', {
+        ...normalizedVehicle,
+        soatDocumentUrl: normalizedVehicle.soatDocumentUrl ? 'PRESENTE' : 'NULL',
+        technoDocumentUrl: normalizedVehicle.technoDocumentUrl ? 'PRESENTE' : 'NULL'
+      });
       
       if (!validateVehicle(normalizedVehicle)) {
         console.error('❌ Validación fallida para vehículo:', normalizedVehicle);
@@ -147,15 +169,20 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         userId: user.id
       } as Vehicle;
       
-      console.log('💾 Preparando para guardar vehículo:', vehicleToSave);
-      console.log('📄 URLs de documentos a guardar:', {
+      console.log('💾 Preparando para guardar vehículo con URLs:', {
+        id: 'nuevo',
+        plate: vehicleToSave.plate,
         soatDocumentUrl: vehicleToSave.soatDocumentUrl,
         technoDocumentUrl: vehicleToSave.technoDocumentUrl
       });
       
       const newVehicle = mapVehicleToDB(vehicleToSave);
       
-      console.log('📤 Datos mapeados para DB:', newVehicle);
+      console.log('📤 Datos mapeados para DB:', {
+        ...newVehicle,
+        soat_document_url: newVehicle.soat_document_url,
+        techno_document_url: newVehicle.techno_document_url
+      });
       
       const { data, error } = await supabase
         .from('vehicles')
@@ -197,12 +224,18 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         return;
       }
       
-      console.log('💾 Vehículo guardado en DB:', data);
+      console.log('💾 Vehículo guardado en DB (RAW):', {
+        id: data.id,
+        plate: data.plate,
+        soat_document_url: data.soat_document_url,
+        techno_document_url: data.techno_document_url
+      });
       
       const mappedVehicle = mapVehicleFromDB(data);
       
-      console.log('✅ Vehículo mapeado final:', mappedVehicle);
-      console.log('📄 URLs finales guardadas:', {
+      console.log('✅ Vehículo mapeado final con URLs:', {
+        id: mappedVehicle.id,
+        plate: mappedVehicle.plate,
         soatDocumentUrl: mappedVehicle.soatDocumentUrl,
         technoDocumentUrl: mappedVehicle.technoDocumentUrl
       });
@@ -218,7 +251,7 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       setVehicles(prev => [mappedVehicle, ...prev]);
       toast.success('Vehículo agregado correctamente');
       
-      console.log('✅ Vehículo creado exitosamente:', mappedVehicle);
+      console.log('✅ Vehículo creado exitosamente con documentos');
     } catch (error) {
       console.error('❌ Error inesperado al agregar vehículo:', error);
       toast.error('Error inesperado al agregar vehículo');
@@ -249,8 +282,16 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
         year: typeof vehicleData.year === 'string' ? parseInt(vehicleData.year, 10) : vehicleData.year,
         color: vehicleData.color?.trim() || null,
         fuelType: vehicleData.fuelType ? vehicleData.fuelType as Vehicle['fuelType'] : undefined,
-        capacity: vehicleData.capacity?.trim() || null
+        capacity: vehicleData.capacity?.trim() || null,
+        // Mantener URLs de documentos si están presentes
+        soatDocumentUrl: vehicleData.soatDocumentUrl !== undefined ? vehicleData.soatDocumentUrl : existingVehicle.soatDocumentUrl,
+        technoDocumentUrl: vehicleData.technoDocumentUrl !== undefined ? vehicleData.technoDocumentUrl : existingVehicle.technoDocumentUrl
       };
+      
+      console.log('📋 URLs de documentos en actualización:', {
+        soatDocumentUrl: normalizedData.soatDocumentUrl,
+        technoDocumentUrl: normalizedData.technoDocumentUrl
+      });
       
       // Validar solo si hay cambios en campos obligatorios
       const hasRequiredFieldChanges = normalizedData.plate || normalizedData.brand || normalizedData.model || normalizedData.year;
@@ -279,6 +320,12 @@ export const useVehicles = (user: User | null, setGlobalLoading: (loading: boole
       }
       
       const updatedVehicle = mapVehicleToDB(normalizedData);
+      
+      console.log('💾 Datos de actualización para DB:', {
+        ...updatedVehicle,
+        soat_document_url: updatedVehicle.soat_document_url,
+        techno_document_url: updatedVehicle.techno_document_url
+      });
       
       const { error } = await supabase
         .from('vehicles')

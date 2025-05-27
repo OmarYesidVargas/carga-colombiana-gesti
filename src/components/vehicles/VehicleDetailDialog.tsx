@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Vehicle } from '@/types';
 import {
@@ -64,8 +65,10 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
     return { status: 'valid', color: 'green', icon: CheckCircle, text: 'Vigente' };
   };
 
-  // Función mejorada para verificar si hay documento - PARÁMETRO REQUERIDO PRIMERO
+  // Función mejorada para verificar si hay documento
   const hasDocument = (url: string | undefined): boolean => {
+    console.log('📋 Verificando documento URL:', url);
+    
     if (!url) {
       console.log('📋 URL no definida');
       return false;
@@ -83,20 +86,26 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                       trimmedUrl.startsWith('https://') ||
                       trimmedUrl.includes('supabase.co');
     
-    console.log(`📋 Verificando documento: ${trimmedUrl.substring(0, 30)}... -> ${isValidUrl}`);
+    console.log(`📋 Verificando documento: ${trimmedUrl.substring(0, 50)}... -> ${isValidUrl}`);
     return isValidUrl;
   };
 
   const handleViewDocument = (url: string | undefined) => {
+    console.log('👁️ Intentando ver documento:', url);
     if (hasDocument(url)) {
       viewDocument(url!);
+    } else {
+      console.log('❌ No se puede ver el documento, URL inválida');
     }
   };
 
   const handleDownloadDocument = (url: string | undefined, type: string) => {
+    console.log('💾 Intentando descargar documento:', url);
     if (hasDocument(url)) {
       const filename = `${type}_${vehicle.plate}_${Date.now()}.pdf`;
       downloadDocument(url!, filename);
+    } else {
+      console.log('❌ No se puede descargar el documento, URL inválida');
     }
   };
 

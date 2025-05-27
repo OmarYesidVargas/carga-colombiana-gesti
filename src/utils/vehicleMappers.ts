@@ -12,17 +12,22 @@ export const mapVehicleFromDB = (vehicle: any): Vehicle => {
   console.log('🔄 Mapeando vehículo desde DB:', {
     id: vehicle.id,
     plate: vehicle.plate,
-    soat_document_url: vehicle.soat_document_url ? 'PRESENTE' : 'AUSENTE',
-    techno_document_url: vehicle.techno_document_url ? 'PRESENTE' : 'AUSENTE'
+    soat_document_url: vehicle.soat_document_url ? `${vehicle.soat_document_url.substring(0, 30)}...` : 'NULL',
+    techno_document_url: vehicle.techno_document_url ? `${vehicle.techno_document_url.substring(0, 30)}...` : 'NULL'
   });
 
-  // Procesar URLs de documentos
-  const soatDocumentUrl = vehicle.soat_document_url?.trim() || undefined;
-  const technoDocumentUrl = vehicle.techno_document_url?.trim() || undefined;
+  // Procesar URLs de documentos - asegurar que se mantengan las URLs válidas
+  const soatDocumentUrl = vehicle.soat_document_url && vehicle.soat_document_url.trim() !== '' 
+    ? vehicle.soat_document_url.trim() 
+    : undefined;
+  
+  const technoDocumentUrl = vehicle.techno_document_url && vehicle.techno_document_url.trim() !== '' 
+    ? vehicle.techno_document_url.trim() 
+    : undefined;
 
-  console.log('📋 URLs procesadas:', {
-    soatDocumentUrl: soatDocumentUrl ? `${soatDocumentUrl.substring(0, 50)}...` : 'NO URL',
-    technoDocumentUrl: technoDocumentUrl ? `${technoDocumentUrl.substring(0, 50)}...` : 'NO URL'
+  console.log('📋 URLs procesadas después de mapeo:', {
+    soatDocumentUrl: soatDocumentUrl ? `${soatDocumentUrl.substring(0, 50)}...` : 'UNDEFINED',
+    technoDocumentUrl: technoDocumentUrl ? `${technoDocumentUrl.substring(0, 50)}...` : 'UNDEFINED'
   });
 
   const mappedVehicle = {
@@ -51,7 +56,9 @@ export const mapVehicleFromDB = (vehicle: any): Vehicle => {
     id: mappedVehicle.id,
     plate: mappedVehicle.plate,
     hasSoatDoc: !!mappedVehicle.soatDocumentUrl,
-    hasTechnoDoc: !!mappedVehicle.technoDocumentUrl
+    hasTechnoDoc: !!mappedVehicle.technoDocumentUrl,
+    soatUrl: mappedVehicle.soatDocumentUrl ? `${mappedVehicle.soatDocumentUrl.substring(0, 30)}...` : 'NO URL',
+    technoUrl: mappedVehicle.technoDocumentUrl ? `${mappedVehicle.technoDocumentUrl.substring(0, 30)}...` : 'NO URL'
   });
 
   return mappedVehicle;
@@ -81,17 +88,21 @@ export const mapVehicleToDB = (vehicle: Partial<Vehicle>): any => {
     mappedVehicle.techno_expiry_date = vehicle.technoExpiryDate ? vehicle.technoExpiryDate.toISOString().split('T')[0] : null;
   }
   
-  // URLs de documentos - asegurar que se guarden correctamente
+  // URLs de documentos - CRÍTICO: asegurar que se guarden correctamente
   if (vehicle.soatDocumentUrl !== undefined) {
-    const trimmedUrl = vehicle.soatDocumentUrl?.trim();
-    mappedVehicle.soat_document_url = trimmedUrl || null;
-    console.log('💾 Guardando SOAT URL:', trimmedUrl ? 'PRESENTE' : 'NULL');
+    const processedUrl = vehicle.soatDocumentUrl && vehicle.soatDocumentUrl.trim() !== '' 
+      ? vehicle.soatDocumentUrl.trim() 
+      : null;
+    mappedVehicle.soat_document_url = processedUrl;
+    console.log('💾 Guardando SOAT URL:', processedUrl ? `${processedUrl.substring(0, 30)}...` : 'NULL');
   }
   
   if (vehicle.technoDocumentUrl !== undefined) {
-    const trimmedUrl = vehicle.technoDocumentUrl?.trim();
-    mappedVehicle.techno_document_url = trimmedUrl || null;
-    console.log('💾 Guardando Techno URL:', trimmedUrl ? 'PRESENTE' : 'NULL');
+    const processedUrl = vehicle.technoDocumentUrl && vehicle.technoDocumentUrl.trim() !== '' 
+      ? vehicle.technoDocumentUrl.trim() 
+      : null;
+    mappedVehicle.techno_document_url = processedUrl;
+    console.log('💾 Guardando Techno URL:', processedUrl ? `${processedUrl.substring(0, 30)}...` : 'NULL');
   }
   
   if (vehicle.soatInsuranceCompany !== undefined) {
@@ -100,6 +111,11 @@ export const mapVehicleToDB = (vehicle: Partial<Vehicle>): any => {
   if (vehicle.technoCenter !== undefined) {
     mappedVehicle.techno_center = vehicle.technoCenter?.trim() || null;
   }
+  
+  console.log('📤 Resultado final del mapeo a DB:', {
+    soat_document_url: mappedVehicle.soat_document_url ? 'PRESENTE' : 'NULL',
+    techno_document_url: mappedVehicle.techno_document_url ? 'PRESENTE' : 'NULL'
+  });
   
   return mappedVehicle;
 };

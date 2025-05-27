@@ -1,508 +1,439 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Vehicle } from '@/types';
-import { DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, FileText } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import DocumentUpload from './DocumentUpload';
 
-// Esquema de validación para el formulario - más flexible
-const formSchema = z.object({
-  plate: z.string()
-    .min(1, 'La placa es requerida')
-    .max(15, 'La placa no debe exceder 15 caracteres')
-    .transform(val => val.toUpperCase().trim()),
-  brand: z.string()
-    .min(1, 'La marca es requerida')
-    .max(50, 'La marca no debe exceder 50 caracteres')
-    .transform(val => val.trim()),
-  model: z.string()
-    .min(1, 'El modelo es requerido')
-    .max(50, 'El modelo no debe exceder 50 caracteres')
-    .transform(val => val.trim()),
-  year: z.string()
-    .min(1, 'El año es requerido')
-    .refine(
-      (val) => !isNaN(Number(val)),
-      { message: 'El año debe ser un número' }
-    )
-    .refine(
-      (val) => {
-        const year = Number(val);
-        return year >= 1950 && year <= new Date().getFullYear() + 1;
-      },
-      { message: `El año debe estar entre 1950 y ${new Date().getFullYear() + 1}` }
-    ),
-  color: z.string().optional().transform(val => val?.trim() || ''),
-  fuelType: z.string().optional(),
-  capacity: z.string().optional().transform(val => val?.trim() || ''),
-  // Nuevos campos para Colombia
-  soatExpiryDate: z.string().optional(),
-  technoExpiryDate: z.string().optional(),
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Vehicle } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon, Car, FileText } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import DocumentUpload from './DocumentUpload';
+import { useAuth } from '@/context/AuthContext';
+
+const vehicleSchema = z.object({
+  plate: z.string().min(1, 'La placa es obligatoria'),
+  brand: z.string().min(1, 'La marca es obligatoria'),
+  model: z.string().min(1, 'El modelo es obligatorio'),
+  year: z.number().min(1900, 'Año inválido').max(new Date().getFullYear() + 1, 'Año inválido'),
+  color: z.string().optional(),
+  fuelType: z.enum(['gasolina', 'diesel', 'electrico', 'hibrido', 'gas']).optional(),
+  capacity: z.string().optional(),
+  soatExpiryDate: z.date().optional(),
+  technoExpiryDate: z.date().optional(),
   soatInsuranceCompany: z.string().optional(),
-  technoCenter: z.string().optional().transform(val => val?.trim() || ''),
+  technoCenter: z.string().optional(),
 });
 
-type FormData = z.infer<typeof formSchema> & {
-  soatDocumentUrl?: string;
-  technoDocumentUrl?: string;
-};
+type VehicleFormData = z.infer<typeof vehicleSchema>;
 
 interface VehicleFormProps {
-  initialData?: Partial<Vehicle>;
+  initialData?: Vehicle;
   onSubmit: (data: any) => void;
   onCancel: () => void;
-  isSubmitting?: boolean;
+  isSubmitting: boolean;
 }
 
-const fuelTypes = [
-  { value: 'diesel', label: 'Diesel' },
-  { value: 'gasoline', label: 'Gasolina' },
-  { value: 'gas', label: 'Gas Natural' },
-  { value: 'hybrid', label: 'Híbrido' },
-  { value: 'electric', label: 'Eléctrico' },
-];
-
-const colombianInsurers = [
-  { value: 'sura', label: 'Seguros SURA' },
-  { value: 'bolivar', label: 'Seguros Bolívar' },
-  { value: 'estado', label: 'Seguros del Estado' },
-  { value: 'mapfre', label: 'MAPFRE' },
-  { value: 'liberty', label: 'Liberty Seguros' },
-  { value: 'allianz', label: 'Allianz' },
-  { value: 'axa', label: 'AXA Colpatria' },
-  { value: 'previsora', label: 'La Previsora' },
-  { value: 'mundial', label: 'Seguros Mundial' },
-  { value: 'otros', label: 'Otros' },
-];
-
-const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 74 }, (_, i) => (currentYear + 1 - i).toString());
-
-const VehicleForm = ({ initialData, onSubmit, onCancel, isSubmitting = false }: VehicleFormProps) => {
+const VehicleForm: React.FC<VehicleFormProps> = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  isSubmitting
+}) => {
   const { user } = useAuth();
-  
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  const [soatDocumentUrl, setSoatDocumentUrl] = useState<string | undefined>(initialData?.soatDocumentUrl);
+  const [technoDocumentUrl, setTechnoDocumentUrl] = useState<string | undefined>(initialData?.technoDocumentUrl);
+
+  console.log('🚗 VehicleForm inicializado:', {
+    isEdit: !!initialData,
+    vehicleId: initialData?.id,
+    initialSoatUrl: initialData?.soatDocumentUrl,
+    initialTechnoUrl: initialData?.technoDocumentUrl,
+    currentSoatUrl: soatDocumentUrl,
+    currentTechnoUrl: technoDocumentUrl
+  });
+
+  const form = useForm<VehicleFormData>({
+    resolver: zodResolver(vehicleSchema),
     defaultValues: {
       plate: initialData?.plate || '',
       brand: initialData?.brand || '',
       model: initialData?.model || '',
-      year: initialData?.year ? String(initialData.year) : '',
+      year: initialData?.year || new Date().getFullYear(),
       color: initialData?.color || '',
-      fuelType: initialData?.fuelType || '',
+      fuelType: initialData?.fuelType || undefined,
       capacity: initialData?.capacity || '',
-      soatExpiryDate: initialData?.soatExpiryDate ? initialData.soatExpiryDate.toISOString().split('T')[0] : '',
-      technoExpiryDate: initialData?.technoExpiryDate ? initialData.technoExpiryDate.toISOString().split('T')[0] : '',
+      soatExpiryDate: initialData?.soatExpiryDate || undefined,
+      technoExpiryDate: initialData?.technoExpiryDate || undefined,
       soatInsuranceCompany: initialData?.soatInsuranceCompany || '',
       technoCenter: initialData?.technoCenter || '',
-      soatDocumentUrl: initialData?.soatDocumentUrl || '',
-      technoDocumentUrl: initialData?.technoDocumentUrl || '',
     },
   });
 
-  const handleSubmit = (data: FormData) => {
-    console.log('📝 Datos del formulario enviados:', data);
-    
-    // Verificar que las URLs de documentos estén presentes
-    const soatDocumentUrl = form.getValues('soatDocumentUrl');
-    const technoDocumentUrl = form.getValues('technoDocumentUrl');
-    
-    console.log('📄 URLs de documentos en el formulario:', {
+  const handleFormSubmit = (data: VehicleFormData) => {
+    console.log('📤 Enviando formulario con datos:', {
+      ...data,
       soatDocumentUrl,
       technoDocumentUrl
     });
-    
-    const submitData = {
+
+    const formDataWithDocuments = {
       ...data,
-      year: parseInt(data.year, 10), // Asegurar que el año sea número
-      // Convertir strings vacías a undefined para campos opcionales
-      color: data.color || undefined,
-      fuelType: data.fuelType || undefined,
-      capacity: data.capacity || undefined,
-      soatExpiryDate: data.soatExpiryDate ? new Date(data.soatExpiryDate) : undefined,
-      technoExpiryDate: data.technoExpiryDate ? new Date(data.technoExpiryDate) : undefined,
-      soatInsuranceCompany: data.soatInsuranceCompany || undefined,
-      technoCenter: data.technoCenter || undefined,
-      // Asegurar que las URLs se incluyan en los datos a enviar
-      soatDocumentUrl: soatDocumentUrl || undefined,
-      technoDocumentUrl: technoDocumentUrl || undefined,
+      soatDocumentUrl: soatDocumentUrl || null,
+      technoDocumentUrl: technoDocumentUrl || null,
     };
-    
-    console.log('🚀 Datos procesados para envío:', submitData);
-    console.log('📄 URLs de documentos incluidas:', {
-      soatDocumentUrl: submitData.soatDocumentUrl,
-      technoDocumentUrl: submitData.technoDocumentUrl
+
+    console.log('📋 URLs de documentos a enviar:', {
+      soatDocumentUrl: formDataWithDocuments.soatDocumentUrl,
+      technoDocumentUrl: formDataWithDocuments.technoDocumentUrl
     });
-    
-    onSubmit(submitData);
+
+    onSubmit(formDataWithDocuments);
   };
 
-  const isExpiringSoon = (dateString?: string) => {
-    if (!dateString) return false;
-    const expiryDate = new Date(dateString);
-    const today = new Date();
-    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
+  const handleSoatUpload = (url: string) => {
+    console.log('📄 SOAT documento subido:', url);
+    setSoatDocumentUrl(url);
   };
 
-  const isExpired = (dateString?: string) => {
-    if (!dateString) return false;
-    const expiryDate = new Date(dateString);
-    const today = new Date();
-    return expiryDate < today;
+  const handleTechnoUpload = (url: string) => {
+    console.log('📄 Tecnomecánica documento subido:', url);
+    setTechnoDocumentUrl(url);
   };
+
+  const handleSoatRemove = () => {
+    console.log('🗑️ Removiendo documento SOAT');
+    setSoatDocumentUrl(undefined);
+  };
+
+  const handleTechnoRemove = () => {
+    console.log('🗑️ Removiendo documento Tecnomecánica');
+    setTechnoDocumentUrl(undefined);
+  };
+
+  if (!user) {
+    return <div>Usuario no autenticado</div>;
+  }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
-        <ScrollArea className="flex-1 max-h-[70vh] pr-4">
-          <div className="space-y-4">
-            {/* Información básica del vehículo */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+    <div className="h-full overflow-hidden">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="h-full flex flex-col">
+          <div className="flex-1 overflow-y-auto px-1">
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="basic" className="flex items-center gap-2">
+                  <Car className="h-4 w-4" />
+                  Información Básica
+                </TabsTrigger>
+                <TabsTrigger value="documentation" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  Información del Vehículo
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <FormField
-                  control={form.control}
-                  name="plate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Placa *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="ABC123" 
-                          className="uppercase vehicle-plate h-9"
-                          maxLength={15}
-                          onChange={(e) => {
-                            field.onChange(e.target.value.toUpperCase());
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="brand"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">Marca *</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Toyota" className="h-9" maxLength={50} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="model"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">Modelo *</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Corolla" className="h-9" maxLength={50} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="year"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">Año *</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-9">
-                              <SelectValue placeholder="Año" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[200px]">
-                            {years.map((year) => (
-                              <SelectItem key={year} value={year}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="color"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">Color</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Blanco" className="h-9" maxLength={30} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="fuelType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm">Combustible</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-9">
-                              <SelectValue placeholder="Tipo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {fuelTypes.map((type) => (
-                              <SelectItem key={type.value} value={type.value}>
-                                {type.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Capacidad de Carga</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Ej: 5 Toneladas" className="h-9" maxLength={50} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+                  Documentación
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Documentación Colombia */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Documentación Colombia
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* SOAT */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm text-muted-foreground">SOAT</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="soatExpiryDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm flex items-center gap-2">
-                            Vencimiento
-                            {isExpired(field.value) && (
-                              <span className="text-xs bg-red-100 text-red-700 px-1 py-0.5 rounded">VENCIDO</span>
-                            )}
-                            {isExpiringSoon(field.value) && !isExpired(field.value) && (
-                              <span className="text-xs bg-yellow-100 text-yellow-700 px-1 py-0.5 rounded">PRÓXIMO</span>
-                            )}
-                          </FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              type="date"
-                              className={`h-9 ${
-                                isExpired(field.value) 
-                                  ? "border-red-500" 
-                                  : isExpiringSoon(field.value) 
-                                    ? "border-yellow-500" 
-                                    : ""
-                              }`}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="soatInsuranceCompany"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm">Aseguradora</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value}
-                          >
+              <TabsContent value="basic" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Datos del Vehículo</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="plate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Placa *</FormLabel>
                             <FormControl>
-                              <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Seleccionar" />
-                              </SelectTrigger>
+                              <Input 
+                                placeholder="ABC123" 
+                                {...field} 
+                                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                              />
                             </FormControl>
-                            <SelectContent>
-                              {colombianInsurers.map((insurer) => (
-                                <SelectItem key={insurer.value} value={insurer.value}>
-                                  {insurer.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <DocumentUpload
-                    label="Documento SOAT"
-                    documentType="soat"
-                    currentUrl={form.watch('soatDocumentUrl')}
-                    vehicleId={initialData?.id}
-                    userId={user?.id || ''}
-                    onUploadComplete={(url) => {
-                      console.log('📄 SOAT documento subido:', url);
-                      form.setValue('soatDocumentUrl', url);
-                    }}
-                    onRemove={() => {
-                      console.log('🗑️ SOAT documento removido');
-                      form.setValue('soatDocumentUrl', '');
-                    }}
-                  />
-                </div>
+                      <FormField
+                        control={form.control}
+                        name="year"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Año *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="2024"
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                {/* Tecnomecánica */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm text-muted-foreground">Tecnomecánica</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="technoExpiryDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm flex items-center gap-2">
-                            Vencimiento
-                            {isExpired(field.value) && (
-                              <span className="text-xs bg-red-100 text-red-700 px-1 py-0.5 rounded">VENCIDO</span>
-                            )}
-                            {isExpiringSoon(field.value) && !isExpired(field.value) && (
-                              <span className="text-xs bg-yellow-100 text-yellow-700 px-1 py-0.5 rounded">PRÓXIMO</span>
-                            )}
-                          </FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              type="date"
-                              className={`h-9 ${
-                                isExpired(field.value) 
-                                  ? "border-red-500" 
-                                  : isExpiringSoon(field.value) 
-                                    ? "border-yellow-500" 
-                                    : ""
-                              }`}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="technoCenter"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm">Centro Diagnóstico</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Centro (opcional)" className="h-9" maxLength={100} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name="brand"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Marca *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Toyota" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <DocumentUpload
-                    label="Certificado Tecnomecánica"
-                    documentType="techno"
-                    currentUrl={form.watch('technoDocumentUrl')}
-                    vehicleId={initialData?.id}
-                    userId={user?.id || ''}
-                    onUploadComplete={(url) => {
-                      console.log('📄 Tecnomecánica documento subido:', url);
-                      form.setValue('technoDocumentUrl', url);
-                    }}
-                    onRemove={() => {
-                      console.log('🗑️ Tecnomecánica documento removido');
-                      form.setValue('technoDocumentUrl', '');
-                    }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                      <FormField
+                        control={form.control}
+                        name="model"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Modelo *</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Corolla" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Color</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Blanco" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="fuelType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tipo de Combustible</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar combustible" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="gasolina">Gasolina</SelectItem>
+                                <SelectItem value="diesel">Diesel</SelectItem>
+                                <SelectItem value="electrico">Eléctrico</SelectItem>
+                                <SelectItem value="hibrido">Híbrido</SelectItem>
+                                <SelectItem value="gas">Gas</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="capacity"
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Capacidad</FormLabel>
+                            <FormControl>
+                              <Input placeholder="5 pasajeros" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="documentation" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>SOAT</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="soatExpiryDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Fecha de Vencimiento</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "dd/MM/yyyy", { locale: es })
+                                    ) : (
+                                      <span>Seleccionar fecha</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) => date < new Date()}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="soatInsuranceCompany"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Aseguradora</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nombre de la aseguradora" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <DocumentUpload
+                      label="Documento SOAT"
+                      documentType="soat"
+                      currentUrl={soatDocumentUrl}
+                      vehicleId={initialData?.id}
+                      userId={user.id}
+                      onUploadComplete={handleSoatUpload}
+                      onRemove={handleSoatRemove}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Tecnomecánica</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="technoExpiryDate"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Fecha de Vencimiento</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "dd/MM/yyyy", { locale: es })
+                                    ) : (
+                                      <span>Seleccionar fecha</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) => date < new Date()}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="technoCenter"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Centro de Revisión</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nombre del centro" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <DocumentUpload
+                      label="Documento Tecnomecánica"
+                      documentType="techno"
+                      currentUrl={technoDocumentUrl}
+                      vehicleId={initialData?.id}
+                      userId={user.id}
+                      onUploadComplete={handleTechnoUpload}
+                      onRemove={handleTechnoRemove}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
-        </ScrollArea>
-        
-        <DialogFooter className="mt-4 pt-4 border-t">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Guardando...' : (initialData?.id ? 'Actualizar' : 'Guardar')} Vehículo
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+
+          <Separator className="my-4" />
+
+          <div className="flex justify-end gap-2 px-1">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Guardando...' : (initialData ? 'Actualizar' : 'Guardar')}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
 
