@@ -12,7 +12,6 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string, metadata?: any) => Promise<void>;
-  signInWithOAuth: (provider: 'google') => Promise<void>;
   isLoading: boolean;
 }
 
@@ -131,31 +130,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const signInWithOAuth = async (provider: 'google'): Promise<void> => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
-      });
-      
-      if (error) {
-        toast.error(error.message);
-        throw error;
-      }
-      
-      // La redirección se maneja automáticamente por Supabase
-    } catch (error: any) {
-      console.error('Error al iniciar sesión con OAuth:', error);
-      toast.error(error.message || `Error al iniciar sesión con ${provider}. Por favor, intenta de nuevo.`);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const logout = async (): Promise<void> => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -177,7 +151,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         login,
         logout,
         register,
-        signInWithOAuth,
         isLoading,
       }}
     >
