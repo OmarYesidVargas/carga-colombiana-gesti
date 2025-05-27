@@ -20,50 +20,50 @@ export default {
 		},
 		extend: {
 			colors: {
-				border: 'hsl(var(--border))',
-				input: 'hsl(var(--input))',
-				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
-				foreground: 'hsl(var(--foreground))',
+				border: '#e2e8f0',
+				input: '#e2e8f0',
+				ring: '#3b82f6',
+				background: '#f8fafc',
+				foreground: '#0f172a',
 				primary: {
 					DEFAULT: '#3b82f6',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: '#ffffff'
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					DEFAULT: '#f1f5f9',
+					foreground: '#334155'
 				},
 				destructive: {
-					DEFAULT: 'hsl(var(--destructive))',
-					foreground: 'hsl(var(--destructive-foreground))'
+					DEFAULT: '#ef4444',
+					foreground: '#ffffff'
 				},
 				muted: {
-					DEFAULT: 'hsl(var(--muted))',
-					foreground: 'hsl(var(--muted-foreground))'
+					DEFAULT: '#f8fafc',
+					foreground: '#64748b'
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					DEFAULT: '#f1f5f9',
+					foreground: '#334155'
 				},
 				popover: {
-					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
+					DEFAULT: '#ffffff',
+					foreground: '#0f172a'
 				},
 				card: {
-					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
+					DEFAULT: '#ffffff',
+					foreground: '#0f172a'
 				},
 				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
+					DEFAULT: '#ffffff',
+					foreground: '#475569',
+					primary: '#3b82f6',
+					'primary-foreground': '#ffffff',
+					accent: '#f1f5f9',
+					'accent-foreground': '#334155',
+					border: '#e2e8f0',
+					ring: '#3b82f6'
 				},
-				// Tema Unix - Solo grises y azules
+				// TEMA UNIX: Solo grises y azules
 				gray: {
 					50: '#f9fafb',
 					100: '#f3f4f6',
@@ -100,6 +100,7 @@ export default {
 					800: '#1e40af',
 					900: '#1e3a8a'
 				}
+				// ELIMINAMOS completamente amarillo del config
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
