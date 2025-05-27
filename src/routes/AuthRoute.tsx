@@ -22,7 +22,7 @@ const AuthRoute = ({ children }: AuthRouteProps) => {
     // Mientras se verifica la autenticación, mostrar un indicador de carga
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin text-3xl">○</div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }

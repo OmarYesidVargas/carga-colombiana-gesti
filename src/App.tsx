@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { DataProvider } from "@/context/DataContext";
+import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -59,59 +60,77 @@ function App() {
           <AuthProvider>
             <DataProvider>
               <Routes>
-                {/* Rutas públicas */}
+                {/* Ruta principal sin Layout */}
                 <Route path="/" element={<Index />} />
+                
+                {/* Rutas de autenticación sin Layout */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 
-                {/* Rutas protegidas */}
+                {/* Rutas protegidas con Layout */}
                 <Route path="/dashboard" element={
                   <AuthRoute>
-                    <Dashboard />
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
                   </AuthRoute>
                 } />
                 
                 <Route path="/vehicles" element={
                   <AuthRoute>
-                    <VehiclesPage />
+                    <Layout>
+                      <VehiclesPage />
+                    </Layout>
                   </AuthRoute>
                 } />
                 
                 <Route path="/trips" element={
                   <AuthRoute>
-                    <TripsPage />
+                    <Layout>
+                      <TripsPage />
+                    </Layout>
                   </AuthRoute>
                 } />
                 
                 <Route path="/trips/:id" element={
                   <AuthRoute>
-                    <TripDetailPage />
+                    <Layout>
+                      <TripDetailPage />
+                    </Layout>
                   </AuthRoute>
                 } />
                 
                 <Route path="/expenses" element={
                   <AuthRoute>
-                    <ExpensesPage />
+                    <Layout>
+                      <ExpensesPage />
+                    </Layout>
                   </AuthRoute>
                 } />
                 
                 <Route path="/tolls" element={
                   <AuthRoute>
-                    <TollsPage />
+                    <Layout>
+                      <TollsPage />
+                    </Layout>
                   </AuthRoute>
                 } />
                 
                 <Route path="/toll-records" element={
                   <AuthRoute>
-                    <TollRecordsPage />
+                    <Layout>
+                      <TollRecordsPage />
+                    </Layout>
                   </AuthRoute>
                 } />
                 
                 <Route path="/reports" element={
                   <AuthRoute>
-                    <ExpensesReportPage />
+                    <Layout>
+                      <ExpensesReportPage />
+                    </Layout>
                   </AuthRoute>
                 } />
                 
