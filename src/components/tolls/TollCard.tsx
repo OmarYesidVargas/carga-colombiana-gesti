@@ -24,27 +24,27 @@ const formatCurrency = (amount: number) => {
 const getCategoryColor = (category: string) => {
   switch (category.toLowerCase()) {
     case 'liviano':
-      return 'bg-green-500 hover:bg-green-600';
+      return 'bg-emerald-500 hover:bg-emerald-600 text-white';
     case 'pesado':
-      return 'bg-orange-500 hover:bg-orange-600';
+      return 'bg-orange-500 hover:bg-orange-600 text-white';
     case 'motocicleta':
-      return 'bg-blue-500 hover:bg-blue-600';
+      return 'bg-blue-500 hover:bg-blue-600 text-white';
     case 'especial':
-      return 'bg-purple-500 hover:bg-purple-600';
+      return 'bg-purple-500 hover:bg-purple-600 text-white';
     default:
-      return 'bg-gray-500 hover:bg-gray-600';
+      return 'bg-gray-500 hover:bg-gray-600 text-white';
   }
 };
 
 const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
   return (
-    <Card className="h-full bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200 hover:border-violet-300">
-      <CardHeader className="pb-3">
+    <Card className="group h-full bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:border-violet-300 hover:-translate-y-1">
+      <CardHeader className="pb-3 space-y-2">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <CardTitle className="text-lg font-semibold break-words mr-2 text-gray-900">
+          <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-violet-700 transition-colors line-clamp-2 flex-1 min-w-0">
             {toll.name}
           </CardTitle>
-          <Badge className={`text-white shrink-0 ${getCategoryColor(toll.category)}`}>
+          <Badge className={`shrink-0 ${getCategoryColor(toll.category)} font-medium text-xs px-2 py-1`}>
             {toll.category}
           </Badge>
         </div>
@@ -53,14 +53,17 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
       <CardContent className="pb-4 space-y-4">
         {/* Ubicación */}
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-violet-100 rounded-lg">
+          <div className="p-2 bg-violet-50 rounded-lg border border-violet-100 group-hover:bg-violet-100 transition-colors">
             <MapPin className="h-4 w-4 text-violet-600" />
           </div>
-          <div className="flex-1">
-            <p className="font-medium text-gray-900">{toll.location}</p>
-            <p className="text-sm text-gray-600">{toll.route}</p>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-gray-900 text-sm truncate">{toll.location}</p>
+            <div className="flex items-center gap-1 mt-1">
+              <Route className="h-3 w-3 text-gray-400" />
+              <p className="text-xs text-gray-600 truncate">{toll.route}</p>
+            </div>
             {toll.coordinates && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-1 truncate">
                 📍 {toll.coordinates}
               </p>
             )}
@@ -69,11 +72,11 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
         
         {/* Precio */}
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <DollarSign className="h-4 w-4 text-green-600" />
+          <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-100 group-hover:bg-emerald-100 transition-colors">
+            <DollarSign className="h-4 w-4 text-emerald-600" />
           </div>
-          <div>
-            <p className="text-2xl font-bold text-gray-900">
+          <div className="flex-1">
+            <p className="text-xl font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">
               {formatCurrency(toll.price)}
             </p>
             <p className="text-xs text-gray-500">Tarifa oficial</p>
@@ -82,20 +85,20 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
         
         {/* Descripción */}
         {toll.description && (
-          <div className="pt-2 border-t border-gray-100">
-            <p className="text-sm text-gray-600 break-words leading-relaxed">
+          <div className="pt-3 border-t border-gray-100">
+            <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
               {toll.description}
             </p>
           </div>
         )}
       </CardContent>
       
-      <CardFooter className="pt-0 flex justify-end gap-2 bg-gray-50 border-t border-gray-100 rounded-b-lg">
+      <CardFooter className="pt-0 flex flex-col sm:flex-row gap-2 bg-gradient-to-r from-gray-50 to-violet-50 border-t border-gray-100 rounded-b-lg">
         <Button 
           variant="outline" 
           size="sm" 
           onClick={() => onEdit(toll)}
-          className="flex-1 sm:flex-none border-violet-300 text-violet-700 hover:bg-violet-50 hover:border-violet-400"
+          className="flex-1 border-violet-200 text-violet-700 hover:bg-violet-50 hover:border-violet-300 transition-all duration-200"
         >
           <Pencil className="h-4 w-4 mr-1" /> 
           Editar
@@ -104,7 +107,7 @@ const TollCard = ({ toll, onEdit, onDelete }: TollCardProps) => {
           variant="destructive"
           size="sm"
           onClick={() => onDelete(toll.id)}
-          className="flex-1 sm:flex-none bg-red-500 hover:bg-red-600"
+          className="flex-1 bg-red-500 hover:bg-red-600 border-red-500 hover:border-red-600 transition-all duration-200"
         >
           <Trash2 className="h-4 w-4 mr-1" /> 
           Eliminar

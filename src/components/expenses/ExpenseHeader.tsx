@@ -23,46 +23,39 @@ const ExpenseHeader: React.FC<ExpenseHeaderProps> = ({
   canExport
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Gastos</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Administra los gastos de tus viajes
-        </p>
-      </div>
+    <div className="flex flex-col sm:flex-row gap-3">
+      <Button 
+        onClick={onAddClick} 
+        className="bg-white text-violet-700 hover:bg-violet-50 font-semibold px-6 py-3 h-auto shadow-lg hover:shadow-xl transition-all duration-200"
+        size="lg"
+      >
+        <Plus className="mr-2 h-5 w-5" /> 
+        Agregar Gasto
+      </Button>
       
-      <div className="flex flex-col sm:flex-row gap-2">
-        <Button 
-          onClick={onAddClick} 
-          className="w-full sm:w-auto"
-        >
-          <Plus className="mr-2 h-4 w-4" /> 
-          Agregar Gasto
-        </Button>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="w-full sm:w-auto">
-                <Button 
-                  onClick={onExportClick} 
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  disabled={!canExport}
-                >
-                  <Download className="mr-2 h-4 w-4" /> 
-                  Exportar CSV
-                </Button>
-              </div>
-            </TooltipTrigger>
-            {!canExport && (
-              <TooltipContent>
-                <p>Agrega gastos para poder exportarlos</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div>
+              <Button 
+                onClick={onExportClick} 
+                variant="outline"
+                className="bg-white/80 border-white/50 text-white hover:bg-white/90 hover:text-violet-700 font-semibold px-6 py-3 h-auto shadow-lg transition-all duration-200"
+                size="lg"
+                disabled={!canExport}
+              >
+                <Download className="mr-2 h-5 w-5" /> 
+                Exportar CSV
+              </Button>
+            </div>
+          </TooltipTrigger>
+          {!canExport && (
+            <TooltipContent>
+              <p>Agrega gastos para poder exportarlos</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };

@@ -48,7 +48,6 @@ const ExpensesPage = () => {
   
   /**
    * Abre el formulario para crear o editar un gasto
-   * @param {Expense} [expense] - Gasto a editar (si aplica)
    */
   const handleOpenForm = (expense?: Expense) => {
     if (expense) {
@@ -69,7 +68,6 @@ const ExpensesPage = () => {
   
   /**
    * Maneja el envío del formulario de gastos
-   * @param {any} data - Datos del formulario
    */
   const handleFormSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -106,7 +104,6 @@ const ExpensesPage = () => {
   
   /**
    * Muestra el diálogo de confirmación para eliminar un gasto
-   * @param {string} expenseId - ID del gasto a eliminar
    */
   const handleDeleteClick = (expenseId: string) => {
     setExpenseToDelete(expenseId);
@@ -154,8 +151,6 @@ const ExpensesPage = () => {
   
   /**
    * Obtiene la etiqueta en español para una categoría
-   * @param {string} category - Categoría de gasto
-   * @returns {string} Etiqueta en español
    */
   const getCategoryLabel = (category: string): string => {
     const labels: Record<string, string> = {
@@ -171,70 +166,101 @@ const ExpensesPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Encabezado */}
-      <ExpenseHeader 
-        onAddClick={() => handleOpenForm()} 
-        onExportClick={handleExportCSV}
-        canExport={filteredExpenses.length > 0}
-      />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-        {/* Resumen de gastos */}
-        <div className="lg:col-span-1">
-          <ExpenseSummary 
-            expenses={expenses} 
-            vehicles={vehicles}
-            trips={trips}
-            title="Resumen general"
-          />
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50">
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6">
+        {/* Encabezado mejorado */}
+        <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-violet-700 rounded-2xl p-6 sm:p-8 text-white shadow-xl">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                Gestión de Gastos
+              </h1>
+              <p className="text-violet-100 text-lg">
+                Administra los gastos de tus viajes de manera eficiente
+              </p>
+              <div className="flex flex-wrap gap-4 mt-4 text-sm">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-lg px-3 py-2">
+                  <span>{expenses.length} gastos registrados</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-lg px-3 py-2">
+                  <span>{filteredExpenses.length} gastos filtrados</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <ExpenseHeader 
+                onAddClick={() => handleOpenForm()} 
+                onExportClick={handleExportCSV}
+                canExport={filteredExpenses.length > 0}
+              />
+            </div>
+          </div>
         </div>
         
-        {/* Lista de gastos */}
-        <div className="lg:col-span-3 space-y-4">
-          {/* Filtros de búsqueda */}
-          <ExpenseFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            selectedVehicleId={selectedVehicleId}
-            setSelectedVehicleId={setSelectedVehicleId}
-            selectedTripId={selectedTripId}
-            setSelectedTripId={setSelectedTripId}
-            vehicles={vehicles}
-            trips={trips}
-            isFilterOpen={isFilterOpen}
-            setIsFilterOpen={setIsFilterOpen}
-          />
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          {/* Resumen de gastos */}
+          <div className="xl:col-span-1">
+            <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg">
+              <ExpenseSummary 
+                expenses={expenses} 
+                vehicles={vehicles}
+                trips={trips}
+                title="Resumen general"
+              />
+            </div>
+          </div>
           
-          {/* Lista de gastos por categorías */}
-          <ExpensesList
-            filteredExpenses={filteredExpenses}
-            expensesByCategory={expensesByCategory}
-            trips={trips}
-            vehicles={vehicles}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            onEdit={handleOpenForm}
-            onDelete={handleDeleteClick}
-            onAdd={() => handleOpenForm()}
-          />
+          {/* Lista de gastos */}
+          <div className="xl:col-span-3 space-y-6">
+            {/* Filtros de búsqueda mejorados */}
+            <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg">
+              <ExpenseFilters
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                selectedVehicleId={selectedVehicleId}
+                setSelectedVehicleId={setSelectedVehicleId}
+                selectedTripId={selectedTripId}
+                setSelectedTripId={setSelectedTripId}
+                vehicles={vehicles}
+                trips={trips}
+                isFilterOpen={isFilterOpen}
+                setIsFilterOpen={setIsFilterOpen}
+              />
+            </div>
+            
+            {/* Lista de gastos por categorías mejorada */}
+            <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg overflow-hidden">
+              <ExpensesList
+                filteredExpenses={filteredExpenses}
+                expensesByCategory={expensesByCategory}
+                trips={trips}
+                vehicles={vehicles}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                onEdit={handleOpenForm}
+                onDelete={handleDeleteClick}
+                onAdd={() => handleOpenForm()}
+              />
+            </div>
+          </div>
         </div>
+        
+        {/* Diálogos */}
+        <ExpenseDialogs
+          isFormOpen={isFormOpen}
+          setIsFormOpen={setIsFormOpen}
+          isDeleteDialogOpen={isDeleteDialogOpen}
+          setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+          currentExpense={currentExpense}
+          trips={trips}
+          vehicles={vehicles}
+          isSubmitting={isSubmitting}
+          onFormSubmit={handleFormSubmit}
+          onCloseForm={handleCloseForm}
+          onConfirmDelete={confirmDelete}
+        />
       </div>
-      
-      {/* Diálogos */}
-      <ExpenseDialogs
-        isFormOpen={isFormOpen}
-        setIsFormOpen={setIsFormOpen}
-        isDeleteDialogOpen={isDeleteDialogOpen}
-        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
-        currentExpense={currentExpense}
-        trips={trips}
-        vehicles={vehicles}
-        isSubmitting={isSubmitting}
-        onFormSubmit={handleFormSubmit}
-        onCloseForm={handleCloseForm}
-        onConfirmDelete={confirmDelete}
-      />
     </div>
   );
 };
