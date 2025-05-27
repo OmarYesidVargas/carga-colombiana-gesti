@@ -1,73 +1,58 @@
 
 /**
- * Funciones de validación reutilizables
+ * Utilidades de validación para formularios y datos
+ * Centraliza todas las validaciones para mantener consistencia
  */
 
-export const validateVehicle = (vehicle: any): boolean => {
-  if (!vehicle) return false;
-  if (!vehicle.plate || typeof vehicle.plate !== 'string' || vehicle.plate.trim().length === 0) return false;
-  if (!vehicle.brand || typeof vehicle.brand !== 'string' || vehicle.brand.trim().length === 0) return false;
-  if (!vehicle.model || typeof vehicle.model !== 'string' || vehicle.model.trim().length === 0) return false;
-  if (!vehicle.year || isNaN(Number(vehicle.year)) || Number(vehicle.year) < 1900 || Number(vehicle.year) > new Date().getFullYear() + 2) return false;
-  
-  return true;
-};
-
-export const validateTrip = (trip: any): boolean => {
-  if (!trip) return false;
-  if (!trip.vehicleId || typeof trip.vehicleId !== 'string') return false;
-  if (!trip.origin || typeof trip.origin !== 'string' || trip.origin.trim().length === 0) return false;
-  if (!trip.destination || typeof trip.destination !== 'string' || trip.destination.trim().length === 0) return false;
-  if (!trip.startDate) return false;
-  if (trip.distance === undefined || isNaN(Number(trip.distance)) || Number(trip.distance) < 0) return false;
-  
-  // Validar fechas
-  const startDate = new Date(trip.startDate);
-  if (isNaN(startDate.getTime())) return false;
-  
-  if (trip.endDate) {
-    const endDate = new Date(trip.endDate);
-    if (isNaN(endDate.getTime()) || endDate < startDate) return false;
-  }
-  
-  return true;
-};
-
-export const validateToll = (toll: any): boolean => {
-  if (!toll) return false;
-  if (!toll.name || typeof toll.name !== 'string' || toll.name.trim().length === 0) return false;
-  if (!toll.location || typeof toll.location !== 'string' || toll.location.trim().length === 0) return false;
-  if (!toll.category || typeof toll.category !== 'string' || toll.category.trim().length === 0) return false;
-  if (!toll.route || typeof toll.route !== 'string' || toll.route.trim().length === 0) return false;
-  if (toll.price === undefined || isNaN(Number(toll.price)) || Number(toll.price) < 0) return false;
-  
-  return true;
-};
-
-export const validateTollRecord = (record: any): boolean => {
-  if (!record) return false;
-  if (!record.tripId || typeof record.tripId !== 'string') return false;
-  if (!record.vehicleId || typeof record.vehicleId !== 'string') return false;
-  if (!record.tollId || typeof record.tollId !== 'string') return false;
-  if (!record.date) return false;
-  if (record.price === undefined || isNaN(Number(record.price))) return false;
-  if (!record.paymentMethod || typeof record.paymentMethod !== 'string') return false;
-  
-  return true;
-};
-
-export const validateEmail = (email: string): boolean => {
-  if (!email || typeof email !== 'string') return false;
+/**
+ * Valida si un email tiene formato válido
+ * @param email - Email a validar
+ * @returns true si es válido, false si no
+ */
+export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email.trim());
+  return emailRegex.test(email);
 };
 
-export const validatePassword = (password: string): boolean => {
-  if (!password || typeof password !== 'string') return false;
-  return password.length >= 6;
+/**
+ * Valida si una placa de vehículo tiene formato válido (Colombia)
+ * @param plate - Placa a validar
+ * @returns true si es válida, false si no
+ */
+export const isValidPlate = (plate: string): boolean => {
+  // Formato colombiano: ABC123 o ABC12D
+  const plateRegex = /^[A-Z]{3}[0-9]{2}[0-9A-Z]$/;
+  return plateRegex.test(plate.toUpperCase().replace(/\s/g, ''));
 };
 
-export const sanitizeInput = (input: string): string => {
-  if (!input || typeof input !== 'string') return '';
-  return input.trim().replace(/\s+/g, ' ');
+/**
+ * Valida si un número es positivo
+ * @param value - Valor a validar
+ * @returns true si es positivo, false si no
+ */
+export const isPositiveNumber = (value: number | string): boolean => {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  return !isNaN(num) && num > 0;
+};
+
+/**
+ * Valida si una fecha es válida y no es futura
+ * @param date - Fecha a validar
+ * @returns true si es válida, false si no
+ */
+export const isValidPastDate = (date: string | Date): boolean => {
+  const dateObj = new Date(date);
+  const now = new Date();
+  return dateObj <= now && !isNaN(dateObj.getTime());
+};
+
+/**
+ * Valida si un año es válido para vehículos (entre 1900 y año actual + 1)
+ * @param year - Año a validar
+ * @returns true si es válido, false si no
+ */
+export const isValidVehicleYear = (year: number | string): boolean => {
+  const yearNum = typeof year === 'string' ? parseInt(year, 10) : year;
+  const currentYear = new Date().getFullYear();
+  return yearNum >= 1900 && yearNum <= currentYear + 1;
 };
