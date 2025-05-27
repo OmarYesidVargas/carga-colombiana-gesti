@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 250 250 250;
+    --background: 255 255 255;
     --foreground: 15 23 42;
 
     --card: 255 255 255;
@@ -92,27 +92,67 @@
 
   body {
     @apply bg-background text-foreground;
+    background-color: #f8fafc !important;
   }
 
   /* Estilo para el formato de placas vehiculares */
   .vehicle-plate {
     @apply font-mono uppercase tracking-wider;
   }
+}
 
-  /* Forzar fondo blanco/gris en lugar de amarillo */
-  .bg-yellow-50,
-  .bg-yellow-100,
-  .bg-yellow-200,
-  .bg-yellow-300,
-  .bg-yellow-400,
-  .bg-yellow-500 {
-    @apply bg-gray-50 !important;
+@layer components {
+  /* Hover effects - Unix style con grises */
+  .hover\:bg-accent:hover {
+    background-color: hsl(241 245 249) !important;
   }
+  
+  .hover\:bg-muted:hover {
+    background-color: hsl(248 250 252) !important;
+  }
+  
+  .hover\:bg-gray-50:hover {
+    background-color: hsl(249 250 251) !important;
+  }
+  
+  .hover\:bg-gray-100:hover {
+    background-color: hsl(243 244 246) !important;
+  }
+  
+  .hover\:bg-slate-50:hover {
+    background-color: hsl(248 250 252) !important;
+  }
+  
+  .hover\:bg-slate-100:hover {
+    background-color: hsl(241 245 249) !important;
+  }
+  
+  /* Eliminar cualquier amarillo en hover */
+  .hover\:bg-yellow-50:hover,
+  .hover\:bg-yellow-100:hover,
+  .hover\:bg-yellow-200:hover {
+    background-color: hsl(241 245 249) !important;
+  }
+  
+  /* Focus states - Solo azul */
+  .focus\:ring-2:focus {
+    ring-color: hsl(59 130 246) !important;
+  }
+  
+  .focus\:border-primary:focus {
+    border-color: hsl(59 130 246) !important;
+  }
+}
 
-  /* Remover cualquier gradiente amarillo */
-  .from-yellow-400,
-  .to-yellow-600,
-  .via-yellow-500 {
-    @apply from-blue-50 to-blue-100 !important;
-  }
+/* Forzar sobras grises en lugar de amarillas */
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+}
+
+.shadow {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) !important;
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
 }

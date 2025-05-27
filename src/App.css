@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-  background-color: #f8fafc;
+  background-color: #f8fafc !important;
 }
 
 .logo {
@@ -13,9 +13,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #3b82f6aa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -37,18 +39,46 @@
 
 .card {
   padding: 2em;
-  background-color: white;
+  background-color: white !important;
 }
 
 .read-the-docs {
-  color: #888;
+  color: #64748b;
 }
 
-/* Eliminar cualquier fondo amarillo */
-* {
-  background-color: inherit !important;
-}
-
+/* Tema Unix - Fondo gris claro profesional */
 body, html {
+  background-color: #f8fafc !important;
+}
+
+/* Eliminar cualquier amarillo del sistema */
+* {
+  background-color: inherit;
+}
+
+/* Forzar colores Unix en elementos específicos */
+.bg-yellow-50,
+.bg-yellow-100,
+.bg-yellow-200,
+.bg-yellow-300,
+.bg-yellow-400,
+.bg-yellow-500,
+.hover\:bg-yellow-50:hover,
+.hover\:bg-yellow-100:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* Hover effects Unix style */
+button:hover,
+.hover\:bg-accent:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* Cards y contenedores */
+.bg-card {
+  background-color: #ffffff !important;
+}
+
+.bg-background {
   background-color: #f8fafc !important;
 }

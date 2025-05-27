@@ -1,23 +1,21 @@
 
 /**
  * Configuración de colores para gráficos y visualizaciones
- * Centraliza todos los colores para mantener consistencia visual
- * TEMA: AZUL PRINCIPAL - SIN AMARILLO
+ * TEMA UNIX: Colores sobrios y profesionales - Solo grises y azules
  */
 
-// Colores principales de la aplicación (basados en Tailwind - AZUL)
+// Colores principales Unix - Sin amarillo
 export const PRIMARY_COLORS = {
-  primary: '#3b82f6',     // Azul principal
-  secondary: '#64748b',   // Gris
-  accent: '#10b981',      // Verde
-  warning: '#f97316',     // Naranja (NO amarillo)
+  primary: '#3b82f6',     // Azul Unix
+  secondary: '#64748b',   // Gris slate
+  accent: '#10b981',      // Verde sobrio
+  warning: '#f97316',     // Naranja (reemplaza amarillo)
   danger: '#ef4444',      // Rojo
-  info: '#3b82f6'         // Azul
+  info: '#0ea5e9'         // Azul cielo
 };
 
 /**
- * Paleta de colores para categorías de gastos
- * Cada categoría tiene un color único y consistente - SIN AMARILLO
+ * Paleta Unix para categorías de gastos - Sin amarillo
  */
 export const EXPENSE_CATEGORY_COLORS: Record<string, string> = {
   fuel: '#f97316',        // Naranja - Combustible (NO amarillo)
@@ -29,15 +27,15 @@ export const EXPENSE_CATEGORY_COLORS: Record<string, string> = {
 };
 
 /**
- * Colores alternativos para cuando se necesiten más opciones - SIN AMARILLO
+ * Colores Unix para gráficos - Paleta profesional sin amarillo
  */
 export const CHART_COLORS = [
   '#3b82f6', // Azul principal
+  '#64748b', // Gris slate
   '#10b981', // Verde
   '#f97316', // Naranja (NO amarillo)
   '#ef4444', // Rojo
   '#8b5cf6', // Violeta
-  '#64748b', // Gris
   '#06b6d4', // Cyan
   '#84cc16', // Verde lima
   '#ec4899', // Rosa
@@ -46,8 +44,6 @@ export const CHART_COLORS = [
 
 /**
  * Obtiene el color para una categoría específica
- * @param category - Categoría de gasto
- * @returns Color hexadecimal
  */
 export const getCategoryColor = (category: string): string => {
   return EXPENSE_CATEGORY_COLORS[category] || EXPENSE_CATEGORY_COLORS.other;
@@ -55,8 +51,6 @@ export const getCategoryColor = (category: string): string => {
 
 /**
  * Obtiene un color del array de colores por índice
- * @param index - Índice del color
- * @returns Color hexadecimal
  */
 export const getChartColor = (index: number): string => {
   return CHART_COLORS[index % CHART_COLORS.length];
@@ -64,8 +58,6 @@ export const getChartColor = (index: number): string => {
 
 /**
  * Genera datos de color para gráficos de categorías
- * @param categories - Array de categorías
- * @returns Array de objetos con categoría y color
  */
 export const generateCategoryColorData = (categories: string[]) => {
   return categories.map(category => ({
