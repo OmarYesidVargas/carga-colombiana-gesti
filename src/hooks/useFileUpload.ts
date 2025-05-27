@@ -33,14 +33,33 @@ export const useFileUpload = () => {
       const fileExtension = file.name.split('.').pop();
       const fileName = `${userId}/${vehicleId}/${documentType}_${timestamp}.${fileExtension}`;
 
-      console.log('📤 Subiendo archivo:', fileName);
+      console.log('📤 Subiendo archivo a bucket vehicle-documents:', fileName);
+
+      // Verificar si el bucket existe, si no crearlo
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const vehicleDocumentsBucket = buckets?.find(bucket => bucket.name === 'vehicle-documents');
+      
+      if (!vehicleDocumentsBucket) {
+        console.log('📦 Creando bucket vehicle-documents...');
+        const { error: bucketError } = await supabase.storage.createBucket('vehicle-documents', {
+          public: true,
+          allowedMimeTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'],
+          fileSizeLimit: 10485760 // 10MB
+        });
+        
+        if (bucketError) {
+          console.error('❌ Error al crear bucket:', bucketError);
+        } else {
+          console.log('✅ Bucket vehicle-documents creado');
+        }
+      }
 
       // Subir archivo a Supabase Storage
       const { data, error } = await supabase.storage
         .from('vehicle-documents')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true
         });
 
       if (error) {
@@ -56,9 +75,10 @@ export const useFileUpload = () => {
         .from('vehicle-documents')
         .getPublicUrl(data.path);
 
-      console.log('🔗 URL pública generada:', urlData.publicUrl);
+      const publicUrl = urlData.publicUrl;
+      console.log('🔗 URL pública generada:', publicUrl);
 
-      return urlData.publicUrl;
+      return publicUrl;
     } catch (error) {
       console.error('❌ Error inesperado:', error);
       toast.error('Error inesperado al subir archivo');

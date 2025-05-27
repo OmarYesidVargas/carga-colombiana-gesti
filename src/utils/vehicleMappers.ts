@@ -1,3 +1,4 @@
+
 import { Vehicle } from '@/types';
 
 /**
@@ -11,8 +12,17 @@ export const mapVehicleFromDB = (vehicle: any): Vehicle => {
   console.log('🔄 Mapeando vehículo desde DB:', {
     id: vehicle.id,
     plate: vehicle.plate,
-    soat_document_url: vehicle.soat_document_url,
-    techno_document_url: vehicle.techno_document_url
+    soat_document_url: vehicle.soat_document_url ? 'PRESENTE' : 'AUSENTE',
+    techno_document_url: vehicle.techno_document_url ? 'PRESENTE' : 'AUSENTE'
+  });
+
+  // Procesar URLs de documentos
+  const soatDocumentUrl = vehicle.soat_document_url?.trim() || undefined;
+  const technoDocumentUrl = vehicle.techno_document_url?.trim() || undefined;
+
+  console.log('📋 URLs procesadas:', {
+    soatDocumentUrl: soatDocumentUrl ? `${soatDocumentUrl.substring(0, 50)}...` : 'NO URL',
+    technoDocumentUrl: technoDocumentUrl ? `${technoDocumentUrl.substring(0, 50)}...` : 'NO URL'
   });
 
   const mappedVehicle = {
@@ -26,22 +36,22 @@ export const mapVehicleFromDB = (vehicle: any): Vehicle => {
     fuelType: vehicle.fuel_type || null,
     capacity: vehicle.capacity || null,
     imageUrl: vehicle.image_url || null,
-    // Nuevos campos para Colombia - asegurar que se mapeen correctamente
+    // Documentos - asegurar que se mapeen correctamente
     soatExpiryDate: vehicle.soat_expiry_date ? new Date(vehicle.soat_expiry_date) : undefined,
     technoExpiryDate: vehicle.techno_expiry_date ? new Date(vehicle.techno_expiry_date) : undefined,
-    soatDocumentUrl: vehicle.soat_document_url || undefined,
-    technoDocumentUrl: vehicle.techno_document_url || undefined,
+    soatDocumentUrl,
+    technoDocumentUrl,
     soatInsuranceCompany: vehicle.soat_insurance_company || undefined,
     technoCenter: vehicle.techno_center || undefined,
     createdAt: vehicle.created_at,
     updatedAt: vehicle.updated_at
   };
 
-  console.log('✅ Vehículo mapeado:', {
+  console.log('✅ Vehículo mapeado final:', {
     id: mappedVehicle.id,
     plate: mappedVehicle.plate,
-    soatDocumentUrl: mappedVehicle.soatDocumentUrl,
-    technoDocumentUrl: mappedVehicle.technoDocumentUrl
+    hasSoatDoc: !!mappedVehicle.soatDocumentUrl,
+    hasTechnoDoc: !!mappedVehicle.technoDocumentUrl
   });
 
   return mappedVehicle;
@@ -63,17 +73,33 @@ export const mapVehicleToDB = (vehicle: Partial<Vehicle>): any => {
   if (vehicle.imageUrl !== undefined) mappedVehicle.image_url = vehicle.imageUrl?.trim() || null;
   if (vehicle.userId) mappedVehicle.user_id = vehicle.userId;
   
-  // Nuevos campos para Colombia
+  // Campos de documentación
   if (vehicle.soatExpiryDate !== undefined) {
     mappedVehicle.soat_expiry_date = vehicle.soatExpiryDate ? vehicle.soatExpiryDate.toISOString().split('T')[0] : null;
   }
   if (vehicle.technoExpiryDate !== undefined) {
     mappedVehicle.techno_expiry_date = vehicle.technoExpiryDate ? vehicle.technoExpiryDate.toISOString().split('T')[0] : null;
   }
-  if (vehicle.soatDocumentUrl !== undefined) mappedVehicle.soat_document_url = vehicle.soatDocumentUrl?.trim() || null;
-  if (vehicle.technoDocumentUrl !== undefined) mappedVehicle.techno_document_url = vehicle.technoDocumentUrl?.trim() || null;
-  if (vehicle.soatInsuranceCompany !== undefined) mappedVehicle.soat_insurance_company = vehicle.soatInsuranceCompany?.trim() || null;
-  if (vehicle.technoCenter !== undefined) mappedVehicle.techno_center = vehicle.technoCenter?.trim() || null;
+  
+  // URLs de documentos - asegurar que se guarden correctamente
+  if (vehicle.soatDocumentUrl !== undefined) {
+    const trimmedUrl = vehicle.soatDocumentUrl?.trim();
+    mappedVehicle.soat_document_url = trimmedUrl || null;
+    console.log('💾 Guardando SOAT URL:', trimmedUrl ? 'PRESENTE' : 'NULL');
+  }
+  
+  if (vehicle.technoDocumentUrl !== undefined) {
+    const trimmedUrl = vehicle.technoDocumentUrl?.trim();
+    mappedVehicle.techno_document_url = trimmedUrl || null;
+    console.log('💾 Guardando Techno URL:', trimmedUrl ? 'PRESENTE' : 'NULL');
+  }
+  
+  if (vehicle.soatInsuranceCompany !== undefined) {
+    mappedVehicle.soat_insurance_company = vehicle.soatInsuranceCompany?.trim() || null;
+  }
+  if (vehicle.technoCenter !== undefined) {
+    mappedVehicle.techno_center = vehicle.technoCenter?.trim() || null;
+  }
   
   return mappedVehicle;
 };

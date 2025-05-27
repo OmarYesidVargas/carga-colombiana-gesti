@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useDocumentViewer } from '@/hooks/useDocumentViewer';
 
 interface VehicleDetailDialogProps {
   vehicle: Vehicle | null;
@@ -37,6 +38,8 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
   open,
   onOpenChange
 }) => {
+  const { viewDocument, downloadDocument, loading } = useDocumentViewer();
+
   if (!vehicle) return null;
 
   const isExpiringSoon = (date?: Date | string) => {
@@ -61,89 +64,51 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
     return { status: 'valid', color: 'green', icon: CheckCircle, text: 'Vigente' };
   };
 
-  const openDocument = (url?: string) => {
-    if (!url) {
-      console.warn('❌ No document URL provided');
-      return;
-    }
-    
-    console.log('📄 Abriendo documento:', url);
-    
-    try {
-      if (url.startsWith('data:')) {
-        // Para archivos base64
-        const byteCharacters = atob(url.split(',')[1]);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: 'application/pdf' });
-        const newUrl = URL.createObjectURL(blob);
-        window.open(newUrl, '_blank');
-      } else {
-        // Para URLs de Supabase
-        window.open(url, '_blank');
-      }
-    } catch (error) {
-      console.error('❌ Error al abrir documento:', error);
-    }
-  };
-
-  const downloadDocument = (url?: string, type: string = 'documento') => {
-    if (!url) {
-      console.warn('❌ No document URL provided for download');
-      return;
-    }
-    
-    console.log('💾 Descargando documento:', url);
-    
-    try {
-      if (url.startsWith('data:')) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${type}_${vehicle.plate}_${Date.now()}.pdf`;
-        link.click();
-      } else {
-        window.open(url, '_blank');
-      }
-    } catch (error) {
-      console.error('❌ Error al descargar documento:', error);
-    }
-  };
-
   // Función mejorada para verificar si hay documento
-  const hasDocument = (url?: string) => {
+  const hasDocument = (url?: string): boolean => {
     if (!url) {
-      console.log('📋 No hay URL de documento');
+      console.log('📋 URL no definida');
       return false;
     }
     
     const trimmedUrl = url.trim();
-    if (trimmedUrl === '') {
-      console.log('📋 URL de documento vacía');
+    if (trimmedUrl === '' || trimmedUrl === 'null' || trimmedUrl === 'undefined') {
+      console.log('📋 URL vacía o inválida:', trimmedUrl);
       return false;
     }
     
-    // Verificar si es una URL válida (base64 o HTTP/HTTPS)
+    // Verificar si es una URL válida
     const isValidUrl = trimmedUrl.startsWith('data:') || 
                       trimmedUrl.startsWith('http://') || 
                       trimmedUrl.startsWith('https://') ||
-                      trimmedUrl.startsWith('/storage/') ||
                       trimmedUrl.includes('supabase.co');
     
-    console.log(`📋 Verificando documento: ${trimmedUrl.substring(0, 50)}... -> ${isValidUrl}`);
+    console.log(`📋 Verificando documento: ${trimmedUrl.substring(0, 30)}... -> ${isValidUrl}`);
     return isValidUrl;
+  };
+
+  const handleViewDocument = (url?: string) => {
+    if (hasDocument(url)) {
+      viewDocument(url!);
+    }
+  };
+
+  const handleDownloadDocument = (url?: string, type: string) => {
+    if (hasDocument(url)) {
+      const filename = `${type}_${vehicle.plate}_${Date.now()}.pdf`;
+      downloadDocument(url!, filename);
+    }
   };
 
   const soatStatus = getDocumentStatus(vehicle.soatExpiryDate);
   const technoStatus = getDocumentStatus(vehicle.technoExpiryDate);
 
-  console.log('🚗 Vehicle data in detail dialog:', {
+  // Log detallado para debugging
+  console.log('🚗 Detalles del vehículo en diálogo:', {
     id: vehicle.id,
     plate: vehicle.plate,
-    soatDocumentUrl: vehicle.soatDocumentUrl ? `${vehicle.soatDocumentUrl.substring(0, 50)}...` : 'NO URL',
-    technoDocumentUrl: vehicle.technoDocumentUrl ? `${vehicle.technoDocumentUrl.substring(0, 50)}...` : 'NO URL',
+    soatDocumentUrl: vehicle.soatDocumentUrl,
+    technoDocumentUrl: vehicle.technoDocumentUrl,
     hasSoatDoc: hasDocument(vehicle.soatDocumentUrl),
     hasTechnoDoc: hasDocument(vehicle.technoDocumentUrl)
   });
@@ -265,7 +230,8 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openDocument(vehicle.soatDocumentUrl)}
+                      onClick={() => handleViewDocument(vehicle.soatDocumentUrl)}
+                      disabled={loading}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       Ver
@@ -273,14 +239,18 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => downloadDocument(vehicle.soatDocumentUrl, 'SOAT')}
+                      onClick={() => handleDownloadDocument(vehicle.soatDocumentUrl, 'SOAT')}
+                      disabled={loading}
                     >
                       <Download className="h-4 w-4 mr-1" />
                       Descargar
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No hay documento adjunto</p>
+                  <div>
+                    <p className="text-sm text-muted-foreground">No hay documento adjunto</p>
+                    <p className="text-xs text-red-500">URL: {vehicle.soatDocumentUrl || 'No definida'}</p>
+                  </div>
                 )}
               </div>
 
@@ -326,7 +296,8 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openDocument(vehicle.technoDocumentUrl)}
+                      onClick={() => handleViewDocument(vehicle.technoDocumentUrl)}
+                      disabled={loading}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       Ver
@@ -334,14 +305,18 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => downloadDocument(vehicle.technoDocumentUrl, 'Tecnomecanica')}
+                      onClick={() => handleDownloadDocument(vehicle.technoDocumentUrl, 'Tecnomecanica')}
+                      disabled={loading}
                     >
                       <Download className="h-4 w-4 mr-1" />
                       Descargar
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No hay documento adjunto</p>
+                  <div>
+                    <p className="text-sm text-muted-foreground">No hay documento adjunto</p>
+                    <p className="text-xs text-red-500">URL: {vehicle.technoDocumentUrl || 'No definida'}</p>
+                  </div>
                 )}
               </div>
             </CardContent>
