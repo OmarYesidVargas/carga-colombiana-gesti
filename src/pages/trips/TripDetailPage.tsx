@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '@/context/DataContext';
@@ -324,10 +323,10 @@ const TripDetailPage = () => {
                         <p className="text-sm text-muted-foreground">Combustible</p>
                         <p className="font-medium">
                           {vehicle.fuelType === 'diesel' ? 'Diésel' : 
-                            vehicle.fuelType === 'gasoline' ? 'Gasolina' : 
+                            vehicle.fuelType === 'gasolina' ? 'Gasolina' : 
                             vehicle.fuelType === 'gas' ? 'Gas Natural' : 
-                            vehicle.fuelType === 'hybrid' ? 'Híbrido' : 
-                            vehicle.fuelType === 'electric' ? 'Eléctrico' : 
+                            vehicle.fuelType === 'hibrido' ? 'Híbrido' : 
+                            vehicle.fuelType === 'electrico' ? 'Eléctrico' : 
                             vehicle.fuelType}
                         </p>
                       </div>

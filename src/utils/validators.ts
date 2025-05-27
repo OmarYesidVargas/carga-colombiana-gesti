@@ -83,6 +83,47 @@ export const validateExpense = (expense: any): boolean => {
   return true;
 };
 
+// Nuevas validaciones para peajes
+export const validateToll = (toll: any): boolean => {
+  if (!toll) return false;
+  
+  const requiredFields = ['name', 'location', 'category', 'price', 'route'];
+  
+  for (const field of requiredFields) {
+    if (!toll[field] || (typeof toll[field] === 'string' && toll[field].trim() === '')) {
+      return false;
+    }
+  }
+  
+  // Validar que el precio sea un número positivo
+  const price = typeof toll.price === 'string' ? parseFloat(toll.price) : toll.price;
+  if (isNaN(price) || price <= 0) {
+    return false;
+  }
+  
+  return true;
+};
+
+export const validateTollRecord = (record: any): boolean => {
+  if (!record) return false;
+  
+  const requiredFields = ['tollId', 'tripId', 'vehicleId', 'date', 'price'];
+  
+  for (const field of requiredFields) {
+    if (!record[field] || (typeof record[field] === 'string' && record[field].trim() === '')) {
+      return false;
+    }
+  }
+  
+  // Validar que el precio sea un número positivo
+  const price = typeof record.price === 'string' ? parseFloat(record.price) : record.price;
+  if (isNaN(price) || price <= 0) {
+    return false;
+  }
+  
+  return true;
+};
+
 // Validaciones internacionales
 export const validateInternationalPhone = (phone: string, countryCode: string): boolean => {
   // Validación básica para números internacionales
