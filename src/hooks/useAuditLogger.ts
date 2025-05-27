@@ -34,7 +34,11 @@ export const useAuditLogger = (user: User | null) => {
     recordId?: string,
     additionalInfo?: Record<string, any>
   ) => {
-    await auditRead(user, tableName, recordId, additionalInfo);
+    try {
+      await auditRead(user, tableName, recordId, additionalInfo);
+    } catch (error) {
+      console.error('Error en logRead:', error);
+    }
   }, [user]);
 
   /**
@@ -46,7 +50,11 @@ export const useAuditLogger = (user: User | null) => {
     newValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
-    await auditCreate(user, tableName, recordId, newValues, additionalInfo);
+    try {
+      await auditCreate(user, tableName, recordId, newValues, additionalInfo);
+    } catch (error) {
+      console.error('Error en logCreate:', error);
+    }
   }, [user]);
 
   /**
@@ -59,7 +67,11 @@ export const useAuditLogger = (user: User | null) => {
     newValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
-    await auditUpdate(user, tableName, recordId, oldValues, newValues, additionalInfo);
+    try {
+      await auditUpdate(user, tableName, recordId, oldValues, newValues, additionalInfo);
+    } catch (error) {
+      console.error('Error en logUpdate:', error);
+    }
   }, [user]);
 
   /**
@@ -71,7 +83,11 @@ export const useAuditLogger = (user: User | null) => {
     oldValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
-    await auditDelete(user, tableName, recordId, oldValues, additionalInfo);
+    try {
+      await auditDelete(user, tableName, recordId, oldValues, additionalInfo);
+    } catch (error) {
+      console.error('Error en logDelete:', error);
+    }
   }, [user]);
 
   return {

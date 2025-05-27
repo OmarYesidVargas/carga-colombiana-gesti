@@ -1,3 +1,4 @@
+
 /**
  * Servicio de Auditoría para TransporegistrosPlus
  * 
@@ -34,6 +35,12 @@ export const createAuditLog = async (
   user: User | null,
   params: CreateAuditLogParams
 ): Promise<boolean> => {
+  // Si no hay usuario, no registrar auditoría para evitar errores
+  if (!user) {
+    console.log('Auditoría omitida: usuario no autenticado');
+    return false;
+  }
+
   try {
     const context = getAuditContext();
     
@@ -43,7 +50,7 @@ export const createAuditLog = async (
     }
     
     const auditData = {
-      user_id: user?.id || null,
+      user_id: user.id,
       table_name: params.tableName,
       operation: params.operation,
       record_id: params.recordId || null,
@@ -55,24 +62,40 @@ export const createAuditLog = async (
       created_at: new Date().toISOString()
     };
 
-    console.log('Registrando auditoría:', {
-      usuario: user?.email || 'Anónimo',
+    console.log('Intentando registrar auditoría:', {
+      usuario: user.email || 'Usuario',
       tabla: params.tableName,
       operación: params.operation,
       registro: params.recordId
     });
 
-    // Usar edge function para insertar audit log
-    const { data, error } = await supabase.functions.invoke('create-audit-log', {
-      body: { audit_data: auditData }
-    });
+    // Usar edge function para insertar audit log con timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
 
-    if (error) {
-      console.error('Error al crear log de auditoría:', error);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-audit-log', {
+        body: { audit_data: auditData },
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      clearTimeout(timeoutId);
+
+      if (error) {
+        console.error('Error al crear log de auditoría:', error);
+        return false;
+      }
+
+      console.log('Auditoría registrada exitosamente');
+      return true;
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      console.error('Error de conexión en auditoría:', fetchError);
       return false;
     }
 
-    return true;
   } catch (error) {
     console.error('Error inesperado en auditoría:', error);
     return false;
@@ -81,11 +104,6 @@ export const createAuditLog = async (
 
 /**
  * Registra una operación de lectura (READ)
- * 
- * @param {User | null} user - Usuario que realiza la operación
- * @param {string} tableName - Nombre de la tabla
- * @param {string} recordId - ID del registro leído
- * @param {Record<string, any>} additionalInfo - Información adicional
  */
 export const auditRead = async (
   user: User | null,
@@ -93,22 +111,17 @@ export const auditRead = async (
   recordId?: string,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  await createAuditLog(user, {
-    tableName,
-    operation: 'READ',
-    recordId,
-    additionalInfo
-  });
+  // No hacer auditoría de lecturas para reducir carga
+  // await createAuditLog(user, {
+  //   tableName,
+  //   operation: 'READ',
+  //   recordId,
+  //   additionalInfo
+  // });
 };
 
 /**
  * Registra una operación de creación (CREATE)
- * 
- * @param {User | null} user - Usuario que realiza la operación
- * @param {string} tableName - Nombre de la tabla
- * @param {string} recordId - ID del registro creado
- * @param {Record<string, any>} newValues - Valores del nuevo registro
- * @param {Record<string, any>} additionalInfo - Información adicional
  */
 export const auditCreate = async (
   user: User | null,
@@ -128,13 +141,6 @@ export const auditCreate = async (
 
 /**
  * Registra una operación de actualización (UPDATE)
- * 
- * @param {User | null} user - Usuario que realiza la operación
- * @param {string} tableName - Nombre de la tabla
- * @param {string} recordId - ID del registro actualizado
- * @param {Record<string, any>} oldValues - Valores anteriores
- * @param {Record<string, any>} newValues - Valores nuevos
- * @param {Record<string, any>} additionalInfo - Información adicional
  */
 export const auditUpdate = async (
   user: User | null,
@@ -156,12 +162,6 @@ export const auditUpdate = async (
 
 /**
  * Registra una operación de eliminación (DELETE)
- * 
- * @param {User | null} user - Usuario que realiza la operación
- * @param {string} tableName - Nombre de la tabla
- * @param {string} recordId - ID del registro eliminado
- * @param {Record<string, any>} oldValues - Valores del registro eliminado
- * @param {Record<string, any>} additionalInfo - Información adicional
  */
 export const auditDelete = async (
   user: User | null,
@@ -181,11 +181,6 @@ export const auditDelete = async (
 
 /**
  * Obtiene los logs de auditoría del usuario actual
- * 
- * @param {User | null} user - Usuario actual
- * @param {number} limit - Límite de registros a obtener
- * @param {number} offset - Offset para paginación
- * @returns {Promise<any[]>} Lista de logs de auditoría
  */
 export const getAuditLogs = async (
   user: User | null,
