@@ -1,9 +1,9 @@
 
 import React from 'react';
 import Header from './Header';
-import AppSidebar from './Sidebar';
+import { AppSidebar } from './AppSidebar';
 import { useAuth } from '@/context/AuthContext';
-import { useMobile } from '@/hooks/use-mobile';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,28 +11,26 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const { user, logout } = useAuth();
-  const isMobile = useMobile();
   
   return (
-    <div className="min-h-screen w-full flex flex-col bg-background">
-      <Header userEmail={user?.email} onLogout={logout} />
-      
-      <div className="flex flex-1 w-full overflow-hidden">
+    <SidebarProvider>
+      <div className="min-h-screen w-full flex bg-background">
         <AppSidebar />
-        <main className={`
-          flex-1 
-          overflow-y-auto 
-          p-3 sm:p-4 md:p-6 lg:p-8
-          ${isMobile ? 'pb-20' : ''}
-          min-h-0
-          w-full
-        `}>
-          <div className="w-full max-w-full mx-auto">
-            {children}
-          </div>
-        </main>
+        <SidebarInset className="flex-1">
+          <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b px-4 lg:px-6">
+            <SidebarTrigger className="-ml-1" />
+            <div className="flex-1">
+              <Header userEmail={user?.email} onLogout={logout} />
+            </div>
+          </header>
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+            <div className="w-full max-w-full mx-auto">
+              {children}
+            </div>
+          </main>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

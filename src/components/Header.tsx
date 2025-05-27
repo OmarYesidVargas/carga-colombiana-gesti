@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -75,31 +74,13 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
     navigate('/profile/settings');
   };
   
-  const handleLogoClick = () => {
-    if (userEmail) {
-      navigate('/dashboard');
-    } else {
-      navigate('/');
-    }
-  };
-
   const getInitials = () => {
     if (!userEmail) return 'U';
     return userEmail.charAt(0).toUpperCase();
   };
   
   return (
-    <header className="
-      sticky top-0 z-50
-      bg-white dark:bg-gray-950 
-      border-b border-gray-200 dark:border-gray-800 
-      h-14 sm:h-16
-      px-3 sm:px-4 lg:px-6
-      flex items-center justify-between 
-      shadow-sm
-      w-full
-      flex-shrink-0
-    ">
+    <div className="flex items-center justify-between w-full">
       <div className="flex items-center min-w-0 flex-1">
         {userEmail ? (
           <Link 
@@ -107,12 +88,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al dashboard"
           >
-            <span className="
-              text-base sm:text-lg lg:text-xl 
-              font-semibold text-primary 
-              truncate
-              whitespace-nowrap
-            ">
+            <span className="text-lg font-semibold text-primary truncate whitespace-nowrap">
               Transpo<span className="text-secondary">registros</span>
               <span className="text-primary font-bold">Plus</span>
             </span>
@@ -123,12 +99,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al inicio"
           >
-            <span className="
-              text-base sm:text-lg lg:text-xl 
-              font-semibold text-primary 
-              truncate
-              whitespace-nowrap
-            ">
+            <span className="text-lg font-semibold text-primary truncate whitespace-nowrap">
               Transpo<span className="text-secondary">registros</span>
               <span className="text-primary font-bold">Plus</span>
             </span>
@@ -142,25 +113,15 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="
-                  flex items-center gap-1 sm:gap-2 
-                  px-2 sm:px-3 lg:px-4
-                  h-8 sm:h-9 lg:h-10
-                  text-xs sm:text-sm
-                "
+                className="flex items-center gap-2 px-3 h-9"
               >
-                <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
+                <Avatar className="h-6 w-6">
                   <AvatarImage src={avatarUrl || undefined} alt="Foto de perfil" />
                   <AvatarFallback className="text-xs">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="
-                  hidden sm:inline-block 
-                  max-w-[80px] lg:max-w-[150px] 
-                  truncate
-                  text-xs sm:text-sm
-                ">
+                <span className="hidden sm:inline-block max-w-[150px] truncate text-sm">
                   {userEmail}
                 </span>
               </Button>
@@ -184,15 +145,11 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
+          <div className="flex items-center gap-2">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="
-                text-xs sm:text-sm 
-                px-2 sm:px-3
-                h-8 sm:h-9
-              " 
+              className="text-sm px-3 h-9" 
               onClick={handleLogin}
             >
               Iniciar sesión
@@ -200,11 +157,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             <Button 
               variant="default" 
               size="sm" 
-              className="
-                text-xs sm:text-sm
-                px-2 sm:px-3  
-                h-8 sm:h-9
-              " 
+              className="text-sm px-3 h-9" 
               onClick={handleRegister}
             >
               Registrarse
@@ -212,7 +165,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
           </div>
         )}
       </div>
-    </header>
+    </div>
   );
 };
 
