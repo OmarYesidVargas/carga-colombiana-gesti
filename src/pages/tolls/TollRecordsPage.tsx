@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Button } from '@/components/ui/button';
@@ -172,11 +171,12 @@ const TollRecordsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Registro de Peajes</h1>
-          <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+      {/* Header responsivo */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-bold">Registro de Peajes</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Gestiona los registros de paso por peajes
           </p>
         </div>
@@ -184,6 +184,7 @@ const TollRecordsPage = () => {
         <Button 
           onClick={() => handleOpenForm()}
           disabled={!canCreateRecord}
+          className="w-full sm:w-auto"
         >
           <Plus className="mr-2 h-4 w-4" /> 
           Registrar Peaje
@@ -192,7 +193,7 @@ const TollRecordsPage = () => {
 
       {!canCreateRecord && (
         <Card className="border-orange-200 bg-orange-50">
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-start space-x-3">
               <div className="flex-1">
                 <h3 className="font-medium text-orange-800">Configuración requerida</h3>
@@ -210,9 +211,10 @@ const TollRecordsPage = () => {
         </Card>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Resumen de peajes */}
-        <div className="md:col-span-1">
+      {/* Layout responsivo mejorado */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-4">
+        {/* Resumen de peajes - responsive */}
+        <div className="lg:col-span-1 order-2 lg:order-1">
           <TollSummary 
             tollRecords={tollRecords} 
             tolls={tolls}
@@ -221,11 +223,11 @@ const TollRecordsPage = () => {
           />
         </div>
         
-        {/* Lista de registros de peaje */}
-        <div className="md:col-span-3 space-y-4">
-          {/* Búsqueda y filtros */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="relative">
+        {/* Lista de registros de peaje - responsive */}
+        <div className="lg:col-span-3 order-1 lg:order-2 space-y-4">
+          {/* Búsqueda y filtros responsivos */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="relative sm:col-span-2 lg:col-span-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar registros..."
@@ -247,7 +249,9 @@ const TollRecordsPage = () => {
                   <SelectItem value="all">Todos los vehículos</SelectItem>
                   {vehicles.map((vehicle) => (
                     <SelectItem key={vehicle.id} value={vehicle.id}>
-                      {vehicle.plate} - {vehicle.brand} {vehicle.model}
+                      <span className="truncate">
+                        {vehicle.plate} - {vehicle.brand} {vehicle.model}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -266,7 +270,9 @@ const TollRecordsPage = () => {
                   <SelectItem value="all">Todos los viajes</SelectItem>
                   {trips.map((trip) => (
                     <SelectItem key={trip.id} value={trip.id}>
-                      {trip.origin} → {trip.destination}
+                      <span className="truncate">
+                        {trip.origin} → {trip.destination}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -274,9 +280,9 @@ const TollRecordsPage = () => {
             </div>
           </div>
           
-          {/* Lista de registros */}
+          {/* Lista de registros con grid responsivo */}
           {sortedRecords.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {sortedRecords.map((record) => {
                 try {
                   return (
@@ -298,8 +304,8 @@ const TollRecordsPage = () => {
             </div>
           ) : (
             <Card>
-              <CardContent className="py-10 text-center">
-                <p className="text-muted-foreground">
+              <CardContent className="py-8 sm:py-10 text-center">
+                <p className="text-muted-foreground text-sm sm:text-base">
                   {tollRecords.length === 0 
                     ? 'No hay registros de peaje.' 
                     : 'No se encontraron registros con los filtros seleccionados.'}
@@ -307,7 +313,7 @@ const TollRecordsPage = () => {
                 {canCreateRecord && (
                   <Button 
                     onClick={() => handleOpenForm()} 
-                    className="mt-4"
+                    className="mt-4 w-full sm:w-auto"
                   >
                     <Plus className="mr-2 h-4 w-4" /> 
                     Registrar Peaje
@@ -321,7 +327,7 @@ const TollRecordsPage = () => {
       
       {/* Diálogo de formulario */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[550px]">
+        <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>
               {currentRecord ? 'Editar Registro' : 'Registrar Peaje'}

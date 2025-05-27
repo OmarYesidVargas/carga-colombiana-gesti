@@ -16,7 +16,7 @@ import ExpenseDialogs from '@/components/expenses/ExpenseDialogs';
 import { useExpenseFilters } from '@/hooks/useExpenseFilters';
 
 /**
- * Página de gestión de gastos
+ * Página de gestión de gastos con diseño responsivo mejorado
  * Permite visualizar, crear, editar y eliminar gastos
  */
 const ExpensesPage = () => {
@@ -29,7 +29,7 @@ const ExpensesPage = () => {
   const [currentExpense, setCurrentExpense] = useState<Expense | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Usar el hook personalizado para filtros - CORREGIDO: pasar todos los argumentos requeridos
+  // Usar el hook personalizado para filtros
   const {
     searchTerm,
     selectedVehicleId,
@@ -166,28 +166,28 @@ const ExpensesPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50">
-      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6">
-        {/* Encabezado mejorado */}
-        <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-violet-700 rounded-2xl p-6 sm:p-8 text-white shadow-xl">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
+        {/* Encabezado mejorado y responsivo */}
+        <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-violet-700 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-white shadow-xl">
+          <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:items-center lg:justify-between lg:space-x-6">
             <div className="space-y-2">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
                 Gestión de Gastos
               </h1>
-              <p className="text-violet-100 text-lg">
+              <p className="text-violet-100 text-sm sm:text-base lg:text-lg">
                 Administra los gastos de tus viajes de manera eficiente
               </p>
-              <div className="flex flex-wrap gap-4 mt-4 text-sm">
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-lg px-3 py-2">
+              <div className="flex flex-wrap gap-2 sm:gap-4 mt-3 sm:mt-4 text-xs sm:text-sm">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-lg px-2 sm:px-3 py-1 sm:py-2">
                   <span>{expenses.length} gastos registrados</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-lg px-2 sm:px-3 py-1 sm:py-2">
                   <span>{filteredExpenses.length} gastos filtrados</span>
                 </div>
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 shrink-0">
               <ExpenseHeader 
                 onAddClick={() => handleOpenForm()} 
                 onExportClick={handleExportCSV}
@@ -197,10 +197,11 @@ const ExpensesPage = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Resumen de gastos */}
-          <div className="xl:col-span-1">
-            <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg">
+        {/* Layout responsivo mejorado */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-6">
+          {/* Resumen de gastos - responsive */}
+          <div className="lg:col-span-1 order-2 lg:order-1">
+            <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg h-fit">
               <ExpenseSummary 
                 expenses={expenses} 
                 vehicles={vehicles}
@@ -210,9 +211,9 @@ const ExpensesPage = () => {
             </div>
           </div>
           
-          {/* Lista de gastos */}
-          <div className="xl:col-span-3 space-y-6">
-            {/* Filtros de búsqueda mejorados */}
+          {/* Lista de gastos - responsive */}
+          <div className="lg:col-span-3 order-1 lg:order-2 space-y-4 sm:space-y-6">
+            {/* Filtros de búsqueda mejorados y responsivos */}
             <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg">
               <ExpenseFilters
                 searchTerm={searchTerm}
@@ -228,7 +229,7 @@ const ExpensesPage = () => {
               />
             </div>
             
-            {/* Lista de gastos por categorías mejorada */}
+            {/* Lista de gastos por categorías - responsive */}
             <div className="bg-white/90 backdrop-blur rounded-xl border border-violet-100 shadow-lg overflow-hidden">
               <ExpensesList
                 filteredExpenses={filteredExpenses}
