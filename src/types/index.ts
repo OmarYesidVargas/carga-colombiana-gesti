@@ -1,4 +1,3 @@
-
 export type User = {
   id: string;
   email: string;
@@ -17,6 +16,13 @@ export type Vehicle = {
   fuelType?: string; // Tipo de combustible (opcional)
   capacity?: string; // Capacidad de carga (opcional)
   imageUrl?: string; // URL de la imagen (opcional)
+  // Nuevos campos para Colombia
+  soatExpiryDate?: Date; // Fecha de vencimiento del SOAT
+  technoExpiryDate?: Date; // Fecha de vencimiento de tecnomecánica
+  soatDocumentUrl?: string; // URL del documento SOAT
+  technoDocumentUrl?: string; // URL del documento tecnomecánica
+  soatInsuranceCompany?: string; // Compañía aseguradora del SOAT
+  technoCenter?: string; // Centro de diagnóstico tecnomecánica
   createdAt: Date;
   updatedAt: Date;
 };

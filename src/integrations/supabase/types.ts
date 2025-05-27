@@ -360,6 +360,42 @@ export type Database = {
           },
         ]
       }
+      vehicle_notifications: {
+        Row: {
+          created_at: string
+          document_type: string
+          expiry_date: string
+          id: string
+          is_sent: boolean | null
+          notification_date: string
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          expiry_date: string
+          id?: string
+          is_sent?: boolean | null
+          notification_date: string
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          expiry_date?: string
+          id?: string
+          is_sent?: boolean | null
+          notification_date?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: []
+      }
       vehicles: {
         Row: {
           brand: string
@@ -371,6 +407,12 @@ export type Database = {
           image_url: string | null
           model: string
           plate: string
+          soat_document_url: string | null
+          soat_expiry_date: string | null
+          soat_insurance_company: string | null
+          techno_center: string | null
+          techno_document_url: string | null
+          techno_expiry_date: string | null
           updated_at: string
           user_id: string
           year: number
@@ -385,6 +427,12 @@ export type Database = {
           image_url?: string | null
           model: string
           plate: string
+          soat_document_url?: string | null
+          soat_expiry_date?: string | null
+          soat_insurance_company?: string | null
+          techno_center?: string | null
+          techno_document_url?: string | null
+          techno_expiry_date?: string | null
           updated_at?: string
           user_id: string
           year: number
@@ -399,6 +447,12 @@ export type Database = {
           image_url?: string | null
           model?: string
           plate?: string
+          soat_document_url?: string | null
+          soat_expiry_date?: string | null
+          soat_insurance_company?: string | null
+          techno_center?: string | null
+          techno_document_url?: string | null
+          techno_expiry_date?: string | null
           updated_at?: string
           user_id?: string
           year?: number

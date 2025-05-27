@@ -20,6 +20,13 @@ export const mapVehicleFromDB = (vehicle: any): Vehicle => {
     fuelType: vehicle.fuel_type || null,
     capacity: vehicle.capacity || null,
     imageUrl: vehicle.image_url || null,
+    // Nuevos campos para Colombia
+    soatExpiryDate: vehicle.soat_expiry_date ? new Date(vehicle.soat_expiry_date) : undefined,
+    technoExpiryDate: vehicle.techno_expiry_date ? new Date(vehicle.techno_expiry_date) : undefined,
+    soatDocumentUrl: vehicle.soat_document_url || undefined,
+    technoDocumentUrl: vehicle.techno_document_url || undefined,
+    soatInsuranceCompany: vehicle.soat_insurance_company || undefined,
+    technoCenter: vehicle.techno_center || undefined,
     createdAt: vehicle.created_at,
     updatedAt: vehicle.updated_at
   };
@@ -40,6 +47,18 @@ export const mapVehicleToDB = (vehicle: Partial<Vehicle>): any => {
   if (vehicle.capacity !== undefined) mappedVehicle.capacity = vehicle.capacity?.trim() || null;
   if (vehicle.imageUrl !== undefined) mappedVehicle.image_url = vehicle.imageUrl?.trim() || null;
   if (vehicle.userId) mappedVehicle.user_id = vehicle.userId;
+  
+  // Nuevos campos para Colombia
+  if (vehicle.soatExpiryDate !== undefined) {
+    mappedVehicle.soat_expiry_date = vehicle.soatExpiryDate ? vehicle.soatExpiryDate.toISOString().split('T')[0] : null;
+  }
+  if (vehicle.technoExpiryDate !== undefined) {
+    mappedVehicle.techno_expiry_date = vehicle.technoExpiryDate ? vehicle.technoExpiryDate.toISOString().split('T')[0] : null;
+  }
+  if (vehicle.soatDocumentUrl !== undefined) mappedVehicle.soat_document_url = vehicle.soatDocumentUrl?.trim() || null;
+  if (vehicle.technoDocumentUrl !== undefined) mappedVehicle.techno_document_url = vehicle.technoDocumentUrl?.trim() || null;
+  if (vehicle.soatInsuranceCompany !== undefined) mappedVehicle.soat_insurance_company = vehicle.soatInsuranceCompany?.trim() || null;
+  if (vehicle.technoCenter !== undefined) mappedVehicle.techno_center = vehicle.technoCenter?.trim() || null;
   
   return mappedVehicle;
 };

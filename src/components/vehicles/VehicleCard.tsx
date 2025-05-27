@@ -3,7 +3,8 @@ import React from 'react';
 import { Vehicle } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Car, Edit, Trash } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Car, Edit, Trash, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -15,6 +16,29 @@ interface VehicleCardProps {
 }
 
 const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) => {
+  const isExpiringSoon = (date?: Date) => {
+    if (!date) return false;
+    const today = new Date();
+    const daysUntilExpiry = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
+  };
+
+  const isExpired = (date?: Date) => {
+    if (!date) return false;
+    const today = new Date();
+    return date < today;
+  };
+
+  const getDocumentStatus = (date?: Date) => {
+    if (!date) return { status: 'none', color: 'gray', icon: null };
+    if (isExpired(date)) return { status: 'expired', color: 'red', icon: AlertTriangle };
+    if (isExpiringSoon(date)) return { status: 'expiring', color: 'yellow', icon: Clock };
+    return { status: 'valid', color: 'green', icon: CheckCircle };
+  };
+
+  const soatStatus = getDocumentStatus(vehicle.soatExpiryDate);
+  const technoStatus = getDocumentStatus(vehicle.technoExpiryDate);
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <CardHeader className="bg-secondary/10 pb-2">
@@ -32,7 +56,7 @@ const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) 
       </CardHeader>
       
       <CardContent className="pt-4">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Car className="h-5 w-5 text-muted-foreground" />
             <div>
@@ -43,7 +67,7 @@ const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) 
           
           {vehicle.color && (
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 rounded-full" style={{ backgroundColor: vehicle.color }}></div>
+              <div className="h-4 w-4 rounded-full border" style={{ backgroundColor: vehicle.color }}></div>
               <span className="text-sm">{vehicle.color}</span>
             </div>
           )}
@@ -59,6 +83,57 @@ const VehicleCard = ({ vehicle, onEdit, onDelete, onSelect }: VehicleCardProps) 
               Capacidad: {vehicle.capacity}
             </div>
           )}
+
+          {/* Estado de documentos para Colombia */}
+          <div className="space-y-2 pt-2 border-t">
+            <h4 className="text-sm font-medium text-gray-700">Documentación</h4>
+            
+            {/* SOAT */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm">SOAT</span>
+              {vehicle.soatExpiryDate ? (
+                <div className="flex items-center gap-2">
+                  {soatStatus.icon && <soatStatus.icon className={`h-4 w-4 text-${soatStatus.color}-600`} />}
+                  <Badge 
+                    variant={soatStatus.status === 'valid' ? 'default' : 'destructive'}
+                    className={`text-xs ${
+                      soatStatus.status === 'valid' ? 'bg-green-100 text-green-700' :
+                      soatStatus.status === 'expiring' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {soatStatus.status === 'expired' ? 'Vencido' :
+                     soatStatus.status === 'expiring' ? 'Por vencer' : 'Vigente'}
+                  </Badge>
+                </div>
+              ) : (
+                <Badge variant="outline" className="text-xs">No registrado</Badge>
+              )}
+            </div>
+
+            {/* Tecnomecánica */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Tecnomecánica</span>
+              {vehicle.technoExpiryDate ? (
+                <div className="flex items-center gap-2">
+                  {technoStatus.icon && <technoStatus.icon className={`h-4 w-4 text-${technoStatus.color}-600`} />}
+                  <Badge 
+                    variant={technoStatus.status === 'valid' ? 'default' : 'destructive'}
+                    className={`text-xs ${
+                      technoStatus.status === 'valid' ? 'bg-green-100 text-green-700' :
+                      technoStatus.status === 'expiring' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {technoStatus.status === 'expired' ? 'Vencido' :
+                     technoStatus.status === 'expiring' ? 'Por vencer' : 'Vigente'}
+                  </Badge>
+                </div>
+              ) : (
+                <Badge variant="outline" className="text-xs">No registrado</Badge>
+              )}
+            </div>
+          </div>
         </div>
       </CardContent>
       
