@@ -27,15 +27,11 @@ interface TripDateFieldsProps {
  */
 const TripDateFields = ({ form }: TripDateFieldsProps) => {
   const today = new Date();
-  today.setHours(23, 59, 59, 999); // Fin del día de hoy
-  
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  thirtyDaysAgo.setHours(0, 0, 0, 0); // Inicio del día hace 30 días
   
   const oneYearFromNow = new Date();
   oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-  oneYearFromNow.setHours(23, 59, 59, 999); // Fin del día en 1 año
 
   React.useEffect(() => {
     console.log('Date fields initialized', {
@@ -95,17 +91,13 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
                   selected={field.value}
                   onSelect={(date) => handleStartDateChange(date, field.onChange)}
                   disabled={(date) => {
+                    // Normalizar fechas para comparar solo el día (sin horas)
+                    const dateToCheck = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                    const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    const thirtyDaysAgoNormalized = new Date(thirtyDaysAgo.getFullYear(), thirtyDaysAgo.getMonth(), thirtyDaysAgo.getDate());
+                    
                     // Permitir desde hace 30 días hasta HOY (incluido)
-                    const currentDate = new Date(date);
-                    currentDate.setHours(0, 0, 0, 0);
-                    
-                    const minDate = new Date(thirtyDaysAgo);
-                    minDate.setHours(0, 0, 0, 0);
-                    
-                    const maxDate = new Date();
-                    maxDate.setHours(23, 59, 59, 999);
-                    
-                    return currentDate < minDate || currentDate > maxDate;
+                    return dateToCheck < thirtyDaysAgoNormalized || dateToCheck > todayNormalized;
                   }}
                   initialFocus
                   locale={es}
@@ -149,29 +141,23 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
                   selected={field.value ? field.value : undefined}
                   onSelect={(date) => handleEndDateChange(date, field.onChange)}
                   disabled={(date) => {
-                    // La fecha de fin debe ser posterior o igual a la fecha de inicio
                     const startDate = form.getValues('startDate');
-                    const currentDate = new Date(date);
-                    currentDate.setHours(0, 0, 0, 0);
+                    
+                    // Normalizar fechas para comparar solo el día
+                    const dateToCheck = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                    const oneYearFromNowNormalized = new Date(oneYearFromNow.getFullYear(), oneYearFromNow.getMonth(), oneYearFromNow.getDate());
                     
                     if (startDate) {
-                      const startDateCompare = new Date(startDate);
-                      startDateCompare.setHours(0, 0, 0, 0);
+                      const startDateNormalized = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
                       
-                      const maxDate = new Date(oneYearFromNow);
-                      maxDate.setHours(23, 59, 59, 999);
-                      
-                      return currentDate < startDateCompare || currentDate > maxDate;
+                      // La fecha de fin debe ser posterior o igual a la fecha de inicio
+                      return dateToCheck < startDateNormalized || dateToCheck > oneYearFromNowNormalized;
                     }
                     
                     // Si no hay fecha de inicio, permitir desde hoy hasta 1 año en el futuro
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
+                    const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate());
                     
-                    const maxDate = new Date(oneYearFromNow);
-                    maxDate.setHours(23, 59, 59, 999);
-                    
-                    return currentDate < today || currentDate > maxDate;
+                    return dateToCheck < todayNormalized || dateToCheck > oneYearFromNowNormalized;
                   }}
                   initialFocus
                   locale={es}
