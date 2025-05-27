@@ -1,53 +1,63 @@
 
+/**
+ * Hook de logging para debugging en TransporegistrosPlus
+ * Proporciona logging estructurado con contexto y métricas de rendimiento
+ */
+
 import { useCallback } from 'react';
 
-interface DebugLoggerConfig {
-  component: string;
-  enabled?: boolean;
+interface LogContext {
+  component?: string;
+  action?: string;
+  data?: any;
+  [key: string]: any;
+}
+
+interface DebugLogger {
+  log: (message: string, context?: LogContext) => void;
+  logError: (error: Error, context?: LogContext) => void;
+  logAction: (action: string, context?: LogContext) => void;
+  logPerformance: (operation: string, startTime: number) => void;
 }
 
 /**
- * Hook para logging avanzado y debugging en desarrollo
- * Facilita la identificación de problemas y seguimiento de flujos
+ * Hook personalizado para logging de debugging
  */
-export const useDebugLogger = ({ component, enabled = true }: DebugLoggerConfig) => {
-  const log = useCallback((message: string, data?: any, level: 'info' | 'warn' | 'error' = 'info') => {
-    if (!enabled || import.meta.env.PROD) return;
-    
-    const timestamp = new Date().toISOString();
-    const prefix = `🔍 [${component}] ${timestamp}:`;
-    
-    switch (level) {
-      case 'info':
-        console.log(`${prefix} ${message}`, data || '');
-        break;
-      case 'warn':
-        console.warn(`⚠️ ${prefix} ${message}`, data || '');
-        break;
-      case 'error':
-        console.error(`🚨 ${prefix} ${message}`, data || '');
-        break;
+export const useDebugLogger = (defaultContext: LogContext = {}): DebugLogger => {
+  
+  const log = useCallback((message: string, context: LogContext = {}) => {
+    if (import.meta.env.DEV) {
+      const logContext = { ...defaultContext, ...context };
+      console.log(`🔍 [${logContext.component || 'App'}] ${message}`, logContext);
     }
-  }, [component, enabled]);
-
-  const logAction = useCallback((action: string, payload?: any) => {
-    log(`Action: ${action}`, payload);
-  }, [log]);
-
-  const logError = useCallback((error: Error | string, context?: any) => {
-    const errorMsg = typeof error === 'string' ? error : error.message;
-    log(`Error: ${errorMsg}`, { error, context }, 'error');
-  }, [log]);
-
+  }, [defaultContext]);
+  
+  const logError = useCallback((error: Error, context: LogContext = {}) => {
+    const logContext = { ...defaultContext, ...context };
+    console.error(`❌ [${logContext.component || 'App'}] Error:`, error.message, {
+      ...logContext,
+      stack: error.stack
+    });
+  }, [defaultContext]);
+  
+  const logAction = useCallback((action: string, context: LogContext = {}) => {
+    if (import.meta.env.DEV) {
+      const logContext = { ...defaultContext, ...context };
+      console.log(`⚡ [${logContext.component || 'App'}] Action: ${action}`, logContext);
+    }
+  }, [defaultContext]);
+  
   const logPerformance = useCallback((operation: string, startTime: number) => {
-    const duration = performance.now() - startTime;
-    log(`Performance: ${operation} completed in ${duration.toFixed(2)}ms`);
-  }, [log]);
-
+    if (import.meta.env.DEV) {
+      const duration = performance.now() - startTime;
+      console.log(`⏱️ [${defaultContext.component || 'App'}] ${operation}: ${duration.toFixed(2)}ms`);
+    }
+  }, [defaultContext]);
+  
   return {
     log,
-    logAction,
     logError,
+    logAction,
     logPerformance
   };
 };

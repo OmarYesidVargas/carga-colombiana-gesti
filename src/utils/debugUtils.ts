@@ -1,127 +1,94 @@
 
 /**
- * Utilidades de debugging para el desarrollo
- * Facilita la identificación de problemas y optimización
+ * Utilidades de debugging para TransporegistrosPlus
+ * Herramientas para facilitar el debugging y monitoreo
  */
 
-export interface PerformanceMetrics {
-  operation: string;
-  startTime: number;
-  endTime?: number;
-  duration?: number;
-  metadata?: Record<string, any>;
-}
-
+/**
+ * Utilidades estáticas para debugging
+ */
 export class DebugUtils {
-  private static metrics: PerformanceMetrics[] = [];
-  private static enabled = !import.meta.env.PROD;
-
+  private static operations = new Map<string, number>();
+  
   /**
-   * Inicia el seguimiento de una operación
+   * Inicia una operación para medir tiempo
    */
-  static startOperation(operation: string, metadata?: Record<string, any>): string {
-    if (!this.enabled) return '';
-    
-    const id = `${operation}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const metric: PerformanceMetrics = {
-      operation: id,
-      startTime: performance.now(),
-      metadata
-    };
-    
-    this.metrics.push(metric);
-    console.log(`🚀 [Performance] Started: ${operation}`, metadata);
-    
-    return id;
-  }
-
-  /**
-   * Finaliza el seguimiento de una operación
-   */
-  static endOperation(operationId: string): PerformanceMetrics | null {
-    if (!this.enabled || !operationId) return null;
-    
-    const metric = this.metrics.find(m => m.operation === operationId);
-    if (!metric) return null;
-    
-    metric.endTime = performance.now();
-    metric.duration = metric.endTime - metric.startTime;
-    
-    console.log(`✅ [Performance] Completed: ${operationId} in ${metric.duration.toFixed(2)}ms`);
-    
-    return metric;
-  }
-
-  /**
-   * Obtiene todas las métricas registradas
-   */
-  static getMetrics(): PerformanceMetrics[] {
-    return [...this.metrics];
-  }
-
-  /**
-   * Limpia todas las métricas
-   */
-  static clearMetrics(): void {
-    this.metrics = [];
-  }
-
-  /**
-   * Log condicional que solo se ejecuta en desarrollo
-   */
-  static log(message: string, data?: any, level: 'log' | 'warn' | 'error' = 'log'): void {
-    if (!this.enabled) return;
-    
-    const timestamp = new Date().toISOString();
-    const prefix = `🔍 [Debug] ${timestamp}:`;
-    
-    switch (level) {
-      case 'log':
-        console.log(`${prefix} ${message}`, data || '');
-        break;
-      case 'warn':
-        console.warn(`⚠️ ${prefix} ${message}`, data || '');
-        break;
-      case 'error':
-        console.error(`🚨 ${prefix} ${message}`, data || '');
-        break;
-    }
-  }
-
-  /**
-   * Verifica el estado de objetos complejos
-   */
-  static validateObject(obj: any, name: string, requiredProps?: string[]): boolean {
-    if (!this.enabled) return true;
-    
-    if (!obj) {
-      this.log(`Validation failed: ${name} is null or undefined`, null, 'error');
-      return false;
-    }
-    
-    if (requiredProps) {
-      const missing = requiredProps.filter(prop => !(prop in obj));
-      if (missing.length > 0) {
-        this.log(`Validation failed: ${name} missing properties`, { missing, obj }, 'error');
-        return false;
+  static startOperation(name: string, context?: any): void {
+    if (import.meta.env.DEV) {
+      this.operations.set(name, performance.now());
+      if (context) {
+        console.log(`🚀 Starting operation: ${name}`, context);
       }
     }
-    
-    this.log(`Validation passed: ${name}`, { keys: Object.keys(obj) });
+  }
+  
+  /**
+   * Finaliza una operación y muestra el tiempo transcurrido
+   */
+  static endOperation(name: string): void {
+    if (import.meta.env.DEV) {
+      const startTime = this.operations.get(name);
+      if (startTime) {
+        const duration = performance.now() - startTime;
+        console.log(`✅ Operation completed: ${name} (${duration.toFixed(2)}ms)`);
+        this.operations.delete(name);
+      }
+    }
+  }
+  
+  /**
+   * Valida un objeto y sus propiedades requeridas
+   */
+  static validateObject(obj: any, name: string, requiredProps?: string[]): boolean {
+    if (import.meta.env.DEV) {
+      if (!obj) {
+        console.warn(`⚠️ ${name} is null or undefined`);
+        return false;
+      }
+      
+      if (requiredProps) {
+        const missingProps = requiredProps.filter(prop => !(prop in obj));
+        if (missingProps.length > 0) {
+          console.warn(`⚠️ ${name} missing required properties:`, missingProps);
+          return false;
+        }
+      }
+    }
     return true;
   }
-
+  
   /**
-   * Memoria utilizada por la aplicación
+   * Obtiene información de uso de memoria (solo en navegadores compatibles)
    */
   static getMemoryUsage(): any {
-    if (!this.enabled || !(performance as any).memory) return null;
+    if (import.meta.env.DEV && 'memory' in performance) {
+      return (performance as any).memory;
+    }
+    return null;
+  }
+  
+  /**
+   * Formatea bytes en unidades legibles
+   */
+  static formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
     
-    const memory = (performance as any).memory;
-    return {
-      used: Math.round(memory.usedJSHeapSize / 1048576),
-      total: Math.round(memory.totalJSHeapSize / 1048576),
-      limit: Math.round(memory.jsHeapSizeLimit / 1048576)
-    };
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
+  /**
+   * Crea un snapshot del estado actual para debugging
+   */
+  static createSnapshot(name: string, data: any): void {
+    if (import.meta.env.DEV) {
+      console.log(`📸 Snapshot: ${name}`, {
+        timestamp: new Date().toISOString(),
+        data: JSON.parse(JSON.stringify(data))
+      });
+    }
   }
 }
