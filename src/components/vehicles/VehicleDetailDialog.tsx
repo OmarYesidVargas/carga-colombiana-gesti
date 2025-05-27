@@ -63,7 +63,12 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
   };
 
   const openDocument = (url?: string) => {
-    if (!url) return;
+    if (!url) {
+      console.warn('No document URL provided');
+      return;
+    }
+    
+    console.log('📄 Abriendo documento:', url);
     
     try {
       if (url.startsWith('data:')) {
@@ -87,7 +92,12 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
   };
 
   const downloadDocument = (url?: string, type: string = 'documento') => {
-    if (!url) return;
+    if (!url) {
+      console.warn('No document URL provided for download');
+      return;
+    }
+    
+    console.log('💾 Descargando documento:', url);
     
     try {
       if (url.startsWith('data:')) {
@@ -103,8 +113,24 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
     }
   };
 
+  // Función para verificar si hay documento
+  const hasDocument = (url?: string) => {
+    const result = url && url.trim() !== '';
+    console.log(`📋 Verificando documento: ${url} -> ${result}`);
+    return result;
+  };
+
   const soatStatus = getDocumentStatus(vehicle.soatExpiryDate);
   const technoStatus = getDocumentStatus(vehicle.technoExpiryDate);
+
+  console.log('🚗 Vehicle data in detail dialog:', {
+    id: vehicle.id,
+    plate: vehicle.plate,
+    soatDocumentUrl: vehicle.soatDocumentUrl,
+    technoDocumentUrl: vehicle.technoDocumentUrl,
+    hasSoatDoc: hasDocument(vehicle.soatDocumentUrl),
+    hasTechnoDoc: hasDocument(vehicle.technoDocumentUrl)
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -218,7 +244,7 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                   </div>
                 )}
 
-                {vehicle.soatDocumentUrl ? (
+                {hasDocument(vehicle.soatDocumentUrl) ? (
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -279,7 +305,7 @@ const VehicleDetailDialog: React.FC<VehicleDetailDialogProps> = ({
                   </div>
                 )}
 
-                {vehicle.technoDocumentUrl ? (
+                {hasDocument(vehicle.technoDocumentUrl) ? (
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
