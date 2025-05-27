@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, FileText, X, Eye } from 'lucide-react';
+import { Upload, FileText, X, Eye, Download, ExternalLink } from 'lucide-react';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { toast } from 'sonner';
 
 interface DocumentUploadProps {
   label: string;
@@ -32,7 +33,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
   const handleFileSelect = async (file: File) => {
     if (!vehicleId) {
-      // Para vehículos nuevos, guardamos el archivo temporalmente
+      // Para vehículos nuevos, guardamos el archivo temporalmente como base64
       const reader = new FileReader();
       reader.onload = () => {
         onUploadComplete(reader.result as string);
@@ -41,9 +42,17 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
       return;
     }
 
-    const url = await uploadFile(file, userId, vehicleId, documentType);
-    if (url) {
-      onUploadComplete(url);
+    try {
+      const url = await uploadFile(file, userId, vehicleId, documentType);
+      if (url) {
+        onUploadComplete(url);
+        toast.success('Documento subido correctamente');
+      } else {
+        toast.error('Error al subir el documento');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Error al subir el documento');
     }
   };
 
@@ -75,7 +84,65 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
   const openFile = () => {
     if (currentUrl) {
-      window.open(currentUrl, '_blank');
+      try {
+        // Si es una URL base64 (documento temporal)
+        if (currentUrl.startsWith('data:')) {
+          // Crear un blob y abrir en nueva pestaña
+          const byteCharacters = atob(currentUrl.split(',')[1]);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+        } else {
+          // Para URLs normales de Supabase
+          window.open(currentUrl, '_blank');
+        }
+      } catch (error) {
+        console.error('Error opening file:', error);
+        toast.error('Error al abrir el documento');
+      }
+    }
+  };
+
+  const downloadFile = () => {
+    if (currentUrl) {
+      try {
+        if (currentUrl.startsWith('data:')) {
+          // Para archivos base64, crear descarga
+          const link = document.createElement('a');
+          link.href = currentUrl;
+          link.download = `${documentType}_${Date.now()}.pdf`;
+          link.click();
+        } else {
+          // Para URLs de Supabase, abrir en nueva pestaña
+          window.open(currentUrl, '_blank');
+        }
+      } catch (error) {
+        console.error('Error downloading file:', error);
+        toast.error('Error al descargar el documento');
+      }
+    }
+  };
+
+  const getFileTypeFromUrl = (url: string): string => {
+    if (url.startsWith('data:')) {
+      const mimeType = url.split(':')[1].split(';')[0];
+      return mimeType.includes('pdf') ? 'PDF' : 'Imagen';
+    }
+    const extension = url.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'pdf':
+        return 'PDF';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+        return 'Imagen';
+      default:
+        return 'Archivo';
     }
   };
 
@@ -85,30 +152,48 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
       
       {currentUrl ? (
         <Card>
-          <CardContent className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-medium">Documento cargado</span>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={openFile}
-              >
-                <Eye className="h-4 w-4 mr-1" />
-                Ver
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onRemove}
-              >
-                <X className="h-4 w-4 mr-1" />
-                Quitar
-              </Button>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-green-600" />
+                <div>
+                  <span className="text-sm font-medium">Documento cargado</span>
+                  <p className="text-xs text-muted-foreground">
+                    {getFileTypeFromUrl(currentUrl)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={openFile}
+                  disabled={!currentUrl}
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  Ver
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadFile}
+                  disabled={!currentUrl}
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Descargar
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onRemove}
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Quitar
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
