@@ -62,14 +62,7 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				},
-				// Categorías de gastos
-				"expense-fuel": "#FF9F1C", // Naranja para combustible
-				"expense-toll": "#2EC4B6", // Verde azulado para peajes
-				"expense-maintenance": "#E71D36", // Rojo para mantenimiento
-				"expense-lodging": "#7209B7", // Morado para alojamiento
-				"expense-food": "#4CC9F0", // Azul claro para comida
-				"expense-other": "#8E9196", // Gris para otros
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

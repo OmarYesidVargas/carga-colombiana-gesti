@@ -98,37 +98,4 @@
   .vehicle-plate {
     @apply font-mono uppercase tracking-wider;
   }
-
-  /* Estilos específicos para el sidebar */
-  [data-sidebar="sidebar"] {
-    background-color: hsl(var(--sidebar-background));
-    color: hsl(var(--sidebar-foreground));
-    border-color: hsl(var(--sidebar-border));
-  }
-
-  [data-sidebar="menu-button"] {
-    color: hsl(var(--sidebar-foreground));
-  }
-
-  [data-sidebar="menu-button"]:hover {
-    background-color: hsl(var(--sidebar-accent));
-    color: hsl(var(--sidebar-accent-foreground));
-  }
-
-  [data-sidebar="group-label"] {
-    color: hsl(var(--sidebar-foreground));
-    opacity: 0.9;
-  }
-
-  /* Botón hamburguesa personalizado */
-  [data-sidebar="trigger"] {
-    background-color: transparent;
-    border: none;
-    color: hsl(var(--foreground));
-  }
-
-  [data-sidebar="trigger"]:hover {
-    background-color: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
-  }
 }

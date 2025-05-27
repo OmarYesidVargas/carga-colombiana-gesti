@@ -6,7 +6,7 @@
 
 // Colores principales de la aplicación (basados en Tailwind)
 export const PRIMARY_COLORS = {
-  primary: '#8b5cf6',
+  primary: '#3b82f6',
   secondary: '#64748b',
   accent: '#10b981',
   warning: '#f59e0b',
@@ -20,9 +20,9 @@ export const PRIMARY_COLORS = {
  */
 export const EXPENSE_CATEGORY_COLORS: Record<string, string> = {
   fuel: '#f59e0b',        // Amarillo/Naranja - Combustible
-  toll: '#8b5cf6',        // Violeta - Peajes
+  toll: '#3b82f6',        // Azul - Peajes
   maintenance: '#ef4444', // Rojo - Mantenimiento
-  lodging: '#3b82f6',     // Azul - Alojamiento
+  lodging: '#8b5cf6',     // Violeta - Alojamiento
   food: '#10b981',        // Verde - Comida
   other: '#64748b'        // Gris - Otros
 };
@@ -31,11 +31,11 @@ export const EXPENSE_CATEGORY_COLORS: Record<string, string> = {
  * Colores alternativos para cuando se necesiten más opciones
  */
 export const CHART_COLORS = [
-  '#8b5cf6', // Violeta
+  '#3b82f6', // Azul
   '#10b981', // Verde
   '#f59e0b', // Amarillo
   '#ef4444', // Rojo
-  '#3b82f6', // Azul
+  '#8b5cf6', // Violeta
   '#64748b', // Gris
   '#06b6d4', // Cyan
   '#84cc16', // Verde lima
