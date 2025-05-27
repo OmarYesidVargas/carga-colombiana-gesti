@@ -1,6 +1,7 @@
 
+
 // Re-export toast functionality to avoid circular imports
-export { toast } from "sonner";
+import { toast } from "sonner";
 
 // Simple hook for backward compatibility
 export const useToast = () => {
@@ -8,3 +9,4 @@ export const useToast = () => {
     toast
   };
 };
+
