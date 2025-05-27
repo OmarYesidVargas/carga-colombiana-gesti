@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -63,22 +64,22 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster 
-          position="top-right"
-          expand={false}
-          richColors
-          closeButton
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: 'hsl(var(--background))',
-              border: '1px solid hsl(var(--border))',
-              color: 'hsl(var(--foreground))',
-            }
-          }}
-        />
-        <BrowserRouter basename={basename}>
+      <BrowserRouter basename={basename}>
+        <TooltipProvider>
+          <Toaster 
+            position="top-right"
+            expand={false}
+            richColors
+            closeButton
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'hsl(var(--background))',
+                border: '1px solid hsl(var(--border))',
+                color: 'hsl(var(--foreground))',
+              }
+            }}
+          />
           <AuthProvider>
             <DataProvider>
               <Routes>
@@ -164,8 +165,8 @@ function App() {
               </Routes>
             </DataProvider>
           </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+        </TooltipProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
