@@ -6,98 +6,79 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Settings, Globe, Bell, Palette, Database, Download } from 'lucide-react';
+import { Settings, Globe, Bell, Palette, Shield, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { SUPPORTED_COUNTRIES } from '@/lib/constants';
 
-interface Preferences {
+interface UserPreferences {
   language: string;
   country: string;
   currency: string;
+  timezone: string;
   dateFormat: string;
-  timeFormat: string;
-  notifications: {
-    email: boolean;
-    push: boolean;
-    vehicleExpiry: boolean;
-    tripReminders: boolean;
-  };
-  appearance: {
-    theme: string;
-    density: string;
-  };
+  theme: string;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  reminderNotifications: boolean;
+  dataExport: boolean;
+  analytics: boolean;
 }
 
-export const PreferencesSettings = () => {
-  const [preferences, setPreferences] = useState<Preferences>({
-    language: 'es',
-    country: 'CO',
-    currency: 'COP',
-    dateFormat: 'dd/MM/yyyy',
-    timeFormat: '24h',
-    notifications: {
-      email: true,
-      push: true,
-      vehicleExpiry: true,
-      tripReminders: true,
-    },
-    appearance: {
-      theme: 'system',
-      density: 'comfortable',
-    },
-  });
+const defaultPreferences: UserPreferences = {
+  language: 'es',
+  country: 'CO',
+  currency: 'COP',
+  timezone: 'America/Bogota',
+  dateFormat: 'dd/MM/yyyy',
+  theme: 'system',
+  emailNotifications: true,
+  pushNotifications: true,
+  reminderNotifications: true,
+  dataExport: false,
+  analytics: true,
+};
 
+export const PreferencesSettings = () => {
+  const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Cargar preferencias guardadas del localStorage
+    // Cargar preferencias desde localStorage
     const savedPreferences = localStorage.getItem('userPreferences');
     if (savedPreferences) {
       try {
         const parsed = JSON.parse(savedPreferences);
-        setPreferences(prev => ({ ...prev, ...parsed }));
+        setPreferences({ ...defaultPreferences, ...parsed });
       } catch (error) {
-        console.error('Error parsing preferences:', error);
+        console.error('Error al cargar preferencias:', error);
       }
     }
   }, []);
 
   const savePreferences = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
       toast.success('Preferencias guardadas correctamente');
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      console.error('Error al guardar preferencias:', error);
       toast.error('Error al guardar las preferencias');
     } finally {
       setLoading(false);
     }
   };
 
-  const updatePreference = (key: string, value: any) => {
-    setPreferences(prev => {
-      const keys = key.split('.');
-      if (keys.length === 1) {
-        return { ...prev, [key]: value };
-      } else {
-        return {
-          ...prev,
-          [keys[0]]: {
-            ...prev[keys[0] as keyof Preferences],
-            [keys[1]]: value,
-          },
-        };
-      }
-    });
+  const updatePreference = <K extends keyof UserPreferences>(key: K, value: UserPreferences[K]) => {
+    setPreferences(prev => ({ ...prev, [key]: value }));
   };
 
-  const exportData = () => {
+  const handleDataExport = () => {
+    // Simular exportación de datos
     toast.info('Función de exportación en desarrollo');
   };
 
-  const deleteAccount = () => {
-    toast.error('Para eliminar tu cuenta, contacta al soporte técnico');
+  const handleDataDeletion = () => {
+    // Simular eliminación de datos
+    toast.info('Función de eliminación en desarrollo');
   };
 
   return (
@@ -105,22 +86,19 @@ export const PreferencesSettings = () => {
       {/* Configuración Regional */}
       <Card>
         <CardHeader>
-          <div className="flex items-center space-x-2">
+          <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            <CardTitle>Configuración Regional</CardTitle>
-          </div>
+            Configuración Regional
+          </CardTitle>
           <CardDescription>
-            Configura tu idioma, país y formatos preferidos
+            Personaliza el idioma, país y formato de datos
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Idioma</Label>
-              <Select
-                value={preferences.language}
-                onValueChange={(value) => updatePreference('language', value)}
-              >
+              <Label htmlFor="language">Idioma</Label>
+              <Select value={preferences.language} onValueChange={(value) => updatePreference('language', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -133,49 +111,39 @@ export const PreferencesSettings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>País</Label>
-              <Select
-                value={preferences.country}
-                onValueChange={(value) => updatePreference('country', value)}
-              >
+              <Label htmlFor="country">País</Label>
+              <Select value={preferences.country} onValueChange={(value) => updatePreference('country', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SUPPORTED_COUNTRIES.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="CO">Colombia</SelectItem>
+                  <SelectItem value="MX">México</SelectItem>
+                  <SelectItem value="ES">España</SelectItem>
+                  <SelectItem value="AR">Argentina</SelectItem>
+                  <SelectItem value="PE">Perú</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Moneda</Label>
-              <Select
-                value={preferences.currency}
-                onValueChange={(value) => updatePreference('currency', value)}
-              >
+              <Label htmlFor="currency">Moneda</Label>
+              <Select value={preferences.currency} onValueChange={(value) => updatePreference('currency', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="COP">COP - Peso Colombiano</SelectItem>
-                  <SelectItem value="USD">USD - Dólar Americano</SelectItem>
-                  <SelectItem value="EUR">EUR - Euro</SelectItem>
-                  <SelectItem value="MXN">MXN - Peso Mexicano</SelectItem>
-                  <SelectItem value="BRL">BRL - Real Brasileño</SelectItem>
+                  <SelectItem value="COP">Peso Colombiano (COP)</SelectItem>
+                  <SelectItem value="USD">Dólar Americano (USD)</SelectItem>
+                  <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                  <SelectItem value="MXN">Peso Mexicano (MXN)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Formato de Fecha</Label>
-              <Select
-                value={preferences.dateFormat}
-                onValueChange={(value) => updatePreference('dateFormat', value)}
-              >
+              <Label htmlFor="dateFormat">Formato de Fecha</Label>
+              <Select value={preferences.dateFormat} onValueChange={(value) => updatePreference('dateFormat', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -193,56 +161,58 @@ export const PreferencesSettings = () => {
       {/* Notificaciones */}
       <Card>
         <CardHeader>
-          <div className="flex items-center space-x-2">
+          <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            <CardTitle>Notificaciones</CardTitle>
-          </div>
+            Notificaciones
+          </CardTitle>
           <CardDescription>
-            Controla qué notificaciones quieres recibir
+            Configura cómo y cuándo recibir notificaciones
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Notificaciones por Email</Label>
-              <p className="text-sm text-muted-foreground">
-                Recibe actualizaciones importantes por correo
-              </p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Notificaciones por Email</Label>
+                <p className="text-sm text-muted-foreground">
+                  Recibir alertas de vencimientos por email
+                </p>
+              </div>
+              <Switch
+                checked={preferences.emailNotifications}
+                onCheckedChange={(checked) => updatePreference('emailNotifications', checked)}
+              />
             </div>
-            <Switch
-              checked={preferences.notifications.email}
-              onCheckedChange={(value) => updatePreference('notifications.email', value)}
-            />
-          </div>
 
-          <Separator />
+            <Separator />
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Vencimiento de Documentos</Label>
-              <p className="text-sm text-muted-foreground">
-                Alertas sobre SOAT y tecnomecánica próximos a vencer
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Notificaciones Push</Label>
+                <p className="text-sm text-muted-foreground">
+                  Notificaciones en tiempo real en el navegador
+                </p>
+              </div>
+              <Switch
+                checked={preferences.pushNotifications}
+                onCheckedChange={(checked) => updatePreference('pushNotifications', checked)}
+              />
             </div>
-            <Switch
-              checked={preferences.notifications.vehicleExpiry}
-              onCheckedChange={(value) => updatePreference('notifications.vehicleExpiry', value)}
-            />
-          </div>
 
-          <Separator />
+            <Separator />
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Recordatorios de Viajes</Label>
-              <p className="text-sm text-muted-foreground">
-                Notificaciones sobre viajes programados
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Recordatorios de Documentos</Label>
+                <p className="text-sm text-muted-foreground">
+                  Alertas 30 días antes del vencimiento
+                </p>
+              </div>
+              <Switch
+                checked={preferences.reminderNotifications}
+                onCheckedChange={(checked) => updatePreference('reminderNotifications', checked)}
+              />
             </div>
-            <Switch
-              checked={preferences.notifications.tripReminders}
-              onCheckedChange={(value) => updatePreference('notifications.tripReminders', value)}
-            />
           </div>
         </CardContent>
       </Card>
@@ -250,99 +220,81 @@ export const PreferencesSettings = () => {
       {/* Apariencia */}
       <Card>
         <CardHeader>
-          <div className="flex items-center space-x-2">
+          <CardTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5" />
-            <CardTitle>Apariencia</CardTitle>
-          </div>
+            Apariencia
+          </CardTitle>
           <CardDescription>
             Personaliza la apariencia de la aplicación
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Tema</Label>
-              <Select
-                value={preferences.appearance.theme}
-                onValueChange={(value) => updatePreference('appearance.theme', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">Claro</SelectItem>
-                  <SelectItem value="dark">Oscuro</SelectItem>
-                  <SelectItem value="system">Sistema</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Densidad</Label>
-              <Select
-                value={preferences.appearance.density}
-                onValueChange={(value) => updatePreference('appearance.density', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="compact">Compacta</SelectItem>
-                  <SelectItem value="comfortable">Cómoda</SelectItem>
-                  <SelectItem value="spacious">Espaciosa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="theme">Tema</Label>
+            <Select value={preferences.theme} onValueChange={(value) => updatePreference('theme', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">Claro</SelectItem>
+                <SelectItem value="dark">Oscuro</SelectItem>
+                <SelectItem value="system">Sistema</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Datos y Privacidad */}
+      {/* Privacidad y Datos */}
       <Card>
         <CardHeader>
-          <div className="flex items-center space-x-2">
-            <Database className="h-5 w-5" />
-            <CardTitle>Datos y Privacidad</CardTitle>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Privacidad y Datos
+          </CardTitle>
           <CardDescription>
-            Administra tus datos y configuración de privacidad
+            Controla tu información personal y privacidad
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button
-            variant="outline"
-            onClick={exportData}
-            className="w-full justify-start"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Exportar Mis Datos
-          </Button>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Análisis de Uso</Label>
+                <p className="text-sm text-muted-foreground">
+                  Ayudar a mejorar la aplicación con datos anónimos
+                </p>
+              </div>
+              <Switch
+                checked={preferences.analytics}
+                onCheckedChange={(checked) => updatePreference('analytics', checked)}
+              />
+            </div>
 
-          <Separator />
+            <Separator />
 
-          <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20">
-            <h4 className="font-medium text-destructive mb-2">Zona de Peligro</h4>
-            <p className="text-sm text-muted-foreground mb-3">
-              Esta acción eliminará permanentemente tu cuenta y todos los datos asociados.
-            </p>
-            <Button
-              variant="destructive"
-              onClick={deleteAccount}
-              className="w-full"
-            >
-              Eliminar Cuenta
-            </Button>
+            <div className="space-y-3">
+              <Label>Gestión de Datos</Label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button variant="outline" onClick={handleDataExport} className="flex items-center gap-2">
+                  <Download className="h-4 w-4" />
+                  Exportar Datos
+                </Button>
+                <Button variant="destructive" onClick={handleDataDeletion}>
+                  Eliminar Todos los Datos
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                La eliminación de datos es irreversible y eliminará toda tu información.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Botón para guardar */}
+      {/* Botón de Guardar */}
       <div className="flex justify-end">
-        <Button
-          onClick={savePreferences}
-          disabled={loading}
-          className="w-full md:w-auto"
-        >
+        <Button onClick={savePreferences} disabled={loading} size="lg">
           {loading ? 'Guardando...' : 'Guardar Preferencias'}
         </Button>
       </div>

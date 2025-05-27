@@ -1,4 +1,3 @@
-
 /**
  * Utilidades de Validación Internacionales para TransporegistrosPlus
  * 
@@ -99,27 +98,36 @@ export const validateVehicle = (vehicle: Partial<Vehicle>, country: string = 'CO
       return false;
     }
     
-    // Validar año - aceptar tanto number como string
-    const year = typeof vehicle.year === 'string' ? parseInt(vehicle.year, 10) : vehicle.year;
-    if (!year || isNaN(year) || year < 1900 || year > new Date().getFullYear() + 2) {
+    // Validar año - más flexible, acepta tanto number como string
+    let year: number;
+    if (typeof vehicle.year === 'string') {
+      year = parseInt(vehicle.year, 10);
+    } else if (typeof vehicle.year === 'number') {
+      year = vehicle.year;
+    } else {
+      console.error('❌ Validación vehículo: Año es obligatorio');
+      return false;
+    }
+    
+    if (isNaN(year) || year < 1900 || year > new Date().getFullYear() + 2) {
       console.error('❌ Validación vehículo: Año inválido', year);
       return false;
     }
     
-    // Validar formato de placa según país
+    // Validar formato de placa según país - más permisivo
     const plateValidation = validateVehiclePlate(vehicle.plate.trim(), country);
     if (!plateValidation.isValid) {
-      console.error('❌ Validación vehículo:', plateValidation.error);
-      return false;
+      console.warn('⚠️ Advertencia formato placa:', plateValidation.error);
+      // Solo advertencia, no bloquear el guardado
     }
     
-    // Validaciones opcionales - solo validar si tienen valor
-    if (vehicle.color && vehicle.color.trim().length > 0 && vehicle.color.trim().length < 2) {
+    // Validaciones opcionales - solo validar si tienen valor significativo
+    if (vehicle.color && typeof vehicle.color === 'string' && vehicle.color.trim().length > 0 && vehicle.color.trim().length < 2) {
       console.error('❌ Validación vehículo: Color debe tener al menos 2 caracteres');
       return false;
     }
     
-    if (vehicle.capacity && vehicle.capacity.trim().length > 0) {
+    if (vehicle.capacity && typeof vehicle.capacity === 'string' && vehicle.capacity.trim().length > 0) {
       // Permitir descripciones de capacidad como "5 Toneladas", no solo números
       if (vehicle.capacity.trim().length < 1) {
         console.error('❌ Validación vehículo: Capacidad debe tener al menos 1 caracter');
@@ -136,30 +144,31 @@ export const validateVehicle = (vehicle: Partial<Vehicle>, country: string = 'CO
 };
 
 /**
- * Valida formato de placa según el país
+ * Valida formato de placa según el país - más permisivo
  * 
  * @param {string} plate - Placa del vehículo
  * @param {string} country - Código del país
  * @returns {object} Resultado de validación con isValid y error
  */
 export const validateVehiclePlate = (plate: string, country: string): { isValid: boolean; error?: string } => {
-  // Hacer la validación más flexible para Colombia
+  // Validación más permisiva para diferentes formatos de placa
   const plateRegexes: Record<string, RegExp> = {
-    CO: /^[A-Z]{3}[\s\-]?\d{2}[A-Z\d]$|^[A-Z]{2}[\s\-]?\d{3}[A-Z]$|^[A-Z]{3}[\s\-]?\d{3}$/,
-    US: /^[A-Z0-9]{2,8}$/,
-    MX: /^[A-Z]{3}[\s\-]?\d{2}[\s\-]?\d{2}$/,
-    BR: /^[A-Z]{3}[\s\-]?\d{4}$|^[A-Z]{3}[\s\-]?\d[A-Z]\d{2}$/,
-    AR: /^[A-Z]{2}[\s\-]?\d{3}[\s\-]?[A-Z]{2}$/,
-    ES: /^\d{4}[\s\-]?[A-Z]{3}$/
+    CO: /^[A-Z0-9]{3,8}[\s\-]?[A-Z0-9]{0,4}$/i, // Más flexible para Colombia
+    US: /^[A-Z0-9]{2,8}$/i,
+    MX: /^[A-Z0-9]{3,8}[\s\-]?[A-Z0-9]{0,4}$/i,
+    BR: /^[A-Z0-9]{3,8}[\s\-]?[A-Z0-9]{0,4}$/i,
+    AR: /^[A-Z0-9]{3,8}[\s\-]?[A-Z0-9]{0,4}$/i,
+    ES: /^[A-Z0-9]{3,8}[\s\-]?[A-Z0-9]{0,4}$/i
   };
   
+  // Fallback muy permisivo para otros países
   const regex = plateRegexes[country] || /^[A-Za-z0-9\-\s]{3,15}$/;
   const normalizedPlate = plate.toUpperCase().trim();
   
   if (!regex.test(normalizedPlate)) {
     return {
       isValid: false,
-      error: `Formato de placa inválido para ${country}. Placa: ${plate}`
+      error: `Formato de placa podría ser inválido para ${country}. Placa: ${plate}`
     };
   }
   
@@ -167,7 +176,7 @@ export const validateVehiclePlate = (plate: string, country: string): { isValid:
 };
 
 /**
- * Valida los datos de un viaje antes de guardar
+ * Valida los datos de un viaje antes de guardar - más permisivo con fechas
  * 
  * @param {Partial<Trip>} trip - Datos del viaje a validar
  * @param {string} country - Código del país (opcional)
@@ -175,39 +184,43 @@ export const validateVehiclePlate = (plate: string, country: string): { isValid:
  */
 export const validateTrip = (trip: Partial<Trip>, country: string = 'CO'): boolean => {
   try {
+    console.log('🔍 Validando viaje:', trip);
+    
     // Validaciones obligatorias
     if (!trip.vehicleId || trip.vehicleId.trim().length === 0) {
-      console.error('Validación viaje: ID de vehículo es obligatorio');
+      console.error('❌ Validación viaje: ID de vehículo es obligatorio');
       return false;
     }
     
     if (!trip.origin || trip.origin.trim().length < 2) {
-      console.error('Validación viaje: Origen debe tener al menos 2 caracteres');
+      console.error('❌ Validación viaje: Origen debe tener al menos 2 caracteres');
       return false;
     }
     
     if (!trip.destination || trip.destination.trim().length < 2) {
-      console.error('Validación viaje: Destino debe tener al menos 2 caracteres');
+      console.error('❌ Validación viaje: Destino debe tener al menos 2 caracteres');
       return false;
     }
     
     if (!trip.startDate) {
-      console.error('Validación viaje: Fecha de inicio es obligatoria');
+      console.error('❌ Validación viaje: Fecha de inicio es obligatoria');
       return false;
     }
     
     if (!trip.distance || trip.distance <= 0) {
-      console.error('Validación viaje: Distancia debe ser mayor a 0');
+      console.error('❌ Validación viaje: Distancia debe ser mayor a 0');
       return false;
     }
     
-    // Validar que la fecha de inicio no sea futura (con margen de 1 día)
+    // Validar fechas de manera más permisiva
     const startDate = new Date(trip.startDate);
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
     
-    if (startDate > tomorrow) {
-      console.error('Validación viaje: Fecha de inicio no puede ser futura');
+    if (startDate < thirtyDaysAgo || startDate > oneYearFromNow) {
+      console.error('❌ Validación viaje: Fecha de inicio debe estar entre 30 días atrás y 1 año en el futuro');
       return false;
     }
     
@@ -215,29 +228,25 @@ export const validateTrip = (trip: Partial<Trip>, country: string = 'CO'): boole
     if (trip.endDate) {
       const endDate = new Date(trip.endDate);
       if (endDate < startDate) {
-        console.error('Validación viaje: Fecha de fin no puede ser anterior a fecha de inicio');
+        console.error('❌ Validación viaje: Fecha de fin no puede ser anterior a fecha de inicio');
+        return false;
+      }
+      if (endDate > oneYearFromNow) {
+        console.error('❌ Validación viaje: Fecha de fin no puede ser más de 1 año en el futuro');
         return false;
       }
     }
     
-    // Validar distancia máxima razonable (10,000 km)
-    if (trip.distance > 10000) {
-      console.error('Validación viaje: Distancia excede el máximo permitido (10,000 km)');
+    // Validar distancia máxima razonable (50,000 km)
+    if (trip.distance > 50000) {
+      console.error('❌ Validación viaje: Distancia excede el máximo permitido (50,000 km)');
       return false;
     }
     
-    // Validaciones específicas por país
-    if (trip.distance && country === 'US') {
-      // Convertir millas a kilómetros si es necesario
-      if (trip.distance > 10000) {
-        console.error('Validación viaje: Distancia excede el máximo permitido');
-        return false;
-      }
-    }
-    
+    console.log('✅ Validación viaje exitosa');
     return true;
   } catch (error) {
-    console.error('Error en validateTrip:', error);
+    console.error('❌ Error en validateTrip:', error);
     return false;
   }
 };

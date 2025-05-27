@@ -28,10 +28,15 @@ interface TripDateFieldsProps {
  * - Calendarios con localización en español
  * - Validación de fechas coherentes
  * - Diseño responsivo y compacto
+ * - Permite seleccionar fecha actual y futuras (hasta 1 año)
  * 
  * @param form - Instancia del formulario de React Hook Form
  */
 const TripDateFields = ({ form }: TripDateFieldsProps) => {
+  const today = new Date();
+  const oneYearFromNow = new Date();
+  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <FormField
@@ -64,6 +69,12 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
                   mode="single"
                   selected={field.value}
                   onSelect={field.onChange}
+                  disabled={(date) => {
+                    // Permitir desde hace 30 días hasta 1 año en el futuro
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    return date < thirtyDaysAgo || date > oneYearFromNow;
+                  }}
                   initialFocus
                   locale={es}
                   className="pointer-events-auto"
@@ -105,6 +116,15 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
                   mode="single"
                   selected={field.value ? field.value : undefined}
                   onSelect={field.onChange}
+                  disabled={(date) => {
+                    // La fecha de fin debe ser posterior o igual a la fecha de inicio
+                    const startDate = form.getValues('startDate');
+                    if (startDate) {
+                      return date < startDate || date > oneYearFromNow;
+                    }
+                    // Si no hay fecha de inicio, permitir desde hoy hasta 1 año en el futuro
+                    return date < today || date > oneYearFromNow;
+                  }}
                   initialFocus
                   locale={es}
                   className="pointer-events-auto"
