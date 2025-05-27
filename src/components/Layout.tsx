@@ -13,12 +13,15 @@ const Layout = ({ children }: LayoutProps) => {
   const { user, logout } = useAuth();
   
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen w-full flex bg-background">
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b px-4 lg:px-6">
-            <SidebarTrigger className="-ml-1" />
+        <SidebarInset className="flex-1 flex flex-col">
+          <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
+            <SidebarTrigger className="md:hidden" />
+            <div className="hidden md:block">
+              <SidebarTrigger />
+            </div>
             <div className="flex-1">
               <Header userEmail={user?.email} onLogout={logout} />
             </div>

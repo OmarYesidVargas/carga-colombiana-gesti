@@ -19,6 +19,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const menuItems = [
@@ -32,8 +33,15 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
+  const { setOpenMobile } = useSidebar();
+
+  const handleLinkClick = () => {
+    // Cerrar el sidebar en mobile cuando se hace clic en un enlace
+    setOpenMobile(false);
+  };
+
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar variant="sidebar" collapsible="offcanvas">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Navegación</SidebarGroupLabel>
@@ -44,13 +52,16 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.to}
+                      onClick={handleLinkClick}
                       className={({ isActive }) =>
-                        isActive 
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
-                          : "hover:bg-sidebar-accent/50"
+                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
+                          isActive 
+                            ? "bg-primary text-primary-foreground font-medium" 
+                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        }`
                       }
                     >
-                      <item.icon />
+                      <item.icon className="h-4 w-4" />
                       <span>{item.label}</span>
                     </NavLink>
                   </SidebarMenuButton>

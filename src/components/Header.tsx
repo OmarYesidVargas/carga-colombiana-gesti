@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al dashboard"
           >
-            <span className="text-lg font-semibold text-primary truncate whitespace-nowrap">
+            <span className="text-base md:text-lg font-semibold text-primary truncate">
               Transpo<span className="text-secondary">registros</span>
               <span className="text-primary font-bold">Plus</span>
             </span>
@@ -99,7 +100,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al inicio"
           >
-            <span className="text-lg font-semibold text-primary truncate whitespace-nowrap">
+            <span className="text-base md:text-lg font-semibold text-primary truncate">
               Transpo<span className="text-secondary">registros</span>
               <span className="text-primary font-bold">Plus</span>
             </span>
@@ -113,43 +114,43 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="flex items-center gap-2 px-3 h-9"
+                className="flex items-center gap-2 px-2 md:px-3 h-8 md:h-9"
               >
-                <Avatar className="h-6 w-6">
+                <Avatar className="h-5 w-5 md:h-6 md:w-6">
                   <AvatarImage src={avatarUrl || undefined} alt="Foto de perfil" />
                   <AvatarFallback className="text-xs">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline-block max-w-[150px] truncate text-sm">
+                <span className="hidden sm:inline-block max-w-[100px] md:max-w-[150px] truncate text-xs md:text-sm">
                   {userEmail}
                 </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-56 z-50 bg-background border border-border shadow-lg"
+              className="w-48 md:w-56 z-50 bg-background border border-border shadow-lg"
             >
-              <DropdownMenuLabel className="max-w-[200px] truncate">
+              <DropdownMenuLabel className="max-w-[180px] md:max-w-[200px] truncate text-sm">
                 {userEmail}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSettings} className="cursor-pointer">
+              <DropdownMenuItem onClick={handleSettings} className="cursor-pointer text-sm">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Configuración</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive text-sm">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-sm px-3 h-9" 
+              className="text-xs md:text-sm px-2 md:px-3 h-8 md:h-9" 
               onClick={handleLogin}
             >
               Iniciar sesión
@@ -157,7 +158,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             <Button 
               variant="default" 
               size="sm" 
-              className="text-sm px-3 h-9" 
+              className="text-xs md:text-sm px-2 md:px-3 h-8 md:h-9" 
               onClick={handleRegister}
             >
               Registrarse
