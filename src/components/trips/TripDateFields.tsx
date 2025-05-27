@@ -15,7 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useDebugLogger } from '@/hooks/useDebugLogger';
 
 interface TripDateFieldsProps {
   form: UseFormReturn<any>;
@@ -27,8 +26,6 @@ interface TripDateFieldsProps {
  * Y hasta 1 año en el futuro para fecha de fin
  */
 const TripDateFields = ({ form }: TripDateFieldsProps) => {
-  const { log, logAction } = useDebugLogger({ component: 'TripDateFields' });
-  
   const today = new Date();
   today.setHours(23, 59, 59, 999); // Fin del día de hoy
   
@@ -41,27 +38,27 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
   oneYearFromNow.setHours(23, 59, 59, 999); // Fin del día en 1 año
 
   React.useEffect(() => {
-    log('Date fields initialized', {
+    console.log('Date fields initialized', {
       today: today.toISOString(),
       thirtyDaysAgo: thirtyDaysAgo.toISOString(),
       oneYearFromNow: oneYearFromNow.toISOString()
     });
-  }, [log]);
+  }, []);
 
   const handleStartDateChange = (date: Date | undefined, onChange: (date: Date | undefined) => void) => {
-    logAction('Start date changed', { newDate: date?.toISOString() });
+    console.log('Start date changed', { newDate: date?.toISOString() });
     onChange(date);
     
     // Si la fecha de fin es anterior a la nueva fecha de inicio, limpiarla
     const endDate = form.getValues('endDate');
     if (date && endDate && endDate < date) {
-      logAction('Clearing end date because it\'s before new start date');
+      console.log('Clearing end date because it\'s before new start date');
       form.setValue('endDate', undefined);
     }
   };
 
   const handleEndDateChange = (date: Date | undefined, onChange: (date: Date | undefined) => void) => {
-    logAction('End date changed', { newDate: date?.toISOString() });
+    console.log('End date changed', { newDate: date?.toISOString() });
     onChange(date);
   };
 
