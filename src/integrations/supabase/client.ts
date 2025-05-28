@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 import { APP_CONFIG } from '@/lib/constants'
 
-// Configuración del cliente Supabase optimizada para móvil
+// Configuración del cliente Supabase optimizada para móvil y seguridad
 export const supabase = createClient<Database>(
   APP_CONFIG.supabase.url,
   APP_CONFIG.supabase.anonKey,
@@ -27,7 +27,7 @@ export const supabase = createClient<Database>(
     db: {
       schema: 'public'
     },
-    // Configuración adicional para estabilidad
+    // Configuración adicional para estabilidad y seguridad
     realtime: {
       params: {
         eventsPerSecond: 2
@@ -36,18 +36,28 @@ export const supabase = createClient<Database>(
   }
 )
 
-// Configurar manejo de errores globales mejorado para móvil
+// Configurar manejo de errores globales mejorado para móvil y seguridad
 supabase.auth.onAuthStateChange((event, session) => {
   if (import.meta.env.DEV) {
     console.log('🔄 Auth state change:', event, session?.user?.email || 'No user');
   }
   
   if (event === 'SIGNED_OUT') {
-    // Limpiar datos locales al cerrar sesión de forma más agresiva
+    // Limpiar datos locales al cerrar sesión de forma más agresiva y segura
     try {
-      localStorage.removeItem('supabase.auth.token')
-      localStorage.removeItem('transporegistros-auth-token')
-      // En móvil, ser más selectivo con la limpieza
+      // Lista específica de keys relacionadas con autenticación
+      const authKeys = [
+        'supabase.auth.token',
+        'transporegistros-auth-token',
+        'lastActivity'
+      ];
+      
+      // Limpiar keys específicas
+      authKeys.forEach(key => {
+        localStorage.removeItem(key);
+      });
+      
+      // Limpiar keys que contengan patrones de supabase o auth
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -69,8 +79,13 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('🔄 Token de autenticación renovado')
   }
   
-  if (event === 'SIGNED_IN' && import.meta.env.DEV) {
-    console.log('✅ Usuario autenticado:', session?.user?.email)
+  if (event === 'SIGNED_IN') {
+    // Registrar actividad para monitoreo de seguridad
+    localStorage.setItem('lastActivity', Date.now().toString());
+    
+    if (import.meta.env.DEV) {
+      console.log('✅ Usuario autenticado:', session?.user?.email)
+    }
   }
 })
 

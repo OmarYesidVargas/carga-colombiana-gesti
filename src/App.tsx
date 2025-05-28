@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { DataProvider } from "@/context/DataContext";
+import { SecurityProvider } from "@/components/common/SecurityProvider";
 import Layout from "./components/Layout";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/auth/Login";
@@ -78,91 +79,93 @@ function App() {
           />
           
           <AuthProvider>
-            <DataProvider>
-              <Routes>
-                {/* Páginas públicas envueltas en AuthProvider */}
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                
-                {/* Páginas protegidas */}
-                <Route path="/dashboard" element={
-                  <AuthRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="/profile/settings" element={
-                  <AuthRoute>
-                    <Layout>
-                      <ProfileSettings />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="/vehicles" element={
-                  <AuthRoute>
-                    <Layout>
-                      <VehiclesPage />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="/trips" element={
-                  <AuthRoute>
-                    <Layout>
-                      <TripsPage />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="/trips/:id" element={
-                  <AuthRoute>
-                    <Layout>
-                      <TripDetailPage />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="/expenses" element={
-                  <AuthRoute>
-                    <Layout>
-                      <ExpensesPage />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="/tolls" element={
-                  <AuthRoute>
-                    <Layout>
-                      <TollsPage />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="/toll-records" element={
-                  <AuthRoute>
-                    <Layout>
-                      <TollRecordsPage />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="/reports" element={
-                  <AuthRoute>
-                    <Layout>
-                      <ExpensesReportPage />
-                    </Layout>
-                  </AuthRoute>
-                } />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </DataProvider>
+            <SecurityProvider>
+              <DataProvider>
+                <Routes>
+                  {/* Páginas públicas envueltas en AuthProvider */}
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  
+                  {/* Páginas protegidas */}
+                  <Route path="/dashboard" element={
+                    <AuthRoute>
+                      <Layout>
+                        <Dashboard />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="/profile/settings" element={
+                    <AuthRoute>
+                      <Layout>
+                        <ProfileSettings />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="/vehicles" element={
+                    <AuthRoute>
+                      <Layout>
+                        <VehiclesPage />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="/trips" element={
+                    <AuthRoute>
+                      <Layout>
+                        <TripsPage />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="/trips/:id" element={
+                    <AuthRoute>
+                      <Layout>
+                        <TripDetailPage />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="/expenses" element={
+                    <AuthRoute>
+                      <Layout>
+                        <ExpensesPage />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="/tolls" element={
+                    <AuthRoute>
+                      <Layout>
+                        <TollsPage />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="/toll-records" element={
+                    <AuthRoute>
+                      <Layout>
+                        <TollRecordsPage />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="/reports" element={
+                    <AuthRoute>
+                      <Layout>
+                        <ExpensesReportPage />
+                      </Layout>
+                    </AuthRoute>
+                  } />
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </DataProvider>
+            </SecurityProvider>
           </AuthProvider>
         </TooltipProvider>
       </BrowserRouter>
