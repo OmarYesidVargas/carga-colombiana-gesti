@@ -92,6 +92,11 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,
     
     /**
+     * Minificación usando esbuild en lugar de terser para evitar dependencias adicionales
+     */
+    minify: mode === 'production' ? 'esbuild' : false,
+    
+    /**
      * Configuración de Rollup para optimizaciones avanzadas
      * Code splitting manual para mejor cache y performance
      */
@@ -109,17 +114,6 @@ export default defineConfig(({ mode }) => ({
           query: ['@tanstack/react-query'],
           charts: ['recharts'],
         },
-      },
-    },
-    
-    /**
-     * Configuración de optimización adicional para Vercel
-     */
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: mode === 'production',
       },
     },
   },
