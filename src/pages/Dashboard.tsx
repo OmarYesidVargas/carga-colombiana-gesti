@@ -1,4 +1,3 @@
-
 import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/context/DataContext';
@@ -134,7 +133,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6 bg-white min-h-full">
+    <div className="space-y-4 sm:space-y-6 bg-white min-h-full px-2 sm:px-0">
       {/* Header optimizado */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <h1 className="text-3xl font-bold mb-2 text-gray-900">Dashboard</h1>
@@ -157,23 +156,23 @@ const Dashboard = () => {
       </div>
       
       {/* Métricas principales optimizadas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card className="bg-white hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div className="space-y-1">
-              <CardTitle className="text-sm font-medium text-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 p-3 sm:p-6">
+            <div className="space-y-1 min-w-0">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                 Vehículos
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs hidden sm:block">
                 Total registrados
               </CardDescription>
             </div>
-            <Truck className="h-5 w-5 text-blue-600" />
+            <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{vehicles.length}</div>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-xl sm:text-3xl font-bold text-gray-900">{vehicles.length}</div>
             <Link to="/vehicles">
-              <Button variant="link" className="p-0 h-auto text-blue-600 text-sm">
+              <Button variant="link" className="p-0 h-auto text-blue-600 text-xs sm:text-sm">
                 Ver vehículos →
               </Button>
             </Link>
@@ -181,23 +180,23 @@ const Dashboard = () => {
         </Card>
         
         <Card className="bg-white hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div className="space-y-1">
-              <CardTitle className="text-sm font-medium text-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 p-3 sm:p-6">
+            <div className="space-y-1 min-w-0">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                 Viajes
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs hidden sm:block">
                 Activos / Completados
               </CardDescription>
             </div>
-            <Calendar className="h-5 w-5 text-green-600" />
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-900">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-3xl font-bold text-gray-900">
               {metrics.activeTrips} / {metrics.completedTrips}
             </div>
             <Link to="/trips">
-              <Button variant="link" className="p-0 h-auto text-green-600 text-sm">
+              <Button variant="link" className="p-0 h-auto text-green-600 text-xs sm:text-sm">
                 Ver viajes →
               </Button>
             </Link>
@@ -205,23 +204,23 @@ const Dashboard = () => {
         </Card>
         
         <Card className="bg-white hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div className="space-y-1">
-              <CardTitle className="text-sm font-medium text-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 p-3 sm:p-6">
+            <div className="space-y-1 min-w-0">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                 Gastos Totales
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs hidden sm:block">
                 Todos los registros
               </CardDescription>
             </div>
-            <FileChartPie className="h-5 w-5 text-purple-600" />
+            <FileChartPie className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 flex-shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-sm sm:text-2xl font-bold text-gray-900">
               {formatCurrency(metrics.totalExpenses)}
             </div>
             <Link to="/reports">
-              <Button variant="link" className="p-0 h-auto text-purple-600 text-sm">
+              <Button variant="link" className="p-0 h-auto text-purple-600 text-xs sm:text-sm">
                 Ver reportes →
               </Button>
             </Link>
@@ -229,31 +228,31 @@ const Dashboard = () => {
         </Card>
         
         <Card className="bg-white hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div className="space-y-1">
-              <CardTitle className="text-sm font-medium text-gray-900">
+          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 p-3 sm:p-6">
+            <div className="space-y-1 min-w-0">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                 Gastos Recientes
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs hidden sm:block">
                 Últimos 30 días
               </CardDescription>
             </div>
-            <TrendingUp className="h-5 w-5 text-orange-600" />
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 flex-shrink-0" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-sm sm:text-2xl font-bold text-gray-900">
               {formatCurrency(metrics.recentExpensesAmount)}
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs sm:text-sm text-gray-600">
               {metrics.recentExpenses} registros
             </p>
           </CardContent>
         </Card>
       </div>
       
-      {/* Gráficas optimizadas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm">
+      {/* Gráficas optimizadas para móvil */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
+        <div className="bg-white rounded-lg shadow-sm min-h-[300px] sm:min-h-[400px]">
           <ExpensesChart 
             expenses={expenses} 
             data={chartData.expensesByCategory}
