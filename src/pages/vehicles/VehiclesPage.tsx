@@ -112,35 +112,36 @@ const VehiclesPage = () => {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Vehículos</h1>
-          <p className="text-muted-foreground">
+    <div className="space-y-4 p-2 sm:p-4 lg:p-6">
+      <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 truncate">Vehículos</h1>
+          <p className="text-sm text-muted-foreground">
             Gestiona tus vehículos de transporte
           </p>
         </div>
         
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => handleOpenForm()}>
+            <Button onClick={() => handleOpenForm()} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" /> 
-              Nuevo Vehículo
+              <span className="hidden xs:inline">Nuevo Vehículo</span>
+              <span className="xs:hidden">Nuevo</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[800px] p-0 gap-0">
-            <DialogHeader className="p-6 pb-2">
-              <DialogTitle>
+          <DialogContent className="w-[98vw] max-w-2xl h-[95vh] max-h-[700px] p-0 gap-0 mx-auto">
+            <DialogHeader className="p-3 sm:p-4 pb-2">
+              <DialogTitle className="text-base sm:text-lg">
                 {currentVehicle ? 'Editar Vehículo' : 'Agregar Nuevo Vehículo'}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs sm:text-sm">
                 {currentVehicle 
                   ? 'Modifica la información del vehículo seleccionado.' 
                   : 'Completa la información para registrar un nuevo vehículo.'}
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex-1 overflow-hidden px-6 pb-6">
+            <div className="flex-1 overflow-hidden px-3 sm:px-4 pb-3 sm:pb-4">
               <VehicleForm
                 initialData={currentVehicle || undefined}
                 onSubmit={handleSubmitVehicle}
@@ -153,18 +154,18 @@ const VehiclesPage = () => {
       </div>
       
       {/* Búsqueda */}
-      <div>
+      <div className="w-full">
         <Input
           placeholder="Buscar por placa, marca o modelo..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-md h-9"
+          className="w-full max-w-sm h-8 text-sm"
         />
       </div>
       
       {/* Lista de vehículos */}
       {filteredVehicles.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {filteredVehicles.map((vehicle) => (
             <VehicleCard
               key={vehicle.id}
@@ -176,11 +177,11 @@ const VehiclesPage = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-10">
+        <div className="text-center py-8 sm:py-10">
           {searchQuery ? (
-            <p className="text-muted-foreground">No se encontraron vehículos que coincidan con tu búsqueda.</p>
+            <p className="text-sm text-muted-foreground px-4">No se encontraron vehículos que coincidan con tu búsqueda.</p>
           ) : (
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground px-4">
               No hay vehículos registrados. Haz clic en "Nuevo Vehículo" para agregar uno.
             </p>
           )}
@@ -196,21 +197,21 @@ const VehiclesPage = () => {
       
       {/* Diálogo de confirmación para eliminar */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[95vw] max-w-md mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base">¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
               Esta acción no se puede deshacer. El vehículo será eliminado permanentemente.
               <br />
               <br />
               Nota: No se pueden eliminar vehículos que tengan viajes asociados.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Eliminar
             </AlertDialogAction>

@@ -95,6 +95,14 @@
     background-color: #f8fafc !important;
   }
 
+  /* Responsive breakpoints adicionales */
+  @screen xs {
+    .xs\:inline { display: inline; }
+    .xs\:hidden { display: none; }
+    .xs\:block { display: block; }
+    .xs\:flex { display: flex; }
+  }
+
   /* Estilo para el formato de placas vehiculares */
   .vehicle-plate {
     @apply font-mono uppercase tracking-wider;
@@ -131,6 +139,22 @@
 
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Mejoras para touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    button, 
+    [role="button"],
+    .cursor-pointer {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    input, 
+    select, 
+    textarea {
+      min-height: 44px;
+    }
   }
 }
 
@@ -222,6 +246,44 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
   }
+
+  /* Responsive form improvements */
+  .form-responsive {
+    @apply space-y-3;
+  }
+  
+  .form-responsive .form-grid {
+    @apply grid grid-cols-1 gap-3 md:grid-cols-2;
+  }
+  
+  .form-responsive .form-item {
+    @apply space-y-1;
+  }
+  
+  .form-responsive .form-label {
+    @apply text-xs font-medium;
+  }
+  
+  .form-responsive .form-input {
+    @apply h-8 text-sm;
+  }
+  
+  .form-responsive .form-button {
+    @apply h-8 text-sm;
+  }
+
+  /* Mobile-first dialog improvements */
+  .dialog-mobile {
+    @apply w-[98vw] max-w-2xl h-[95vh] max-h-[700px] mx-auto;
+  }
+  
+  .dialog-mobile-header {
+    @apply p-3 sm:p-4 pb-2;
+  }
+  
+  .dialog-mobile-content {
+    @apply px-3 sm:px-4 pb-3 sm:pb-4;
+  }
 }
 
 /* Sombras suaves */
@@ -252,4 +314,12 @@
 /* Ripple effects - solo para elementos no-button */
 .ripple:hover:not(button) {
   background-color: #f5f3ff !important;
+}
+
+/* Breakpoint personalizado para extra small */
+@media (min-width: 475px) {
+  .xs\:inline { display: inline; }
+  .xs\:hidden { display: none; }
+  .xs\:block { display: block; }
+  .xs\:flex { display: flex; }
 }

@@ -81,7 +81,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
   };
   
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex items-center justify-between w-full px-2 sm:px-4">
       <div className="flex items-center min-w-0 flex-1">
         {userEmail ? (
           <Link 
@@ -89,9 +89,10 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al dashboard"
           >
-            <span className="text-base md:text-lg font-semibold text-primary truncate">
-              Transpo<span className="text-primary font-bold">registros</span>
-              <span className="text-primary font-bold">Plus</span>
+            <span className="text-sm sm:text-base md:text-lg font-semibold text-primary truncate">
+              <span className="hidden xs:inline">Transpo</span>
+              <span className="text-primary font-bold">registros</span>
+              <span className="text-primary font-bold hidden sm:inline">Plus</span>
             </span>
           </Link>
         ) : (
@@ -100,9 +101,10 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al inicio"
           >
-            <span className="text-base md:text-lg font-semibold text-primary truncate">
-              Transpo<span className="text-primary font-bold">registros</span>
-              <span className="text-primary font-bold">Plus</span>
+            <span className="text-sm sm:text-base md:text-lg font-semibold text-primary truncate">
+              <span className="hidden xs:inline">Transpo</span>
+              <span className="text-primary font-bold">registros</span>
+              <span className="text-primary font-bold hidden sm:inline">Plus</span>
             </span>
           </Link>
         )}
@@ -114,54 +116,56 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="flex items-center gap-2 px-2 h-9"
+                className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 h-8 sm:h-9 text-xs sm:text-sm"
               >
-                <Avatar className="h-6 w-6">
+                <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
                   <AvatarImage src={avatarUrl || undefined} alt="Foto de perfil" />
                   <AvatarFallback className="text-xs">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline-block max-w-[120px] truncate text-sm">
+                <span className="hidden sm:inline-block max-w-[80px] lg:max-w-[120px] truncate">
                   {userEmail}
                 </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end" 
-              className="w-56 z-50 bg-background border border-border shadow-lg"
+              className="w-48 sm:w-56 z-50 bg-background border border-border shadow-lg"
             >
-              <DropdownMenuLabel className="max-w-[200px] truncate text-sm">
+              <DropdownMenuLabel className="max-w-[180px] sm:max-w-[200px] truncate text-xs sm:text-sm">
                 {userEmail}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSettings} className="cursor-pointer text-sm">
-                <Settings className="mr-2 h-4 w-4" />
+              <DropdownMenuItem onClick={handleSettings} className="cursor-pointer text-xs sm:text-sm">
+                <Settings className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Configuración</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive text-sm">
-                <LogOut className="mr-2 h-4 w-4" />
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive text-xs sm:text-sm">
+                <LogOut className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-sm px-3 h-9" 
+              className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-9" 
               onClick={handleLogin}
             >
-              Iniciar sesión
+              <span className="hidden xs:inline">Iniciar sesión</span>
+              <span className="xs:hidden">Login</span>
             </Button>
             <Button 
               variant="default" 
               size="sm" 
-              className="text-sm px-3 h-9" 
+              className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-9" 
               onClick={handleRegister}
             >
-              Registrarse
+              <span className="hidden xs:inline">Registrarse</span>
+              <span className="xs:hidden">Sign up</span>
             </Button>
           </div>
         )}
