@@ -90,7 +90,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             aria-label="Ir al dashboard"
           >
             <span className="text-base md:text-lg font-semibold text-primary truncate">
-              Transpo<span className="text-secondary">registros</span>
+              Transpo<span className="text-primary font-bold">registros</span>
               <span className="text-primary font-bold">Plus</span>
             </span>
           </Link>
@@ -101,7 +101,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             aria-label="Ir al inicio"
           >
             <span className="text-base md:text-lg font-semibold text-primary truncate">
-              Transpo<span className="text-secondary">registros</span>
+              Transpo<span className="text-primary font-bold">registros</span>
               <span className="text-primary font-bold">Plus</span>
             </span>
           </Link>
