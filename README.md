@@ -169,7 +169,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 **TransporegistrosPlus Team**
 - Email: contact@transporegistrosplus.com
 - GitHub: [@omaryesidvargas](https://github.com/omaryesidvargas)
-- Website: https://omaryesidvargas.github.io/transporegistrosplus/
 
 
 
