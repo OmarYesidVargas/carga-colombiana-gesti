@@ -1,0 +1,430 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 248 250 252;
+    --foreground: 15 23 42;
+
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
+
+    --primary: 139 92 246;
+    --primary-foreground: 255 255 255;
+
+    --secondary: 241 245 249;
+    --secondary-foreground: 51 65 85;
+
+    --muted: 248 250 252;
+    --muted-foreground: 100 116 139;
+
+    --accent: 241 245 249;
+    --accent-foreground: 51 65 85;
+
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
+
+    --border: 226 232 240;
+    --input: 226 232 240;
+    --ring: 139 92 246;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 255 255 255;
+    --sidebar-foreground: 71 85 105;
+    --sidebar-primary: 139 92 246;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 241 245 249;
+    --sidebar-accent-foreground: 51 65 85;
+    --sidebar-border: 226 232 240;
+    --sidebar-ring: 139 92 246;
+  }
+
+  .dark {
+    --background: 15 23 42;
+    --foreground: 248 250 252;
+
+    --card: 30 41 59;
+    --card-foreground: 248 250 252;
+
+    --popover: 30 41 59;
+    --popover-foreground: 248 250 252;
+
+    --primary: 139 92 246;
+    --primary-foreground: 255 255 255;
+
+    --secondary: 51 65 85;
+    --secondary-foreground: 248 250 252;
+
+    --muted: 51 65 85;
+    --muted-foreground: 148 163 184;
+
+    --accent: 51 65 85;
+    --accent-foreground: 248 250 252;
+
+    --destructive: 220 38 38;
+    --destructive-foreground: 248 250 252;
+
+    --border: 51 65 85;
+    --input: 51 65 85;
+    --ring: 139 92 246;
+
+    --sidebar-background: 30 41 59;
+    --sidebar-foreground: 203 213 225;
+    --sidebar-primary: 139 92 246;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 51 65 85;
+    --sidebar-accent-foreground: 248 250 252;
+    --sidebar-border: 51 65 85;
+    --sidebar-ring: 139 92 246;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-slate-50 text-foreground;
+    background-color: #f8fafc !important;
+  }
+
+  /* Breakpoints mobile-first mejorados */
+  @screen xs {
+    .xs\:inline { display: inline; }
+    .xs\:hidden { display: none; }
+    .xs\:block { display: block; }
+    .xs\:flex { display: flex; }
+    .xs\:grid { display: grid; }
+    .xs\:col-span-2 { grid-column: span 2 / span 2; }
+    .xs\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .xs\:text-base { font-size: 1rem; line-height: 1.5rem; }
+    .xs\:flex-row { flex-direction: row; }
+    .xs\:justify-between { justify-content: space-between; }
+    .xs\:items-start { align-items: flex-start; }
+    .xs\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .xs\:max-w-100 { max-width: 100px; }
+    .xs\:max-w-120 { max-width: 120px; }
+    .xs\:max-w-150 { max-width: 150px; }
+  }
+
+  /* Estilo para el formato de placas vehiculares */
+  .vehicle-plate {
+    @apply font-mono uppercase tracking-wider;
+  }
+
+  /* Scrollbar personalizado para móviles */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #8b5cf6 transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #8b5cf6;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #7c3aed;
+  }
+
+  /* Ocultar scrollbar completamente */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Mejoras para touch devices - Mobile-first */
+  @media (hover: none) and (pointer: coarse) {
+    button, 
+    [role="button"],
+    .cursor-pointer {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    input, 
+    select, 
+    textarea {
+      min-height: 44px;
+    }
+    
+    /* Reducir tamaños mínimos en pantallas muy pequeñas */
+    @media (max-width: 380px) {
+      button, 
+      [role="button"],
+      .cursor-pointer {
+        min-height: 40px;
+        min-width: 40px;
+      }
+      
+      input, 
+      select, 
+      textarea {
+        min-height: 40px;
+      }
+    }
+  }
+}
+
+@layer components {
+  /* Hover effects específicos por tipo de elemento */
+  
+  /* Links y navegación - solo para elementos no-button */
+  a:not(button):hover,
+  .hover\:text-primary:hover {
+    color: #8b5cf6 !important;
+  }
+  
+  /* Elementos de tabla y cards */
+  tr:hover,
+  .hover\:bg-muted\/50:hover {
+    background-color: #f8fafc !important;
+  }
+  
+  /* Items de menu y navegación - solo para elementos específicos */
+  .menu-item:hover,
+  [role="menuitem"]:hover:not(button) {
+    background-color: #f5f3ff !important;
+  }
+  
+  /* Dropdown items - solo para elementos específicos */
+  .dropdown-item:hover:not(button) {
+    background-color: #f5f3ff !important;
+  }
+  
+  /* Sidebar específico - solo para elementos de navegación */
+  .sidebar-menu-button:hover:not(button),
+  [data-sidebar="menu-button"]:hover:not(button) {
+    background-color: #f5f3ff !important;
+  }
+  
+  /* Cards y contenedores - solo para elementos no-button */
+  .hover\:bg-card:hover:not(button) {
+    background-color: #ffffff !important;
+  }
+  
+  /* Elementos de fondo neutros */
+  .hover\:bg-muted:hover:not(button) {
+    background-color: #f8fafc !important;
+  }
+  
+  .hover\:bg-gray-50:hover:not(button) {
+    background-color: #f9fafb !important;
+  }
+  
+  .hover\:bg-gray-100:hover:not(button) {
+    background-color: #f3f4f6 !important;
+  }
+  
+  .hover\:bg-slate-50:hover:not(button) {
+    background-color: #f8fafc !important;
+  }
+  
+  .hover\:bg-slate-100:hover:not(button) {
+    background-color: #f1f5f9 !important;
+  }
+  
+  /* Focus states con violeta */
+  .focus\:ring-2:focus {
+    ring-color: #8b5cf6 !important;
+  }
+  
+  .focus\:border-primary:focus {
+    border-color: #8b5cf6 !important;
+  }
+
+  /* Estilos para truncamiento de texto */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  /* Responsive form improvements - Mobile-first */
+  .form-responsive {
+    @apply space-y-3;
+  }
+  
+  .form-responsive .form-grid {
+    @apply grid grid-cols-1 gap-3 xs:grid-cols-2 sm:gap-4;
+  }
+  
+  .form-responsive .form-item {
+    @apply space-y-2;
+  }
+  
+  .form-responsive .form-label {
+    @apply text-xs sm:text-sm font-medium;
+  }
+  
+  .form-responsive .form-input {
+    @apply h-8 sm:h-9 text-sm;
+  }
+  
+  .form-responsive .form-button {
+    @apply h-8 sm:h-9 text-sm;
+  }
+
+  /* Mobile-first dialog improvements */
+  .dialog-mobile {
+    @apply w-[95vw] max-w-2xl h-[90vh] max-h-[700px] mx-auto;
+  }
+  
+  .dialog-mobile-header {
+    @apply p-3 sm:p-4 pb-2;
+  }
+  
+  .dialog-mobile-content {
+    @apply px-3 sm:px-4 pb-3 sm:pb-4;
+  }
+
+  /* Responsive grid utilities */
+  .responsive-grid-1 {
+    @apply grid grid-cols-1 gap-3 sm:gap-4;
+  }
+  
+  .responsive-grid-2 {
+    @apply grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4;
+  }
+  
+  .responsive-grid-3 {
+    @apply grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+  }
+  
+  .responsive-grid-4 {
+    @apply grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4;
+  }
+
+  /* Responsive text utilities */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  /* Responsive spacing utilities */
+  .space-responsive {
+    @apply space-y-3 sm:space-y-4 md:space-y-6;
+  }
+  
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 md:gap-6;
+  }
+  
+  .p-responsive {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+  
+  .px-responsive {
+    @apply px-3 sm:px-4 md:px-6;
+  }
+  
+  .py-responsive {
+    @apply py-3 sm:py-4 md:py-6;
+  }
+}
+
+/* Sombras suaves */
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.05) !important;
+}
+
+.shadow {
+  box-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.1), 0 1px 2px -1px rgb(15 23 42 / 0.1) !important;
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgb(15 23 42 / 0.1), 0 2px 4px -2px rgb(15 23 42 / 0.1) !important;
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1) !important;
+}
+
+/* Estados activos con violeta */
+.active,
+[aria-selected="true"],
+[data-state="active"] {
+  background-color: #8b5cf6 !important;
+  color: #ffffff !important;
+}
+
+/* Ripple effects - solo para elementos no-button */
+.ripple:hover:not(button) {
+  background-color: #f5f3ff !important;
+}
+
+/* Breakpoint personalizado para extra small con más utilidades */
+@media (min-width: 475px) {
+  .xs\:inline { display: inline; }
+  .xs\:hidden { display: none; }
+  .xs\:block { display: block; }
+  .xs\:flex { display: flex; }
+  .xs\:grid { display: grid; }
+  .xs\:flex-row { flex-direction: row; }
+  .xs\:flex-col { flex-direction: column; }
+  .xs\:justify-between { justify-content: space-between; }
+  .xs\:justify-center { justify-content: center; }
+  .xs\:items-start { align-items: flex-start; }
+  .xs\:items-center { align-items: center; }
+  .xs\:col-span-2 { grid-column: span 2 / span 2; }
+  .xs\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .xs\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .xs\:text-xs { font-size: 0.75rem; line-height: 1rem; }
+  .xs\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .xs\:text-base { font-size: 1rem; line-height: 1.5rem; }
+  .xs\:max-w-80 { max-width: 80px; }
+  .xs\:max-w-100 { max-width: 100px; }
+  .xs\:max-w-120 { max-width: 120px; }
+  .xs\:max-w-150 { max-width: 150px; }
+  .xs\:max-w-200 { max-width: 200px; }
+}
