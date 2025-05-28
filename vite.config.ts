@@ -21,7 +21,7 @@
  */
 
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react"; // Cambiado de react-swc a react
 import path from "path";
 
 /**
@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => ({
   
   /**
    * Plugins de Vite para funcionalidades adicionales
-   * - react-swc: Plugin oficial de React con SWC para mejor performance
+   * - react: Plugin oficial de React para mejor compatibilidad con Vercel
    */
   plugins: [
     react(),
