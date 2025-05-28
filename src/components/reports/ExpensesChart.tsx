@@ -28,6 +28,9 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
     return acc;
   }, {} as Record<string, number>);
 
+  // Calcular el total para los porcentajes
+  const totalAmount = Object.values(expensesByCategory).reduce((a, b) => a + b, 0);
+
   // Preparar datos para el gráfico con colores consistentes
   const chartData = Object.entries(expensesByCategory).map(([key, value], index) => {
     const name = dataKeyMap ? (dataKeyMap[key] || key) : getCategoryLabel(key);
@@ -46,9 +49,6 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
   // Componente para el tooltip personalizado optimizado para móvil
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const totalAmount = data ? 
-        Object.values(expensesByCategory).reduce((a, b) => a + b, 0) :
-        expenses.reduce((a, b) => a + b.amount, 0);
       const percentage = totalAmount > 0 ? Math.round((payload[0].value / totalAmount) * 100) : 0;
       
       return (
@@ -68,17 +68,23 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
   const CustomLegend = ({ payload }: any) => {
     return (
       <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-2 sm:mt-4 px-2">
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-1 sm:gap-2 min-w-0">
-            <div 
-              className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">
-              {entry.value}
-            </span>
-          </div>
-        ))}
+        {payload.map((entry: any, index: number) => {
+          const categoryData = chartData.find(item => item.name === entry.value);
+          const percentage = totalAmount > 0 && categoryData ? 
+            Math.round((categoryData.value / totalAmount) * 100) : 0;
+          
+          return (
+            <div key={index} className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <div 
+                className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">
+                {entry.value} ({percentage}%)
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   };
