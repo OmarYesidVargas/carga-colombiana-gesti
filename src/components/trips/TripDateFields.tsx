@@ -18,6 +18,7 @@ import {
 
 interface TripDateFieldsProps {
   form: UseFormReturn<any>;
+  isSubmitting?: boolean;
 }
 
 /**
@@ -25,7 +26,7 @@ interface TripDateFieldsProps {
  * Permite seleccionar fechas desde 30 días atrás hasta hoy (incluido) para fecha de inicio
  * Y hasta 1 año en el futuro para fecha de fin
  */
-const TripDateFields = ({ form }: TripDateFieldsProps) => {
+const TripDateFields = ({ form, isSubmitting = false }: TripDateFieldsProps) => {
   const today = new Date();
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -75,6 +76,7 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
                       "w-full pl-3 text-left font-normal h-9",
                       !field.value && "text-muted-foreground"
                     )}
+                    disabled={isSubmitting}
                   >
                     {field.value ? (
                       format(field.value, "PPP", { locale: es })
@@ -125,6 +127,7 @@ const TripDateFields = ({ form }: TripDateFieldsProps) => {
                       "w-full pl-3 text-left font-normal h-9",
                       !field.value && "text-muted-foreground"
                     )}
+                    disabled={isSubmitting}
                   >
                     {field.value ? (
                       format(field.value, "PPP", { locale: es })
