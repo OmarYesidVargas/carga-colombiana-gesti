@@ -6,16 +6,11 @@ import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
 import { validateTollRecord } from '@/utils/validators';
 import { mapTollRecordFromDB, mapTollRecordToDB } from '@/utils/tollMappers';
+import { errorHandler } from '@/utils/errorHandler';
 
-/**
- * Hook optimizado para gestionar registros de peajes
- */
 export const useTollRecords = (user: User | null, setGlobalLoading: (loading: boolean) => void) => {
   const [tollRecords, setTollRecords] = useState<TollRecord[]>([]);
   
-  /**
-   * Carga todos los registros de peaje del usuario
-   */
   const loadTollRecords = async () => {
     if (!user) {
       setTollRecords([]);
@@ -24,7 +19,7 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
     
     try {
       setGlobalLoading(true);
-      console.log('🔄 [TollRecords] Cargando registros para usuario:', user.id);
+      console.log('🔄 [useTollRecords] Cargando registros para usuario:', user.id);
       
       const { data, error } = await supabase
         .from('toll_records')
@@ -33,8 +28,8 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('❌ [TollRecords] Error al cargar registros:', error);
-        toast.error('Error al cargar los registros de peajes');
+        console.error('❌ [useTollRecords] Error al cargar registros:', error);
+        errorHandler.handleDatabaseError(error, { component: 'useTollRecords', action: 'loadTollRecords' });
         return;
       }
       
@@ -43,24 +38,23 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
         return;
       }
       
-      // Mapear registros válidos
       const mappedRecords = data
         .filter(record => record && typeof record === 'object')
         .map(record => {
           try {
             return mapTollRecordFromDB(record);
           } catch (error) {
-            console.error('❌ [TollRecords] Error al mapear registro:', error, record);
+            console.error('❌ [useTollRecords] Error al mapear registro:', error, record);
             return null;
           }
         })
         .filter(Boolean) as TollRecord[];
       
-      console.log('✅ [TollRecords] Registros cargados:', mappedRecords.length);
+      console.log('✅ [useTollRecords] Registros cargados:', mappedRecords.length);
       setTollRecords(mappedRecords);
     } catch (error) {
-      console.error('❌ [TollRecords] Error inesperado:', error);
-      toast.error('Error inesperado al cargar los registros');
+      console.error('❌ [useTollRecords] Error inesperado:', error);
+      errorHandler.handleGenericError(error, { component: 'useTollRecords', action: 'loadTollRecords' });
     } finally {
       setGlobalLoading(false);
     }
@@ -70,17 +64,11 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
     loadTollRecords();
   }, [user]);
   
-  /**
-   * Obtiene un registro por ID
-   */
   const getTollRecordById = (id: string) => {
     if (!id || typeof id !== 'string') return undefined;
     return tollRecords.find(record => record.id === id);
   };
   
-  /**
-   * Agrega un nuevo registro de peaje
-   */
   const addTollRecord = async (record: Omit<TollRecord, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) {
       toast.error('Usuario no autenticado');
@@ -88,19 +76,16 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
     }
     
     try {
-      // Validar datos
       if (!validateTollRecord(record)) {
         toast.error('Datos del registro incompletos o inválidos');
         return;
       }
       
-      // Preparar datos para DB
       const newRecord = mapTollRecordToDB({
         ...record,
         userId: user.id
       });
       
-      // Validaciones específicas
       if (!newRecord.vehicle_id) {
         toast.error('El vehículo es requerido');
         return;
@@ -116,12 +101,11 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
         return;
       }
       
-      // Convertir fecha si es necesario
       if (newRecord.date instanceof Date) {
         newRecord.date = newRecord.date.toISOString();
       }
       
-      console.log('📝 [TollRecords] Creando nuevo registro:', newRecord);
+      console.log('📝 [useTollRecords] Creando nuevo registro:', newRecord);
       
       const { data, error } = await supabase
         .from('toll_records')
@@ -130,15 +114,8 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
         .single();
       
       if (error) {
-        console.error('❌ [TollRecords] Error de Supabase:', error);
-        
-        if (error.code === '23502') {
-          toast.error('Faltan datos obligatorios en el registro');
-        } else if (error.code === '23503') {
-          toast.error('Referencias inválidas en el registro');
-        } else {
-          toast.error('Error al guardar el registro de peaje');
-        }
+        console.error('❌ [useTollRecords] Error de Supabase:', error);
+        errorHandler.handleDatabaseError(error, { component: 'useTollRecords', action: 'addTollRecord' });
         return;
       }
       
@@ -147,21 +124,17 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
         return;
       }
       
-      // Agregar al estado local
       const mappedRecord = mapTollRecordFromDB(data);
       setTollRecords(prev => [mappedRecord, ...prev]);
       
-      console.log('✅ [TollRecords] Registro creado:', mappedRecord.id);
+      console.log('✅ [useTollRecords] Registro creado:', mappedRecord.id);
       toast.success('Registro de peaje agregado correctamente');
     } catch (error) {
-      console.error('❌ [TollRecords] Error inesperado:', error);
-      toast.error('Error inesperado al agregar el registro');
+      console.error('❌ [useTollRecords] Error inesperado:', error);
+      errorHandler.handleGenericError(error, { component: 'useTollRecords', action: 'addTollRecord' });
     }
   };
   
-  /**
-   * Actualiza un registro existente
-   */
   const updateTollRecord = async (id: string, record: Partial<TollRecord>) => {
     if (!user || !id) {
       toast.error('Parámetros inválidos para actualizar');
@@ -169,11 +142,10 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
     }
     
     try {
-      console.log('🔄 [TollRecords] Actualizando registro:', id, record);
+      console.log('🔄 [useTollRecords] Actualizando registro:', id, record);
       
       const updatedRecord = mapTollRecordToDB(record);
       
-      // Convertir fecha si es necesario
       if (updatedRecord.date instanceof Date) {
         updatedRecord.date = updatedRecord.date.toISOString();
       }
@@ -185,27 +157,23 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
         .eq('user_id', user.id);
       
       if (error) {
-        console.error('❌ [TollRecords] Error al actualizar:', error);
-        toast.error('Error al actualizar el registro');
+        console.error('❌ [useTollRecords] Error al actualizar:', error);
+        errorHandler.handleDatabaseError(error, { component: 'useTollRecords', action: 'updateTollRecord' });
         return;
       }
       
-      // Actualizar estado local
       setTollRecords(prev => 
         prev.map(r => r.id === id ? { ...r, ...record } : r)
       );
       
-      console.log('✅ [TollRecords] Registro actualizado:', id);
+      console.log('✅ [useTollRecords] Registro actualizado:', id);
       toast.success('Registro actualizado correctamente');
     } catch (error) {
-      console.error('❌ [TollRecords] Error inesperado al actualizar:', error);
-      toast.error('Error inesperado al actualizar');
+      console.error('❌ [useTollRecords] Error inesperado al actualizar:', error);
+      errorHandler.handleGenericError(error, { component: 'useTollRecords', action: 'updateTollRecord' });
     }
   };
   
-  /**
-   * Elimina un registro
-   */
   const deleteTollRecord = async (id: string) => {
     if (!user || !id) {
       toast.error('Parámetros inválidos para eliminar');
@@ -213,7 +181,7 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
     }
     
     try {
-      console.log('🗑️ [TollRecords] Eliminando registro:', id);
+      console.log('🗑️ [useTollRecords] Eliminando registro:', id);
       
       const { error } = await supabase
         .from('toll_records')
@@ -222,19 +190,18 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
         .eq('user_id', user.id);
       
       if (error) {
-        console.error('❌ [TollRecords] Error al eliminar:', error);
-        toast.error('Error al eliminar el registro');
+        console.error('❌ [useTollRecords] Error al eliminar:', error);
+        errorHandler.handleDatabaseError(error, { component: 'useTollRecords', action: 'deleteTollRecord' });
         return;
       }
       
-      // Actualizar estado local
       setTollRecords(prev => prev.filter(r => r.id !== id));
       
-      console.log('✅ [TollRecords] Registro eliminado:', id);
+      console.log('✅ [useTollRecords] Registro eliminado:', id);
       toast.success('Registro eliminado correctamente');
     } catch (error) {
-      console.error('❌ [TollRecords] Error inesperado al eliminar:', error);
-      toast.error('Error inesperado al eliminar');
+      console.error('❌ [useTollRecords] Error inesperado al eliminar:', error);
+      errorHandler.handleGenericError(error, { component: 'useTollRecords', action: 'deleteTollRecord' });
     }
   };
   

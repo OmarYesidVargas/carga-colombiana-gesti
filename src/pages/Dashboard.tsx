@@ -1,7 +1,8 @@
+
 import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useData } from '@/context/DataContext';
-import { Truck, Calendar, FileChartPie, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Truck, Calendar, FileChartPie, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import ExpensesChart from '@/components/reports/ExpensesChart';
@@ -9,10 +10,6 @@ import MonthlyExpenseChart from '@/components/reports/MonthlyExpenseChart';
 import ExpenseSummary from '@/components/reports/ExpenseSummary';
 import { formatCurrency } from '@/utils/chartColors';
 
-/**
- * Dashboard optimizado con métricas avanzadas, debugging y mejor UX
- * Incluye análisis de rendimiento y estadísticas detalladas
- */
 const Dashboard = () => {
   console.log('🎯 [Dashboard] Inicializando Dashboard');
   
@@ -20,8 +17,6 @@ const Dashboard = () => {
     vehicles, 
     trips, 
     expenses, 
-    getVehicleById, 
-    getTripById,
     isLoading 
   } = useData();
   
@@ -32,15 +27,12 @@ const Dashboard = () => {
     isLoading
   });
   
-  // Métricas optimizadas con memoización y debugging
   const metrics = useMemo(() => {
     const startTime = performance.now();
     console.log('📈 [Dashboard] Calculando métricas...');
     
-    // Cálculo de total de gastos
     const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
     
-    // Viajes activos optimizado
     const now = new Date();
     const activeTrips = trips.filter(trip => {
       const hasNoEndDate = !trip.endDate;
@@ -48,7 +40,6 @@ const Dashboard = () => {
       return hasNoEndDate || endDateFuture;
     });
     
-    // Gastos de los últimos 30 días optimizado
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -56,7 +47,6 @@ const Dashboard = () => {
       new Date(expense.date) >= thirtyDaysAgo
     );
     
-    // Análisis de vehículos con documentos próximos a vencer
     const vehiclesWithExpiringDocs = vehicles.filter(vehicle => {
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
@@ -69,7 +59,6 @@ const Dashboard = () => {
       return soatExpiring || technoExpiring;
     });
     
-    // Estadísticas avanzadas
     const avgExpensePerTrip = trips.length > 0 ? totalExpenses / trips.length : 0;
     const avgExpensePerVehicle = vehicles.length > 0 ? totalExpenses / vehicles.length : 0;
     
@@ -91,7 +80,6 @@ const Dashboard = () => {
     return result;
   }, [vehicles, trips, expenses]);
   
-  // Datos para gráficos optimizados
   const chartData = useMemo(() => {
     console.log('📊 [Dashboard] Preparando datos para gráficos...');
     
@@ -105,12 +93,10 @@ const Dashboard = () => {
     return { expensesByCategory };
   }, [expenses]);
   
-  // Debugging de renders
   useEffect(() => {
     console.log('🔄 [Dashboard] Dashboard renderizado con métricas actualizadas');
   }, [metrics]);
   
-  // Estado de carga optimizado
   if (isLoading) {
     console.log('⏳ [Dashboard] Mostrando estado de carga');
     return (

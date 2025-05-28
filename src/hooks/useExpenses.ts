@@ -4,6 +4,7 @@ import { Expense } from '@/types';
 import { User } from '@supabase/supabase-js';
 import { validateExpense } from '@/utils/validators';
 import { useAuditLogger } from './useAuditLogger';
+import { errorHandler } from '@/utils/errorHandler';
 import { 
   loadExpenses, 
   addExpense as addExpenseService, 
@@ -45,6 +46,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       } catch (error) {
         const errorMessage = 'Error al cargar los gastos';
         console.error('❌ [useExpenses] Error al cargar:', error);
+        errorHandler.handleGenericError(error, { component: 'useExpenses', action: 'fetchExpenses' });
         setError(errorMessage);
       } finally {
         setGlobalLoading(false);
@@ -76,11 +78,10 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     if (!user) {
       const errorMessage = 'Usuario no autenticado';
       console.error('❌ [useExpenses] addExpense:', errorMessage);
-      setError(errorMessage);
+      errorHandler.handleAuthError(new Error(errorMessage), { component: 'useExpenses', action: 'addExpense' });
       throw new Error(errorMessage);
     }
 
-    // Validar datos básicos
     const expenseToValidate = {
       ...expense,
       userId: user.id,
@@ -92,7 +93,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     if (!validateExpense(expenseToValidate)) {
       const errorMessage = 'Datos del gasto inválidos';
       console.error('❌ [useExpenses] Validación fallida:', expense);
-      setError(errorMessage);
+      errorHandler.handleValidationError(new Error(errorMessage), { component: 'useExpenses', action: 'addExpense' });
       throw new Error(errorMessage);
     }
 
@@ -118,9 +119,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
         return newExpense;
       }
     } catch (error: any) {
-      const errorMessage = error.message || 'Error al agregar el gasto';
       console.error('❌ [useExpenses] Error al agregar:', error);
-      setError(errorMessage);
+      errorHandler.handleGenericError(error, { component: 'useExpenses', action: 'addExpense' });
       throw error;
     } finally {
       setLoading(false);
@@ -134,7 +134,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     if (!user || !id) {
       const errorMessage = 'Parámetros inválidos para actualizar';
       console.error('❌ [useExpenses] updateExpense:', errorMessage);
-      setError(errorMessage);
+      errorHandler.handleValidationError(new Error(errorMessage), { component: 'useExpenses', action: 'updateExpense' });
       return false;
     }
 
@@ -142,7 +142,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     if (!existingExpense) {
       const errorMessage = 'Gasto no encontrado';
       console.error('❌ [useExpenses] Gasto no encontrado:', id);
-      setError(errorMessage);
+      errorHandler.handleValidationError(new Error(errorMessage), { component: 'useExpenses', action: 'updateExpense' });
       return false;
     }
 
@@ -171,9 +171,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       
       return success;
     } catch (error: any) {
-      const errorMessage = error.message || 'Error al actualizar el gasto';
       console.error('❌ [useExpenses] Error al actualizar:', error);
-      setError(errorMessage);
+      errorHandler.handleGenericError(error, { component: 'useExpenses', action: 'updateExpense' });
       return false;
     } finally {
       setLoading(false);
@@ -184,7 +183,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     if (!user || !id) {
       const errorMessage = 'Parámetros inválidos para eliminar';
       console.error('❌ [useExpenses] deleteExpense:', errorMessage);
-      setError(errorMessage);
+      errorHandler.handleValidationError(new Error(errorMessage), { component: 'useExpenses', action: 'deleteExpense' });
       return false;
     }
 
@@ -192,7 +191,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     if (!existingExpense) {
       const errorMessage = 'Gasto no encontrado';
       console.error('❌ [useExpenses] Gasto no encontrado:', id);
-      setError(errorMessage);
+      errorHandler.handleValidationError(new Error(errorMessage), { component: 'useExpenses', action: 'deleteExpense' });
       return false;
     }
 
@@ -221,9 +220,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       
       return success;
     } catch (error: any) {
-      const errorMessage = error.message || 'Error al eliminar el gasto';
       console.error('❌ [useExpenses] Error al eliminar:', error);
-      setError(errorMessage);
+      errorHandler.handleGenericError(error, { component: 'useExpenses', action: 'deleteExpense' });
       return false;
     } finally {
       setLoading(false);
@@ -252,7 +250,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     } catch (error) {
       const errorMessage = 'Error al recargar los gastos';
       console.error('❌ [useExpenses] Error al recargar:', error);
-      setError(errorMessage);
+      errorHandler.handleGenericError(error, { component: 'useExpenses', action: 'reloadExpenses' });
     } finally {
       setLoading(false);
     }

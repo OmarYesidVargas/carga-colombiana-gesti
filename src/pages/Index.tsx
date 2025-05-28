@@ -21,7 +21,6 @@ const Index = () => {
   const { isAuthenticated } = useAuth();
 
   React.useEffect(() => {
-    // Si el usuario ya está autenticado, redirigir al dashboard
     if (isAuthenticated) {
       navigate('/dashboard');
     }
