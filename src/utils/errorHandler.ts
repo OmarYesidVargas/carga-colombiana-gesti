@@ -1,4 +1,3 @@
-
 /**
  * Manejo centralizado de errores con logging seguro
  */
@@ -10,6 +9,7 @@ export interface ErrorContext {
   action?: string;
   userId?: string;
   additionalData?: any;
+  type?: string;
 }
 
 class ErrorHandler {
