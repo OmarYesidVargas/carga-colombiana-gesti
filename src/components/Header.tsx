@@ -89,10 +89,20 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al dashboard"
           >
-            <span className="text-sm sm:text-base md:text-lg font-semibold text-primary truncate">
-              <span className="hidden xs:inline">Transpo</span>
-              <span className="text-primary font-bold">registros</span>
-              <span className="text-primary font-bold hidden sm:inline">Plus</span>
+            <span className="text-xs xs:text-sm sm:text-base md:text-lg font-semibold text-primary truncate">
+              {/* Versión extra pequeña - solo TR */}
+              <span className="inline xs:hidden">TR</span>
+              {/* Versión pequeña - Transpo + registros */}
+              <span className="hidden xs:inline sm:hidden">
+                <span className="text-primary font-bold">Transpo</span>
+                <span className="text-primary font-bold">registros</span>
+              </span>
+              {/* Versión mediana y grande - completo */}
+              <span className="hidden sm:inline">
+                <span>Transpo</span>
+                <span className="text-primary font-bold">registros</span>
+                <span className="text-primary font-bold">Plus</span>
+              </span>
             </span>
           </Link>
         ) : (
@@ -101,30 +111,40 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al inicio"
           >
-            <span className="text-sm sm:text-base md:text-lg font-semibold text-primary truncate">
-              <span className="hidden xs:inline">Transpo</span>
-              <span className="text-primary font-bold">registros</span>
-              <span className="text-primary font-bold hidden sm:inline">Plus</span>
+            <span className="text-xs xs:text-sm sm:text-base md:text-lg font-semibold text-primary truncate">
+              {/* Versión extra pequeña - solo TR */}
+              <span className="inline xs:hidden">TR</span>
+              {/* Versión pequeña - Transpo + registros */}
+              <span className="hidden xs:inline sm:hidden">
+                <span className="text-primary font-bold">Transpo</span>
+                <span className="text-primary font-bold">registros</span>
+              </span>
+              {/* Versión mediana y grande - completo */}
+              <span className="hidden sm:inline">
+                <span>Transpo</span>
+                <span className="text-primary font-bold">registros</span>
+                <span className="text-primary font-bold">Plus</span>
+              </span>
             </span>
           </Link>
         )}
       </div>
       
-      <div className="flex items-center flex-shrink-0 ml-2">
+      <div className="flex items-center flex-shrink-0 ml-1 sm:ml-2">
         {userEmail ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 h-8 sm:h-9 text-xs sm:text-sm"
+                className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 h-7 sm:h-8 md:h-9 text-xs sm:text-sm"
               >
-                <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
+                <Avatar className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6">
                   <AvatarImage src={avatarUrl || undefined} alt="Foto de perfil" />
                   <AvatarFallback className="text-xs">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline-block max-w-[80px] lg:max-w-[120px] truncate">
+                <span className="hidden sm:inline-block max-w-[60px] sm:max-w-[80px] lg:max-w-[120px] truncate">
                   {userEmail}
                 </span>
               </Button>
@@ -152,7 +172,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-9" 
+              className="text-xs sm:text-sm px-1 sm:px-2 md:px-3 h-6 sm:h-7 md:h-9" 
               onClick={handleLogin}
             >
               <span className="hidden xs:inline">Iniciar sesión</span>
@@ -161,7 +181,7 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             <Button 
               variant="default" 
               size="sm" 
-              className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-9" 
+              className="text-xs sm:text-sm px-1 sm:px-2 md:px-3 h-6 sm:h-7 md:h-9" 
               onClick={handleRegister}
             >
               <span className="hidden xs:inline">Registrarse</span>
