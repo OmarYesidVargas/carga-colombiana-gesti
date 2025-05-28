@@ -1,29 +1,28 @@
-
 /**
  * Configuración de Vite para TransporegistrosPlus
  * 
  * Este archivo configura el bundler Vite para desarrollo y producción:
- * - Configuración específica para deployment en GitHub Pages
+ * - Configuración específica para deployment en Vercel
  * - Optimizaciones de build para producción
  * - Aliases de rutas para imports limpios
  * - Plugins para desarrollo y calidad de código
  * - Configuración del servidor de desarrollo
  * 
  * Características especiales:
- * - Base path dinámico según entorno (GitHub Pages vs local)
  * - Code splitting optimizado para mejor performance
- * - Sourcemaps deshabilitados para producción
+ * - Sourcemaps configurables según ambiente
  * - Servidor con IPv6 y puerto personalizado
  * - Integración con herramientas de desarrollo
+ * - Optimización de caching para assets
  * 
  * @author TransporegistrosPlus Team
- * @version 1.0.0
+ * @version 2.0.0
+ * @lastModified 2025-05-28
  */
 
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 
 /**
  * Configuración principal de Vite
@@ -36,34 +35,30 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   /**
    * Base path para la aplicación
-   * - Producción: '/transporegistrosplus/' para GitHub Pages
-   * - Desarrollo: '/' para servidor local
-   * 
-   * GitHub Pages requiere el nombre del repositorio como base path
+   * Configurado para Vercel deployment
    */
-  base: mode === 'production' ? '/transporegistrosplus/' : '/',
+  base: '/',
   
   /**
    * Configuración del servidor de desarrollo
-   * - host "::" permite conexiones desde cualquier IP (útil para testing en red)
+   * - host true permite conexiones desde cualquier IP (útil para testing en red)
    * - port 8080 para consistencia con otros proyectos
+   * - Configuración de CORS para desarrollo
    */
   server: {
-    host: "::",
+    host: true,
     port: 8080,
+    cors: true,
+    strictPort: true,
   },
   
   /**
    * Plugins de Vite para funcionalidades adicionales
-   * - react(): Plugin oficial de React con SWC para mejor performance
-   * - componentTagger(): Solo en desarrollo, para debugging de componentes
+   * - react-swc: Plugin oficial de React con SWC para mejor performance
    */
   plugins: [
     react(),
-    // Component tagger solo en desarrollo para evitar overhead en producción
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean), // Filtra plugins undefined/false
+  ],
   
   /**
    * Configuración de resolución de módulos
@@ -80,33 +75,111 @@ export default defineConfig(({ mode }) => ({
   
   /**
    * Configuración del build para producción
-   * Optimizada especialmente para GitHub Pages
+   * Optimizada especialmente para Vercel
    */
   build: {
     /** Directorio de salida del build */
     outDir: 'dist',
+    
     /** Directorio para assets estáticos */
     assetsDir: 'assets',
+    
     /** 
-     * Sourcemaps deshabilitados para reducir tamaño del bundle
-     * Cambiar a true si se necesita debugging en producción
+     * Sourcemaps habilitados solo en Vercel para debugging
      */
-    sourcemap: false,
+    sourcemap: process.env.VERCEL === '1',
+    
+    /** Optimizaciones de minificación */
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      },
+    },
     
     /**
      * Configuración de Rollup para optimizaciones avanzadas
-     * Code splitting manual para mejor cache y performance
+     * Code splitting optimizado para mejor caching y performance
      */
     rollupOptions: {
       output: {
         /**
-         * Manual chunks para separar vendor code del código de la app
-         * Mejora el caching del navegador ya que vendor code cambia menos
+         * Manual chunks para separar código por categorías
+         * Mejora el caching del navegador y la carga inicial
          */
         manualChunks: {
-          vendor: ['react', 'react-dom'],
+          // Core libraries
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          
+          // UI Components
+          ui: [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-label',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip'
+          ],
+          
+          // Data management
+          data: ['@supabase/supabase-js', '@tanstack/react-query', 'zod'],
+          
+          // Utilities
+          utils: ['date-fns', 'xlsx', 'recharts'],
+          
+          // Styling
+          styles: ['class-variance-authority', 'clsx', 'tailwind-merge']
         },
+        
+        /**
+         * Configuración de assets
+         * - Naming consistente para mejor caching
+         * - Tamaño máximo para inlining
+         */
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        entryFileNames: 'entries/[name]-[hash].js',
       },
+    },
+    
+    /** 
+     * Configuración de reportes de tamaño
+     * Útil para monitorear el tamaño del bundle
+     */
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 1000,
+  },
+  
+  /**
+   * Configuración de optimizaciones
+   * Mejora el tiempo de build y la performance
+   */
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      'date-fns'
+    ],
+    exclude: ['@testing-library/jest-dom']
+  },
+
+  /**
+   * Configuración para pruebas
+   * Define globals y configuración de testing
+   */
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.ts'],
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+      exclude: ['node_modules/', 'src/setupTests.ts'],
     },
   },
 }));
