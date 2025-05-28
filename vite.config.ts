@@ -15,13 +15,13 @@
  * - Integración con herramientas de desarrollo
  * - Optimización de caching para assets
  * 
- * @author TransporegistrosPlus Team
+ * @author OmarYesidVargas
  * @version 2.0.0
- * @lastModified 2025-05-28
+ * @lastModified 2025-05-28 16:58:13
  */
 
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react"; // Cambiado de react-swc a react
+import react from "@vitejs/plugin-react";
 import path from "path";
 
 /**
@@ -85,9 +85,9 @@ export default defineConfig(({ mode }) => ({
     assetsDir: 'assets',
     
     /** 
-     * Sourcemaps habilitados solo en Vercel para debugging
+     * Sourcemaps habilitados solo en desarrollo o en Vercel
      */
-    sourcemap: process.env.VERCEL === '1',
+    sourcemap: mode === 'development' || process.env.VERCEL === '1',
     
     /** Optimizaciones de minificación */
     minify: 'terser',
@@ -103,6 +103,7 @@ export default defineConfig(({ mode }) => ({
      * Code splitting optimizado para mejor caching y performance
      */
     rollupOptions: {
+      external: ['next-themes'],
       output: {
         /**
          * Manual chunks para separar código por categorías
@@ -126,13 +127,27 @@ export default defineConfig(({ mode }) => ({
           ],
           
           // Data management
-          data: ['@supabase/supabase-js', '@tanstack/react-query', 'zod'],
+          data: [
+            '@supabase/supabase-js', 
+            '@tanstack/react-query', 
+            'zod',
+            '@hookform/resolvers',
+            'react-hook-form'
+          ],
           
           // Utilities
-          utils: ['date-fns', 'xlsx', 'recharts'],
+          utils: ['date-fns', 'xlsx', 'recharts', 'sonner'],
           
           // Styling
-          styles: ['class-variance-authority', 'clsx', 'tailwind-merge']
+          styles: [
+            'class-variance-authority', 
+            'clsx', 
+            'tailwind-merge',
+            'tailwindcss-animate'
+          ],
+
+          // Theme management
+          theme: ['next-themes']
         },
         
         /**
@@ -164,7 +179,11 @@ export default defineConfig(({ mode }) => ({
       'react-dom',
       'react-router-dom',
       '@supabase/supabase-js',
-      'date-fns'
+      'date-fns',
+      'next-themes',
+      'sonner',
+      '@hookform/resolvers/zod',
+      'react-hook-form'
     ],
     exclude: ['@testing-library/jest-dom']
   },
@@ -182,4 +201,12 @@ export default defineConfig(({ mode }) => ({
       exclude: ['node_modules/', 'src/setupTests.ts'],
     },
   },
+
+  /**
+   * Configuración de tipos de TypeScript
+   * Asegura que TypeScript reconozca correctamente los módulos
+   */
+  define: {
+    'process.env': {},
+  }
 }));
