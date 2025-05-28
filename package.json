@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "vercel-build": "vite build",
     "preview": "vite preview",
+    "vercel-build": "npm run build"
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "test": "vitest run",
