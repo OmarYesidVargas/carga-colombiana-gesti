@@ -37,8 +37,7 @@ interface ExpenseReportFiltersProps {
 }
 
 /**
- * Componente de filtros responsivo para reportes de gastos
- * Se adapta automáticamente a dispositivos móviles y desktop
+ * Componente de filtros completamente responsivo con diseño mobile-first
  */
 const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
   vehicles,
@@ -54,26 +53,26 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
 
   return (
     <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg sm:text-xl">Filtros</CardTitle>
+      <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
+        <CardTitle className="text-base sm:text-lg md:text-xl">Filtros</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Grid responsivo de filtros - 1 columna en móvil, 2 en tablet, 3 en desktop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
+        {/* Grid adaptativo mejorado - Mobile-first */}
+        <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {/* Filtro de vehículos */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium block">
+          <div className="space-y-2 xs:col-span-2 lg:col-span-1">
+            <label className="text-xs sm:text-sm font-medium block">
               Vehículo
             </label>
             <Select value={vehicleFilter} onValueChange={setVehicleFilter}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-8 sm:h-9 text-sm">
                 <SelectValue placeholder="Seleccionar vehículo" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los vehículos</SelectItem>
                 {vehicles.map((vehicle) => (
                   <SelectItem key={vehicle.id} value={vehicle.id}>
-                    <span className="truncate">
+                    <span className="truncate max-w-[200px]">
                       {vehicle.plate} - {vehicle.brand} {vehicle.model}
                     </span>
                   </SelectItem>
@@ -84,11 +83,11 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
           
           {/* Filtro de categorías */}
           <div className="space-y-2">
-            <label className="text-sm font-medium block">
+            <label className="text-xs sm:text-sm font-medium block">
               Categoría
             </label>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-8 sm:h-9 text-sm">
                 <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
               <SelectContent>
@@ -102,8 +101,8 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
           </div>
           
           {/* Filtro de rango de fechas */}
-          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-            <label className="text-sm font-medium block">
+          <div className="space-y-2">
+            <label className="text-xs sm:text-sm font-medium block">
               Rango de fechas
             </label>
             <Popover>
@@ -111,11 +110,11 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
                 <Button
                   variant={"outline"}
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-full justify-start text-left font-normal h-8 sm:h-9 text-sm",
                     !dateRange && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="truncate">
                     {dateRange?.from ? (
                       dateRange.to ? (
@@ -127,7 +126,7 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
                         format(dateRange.from, "dd/MM/yyyy", { locale: es })
                       )
                     ) : (
-                      <span>Seleccionar fechas</span>
+                      <span className="text-xs sm:text-sm">Seleccionar fechas</span>
                     )}
                   </span>
                 </Button>
@@ -148,43 +147,45 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
           </div>
         </div>
         
-        {/* Chips con los filtros activos - Se apilan en móvil */}
-        <div className="flex flex-wrap gap-2">
+        {/* Chips con filtros activos - Diseño mobile-first mejorado */}
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {vehicleFilter !== 'all' && (
             <Badge 
               variant="secondary" 
-              className="cursor-pointer text-xs" 
+              className="cursor-pointer text-xs px-2 py-1 h-auto" 
               onClick={() => setVehicleFilter('all')}
             >
-              <span className="truncate max-w-[100px] sm:max-w-[150px]">
+              <span className="truncate max-w-[80px] xs:max-w-[100px] sm:max-w-[150px]">
                 {vehicles.find(v => v.id === vehicleFilter)?.plate || vehicleFilter}
               </span>
-              <span className="ml-1">×</span>
+              <span className="ml-1 text-xs">×</span>
             </Badge>
           )}
           
           {categoryFilter !== 'all' && (
             <Badge 
               variant="secondary" 
-              className="cursor-pointer text-xs" 
+              className="cursor-pointer text-xs px-2 py-1 h-auto" 
               onClick={() => setCategoryFilter('all')}
             >
-              {expenseCategories.find(c => c.value === categoryFilter)?.label || categoryFilter}
-              <span className="ml-1">×</span>
+              <span className="truncate max-w-[100px]">
+                {expenseCategories.find(c => c.value === categoryFilter)?.label || categoryFilter}
+              </span>
+              <span className="ml-1 text-xs">×</span>
             </Badge>
           )}
           
           {dateRange && (
             <Badge 
               variant="secondary" 
-              className="cursor-pointer text-xs" 
+              className="cursor-pointer text-xs px-2 py-1 h-auto" 
               onClick={() => setDateRange(undefined)}
             >
-              <span className="truncate max-w-[120px]">
+              <span className="truncate max-w-[80px] xs:max-w-[120px]">
                 {dateRange.from && format(dateRange.from, "dd/MM/yy", { locale: es })}
                 {dateRange.to && ` - ${format(dateRange.to, "dd/MM/yy", { locale: es })}`}
               </span>
-              <span className="ml-1">×</span>
+              <span className="ml-1 text-xs">×</span>
             </Badge>
           )}
           
@@ -194,9 +195,9 @@ const ExpenseReportFilters: React.FC<ExpenseReportFiltersProps> = ({
               variant="ghost" 
               size="sm" 
               onClick={resetFilters}
-              className="text-xs h-6 px-2"
+              className="text-xs h-6 px-2 ml-1"
             >
-              Limpiar filtros
+              Limpiar todo
             </Button>
           )}
         </div>

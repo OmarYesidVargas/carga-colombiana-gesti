@@ -43,7 +43,7 @@ interface TollFormProps {
 }
 
 /**
- * Componente de formulario responsive para crear y editar peajes
+ * Componente de formulario completamente responsive con diseño mobile-first
  */
 const TollForm = ({ 
   initialData, 
@@ -73,7 +73,7 @@ const TollForm = ({
   };
 
   return (
-    <div className="flex flex-col h-full max-h-[80vh]">
+    <div className="flex flex-col h-full max-h-[85vh]">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
           <ScrollArea className="flex-1 pr-2 sm:pr-4">
@@ -103,7 +103,8 @@ const TollForm = ({
                   )}
                 />
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Grid responsivo mejorado para categoría y precio */}
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="category"
@@ -156,7 +157,8 @@ const TollForm = ({
                   Ubicación
                 </h3>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Grid responsivo mejorado para ubicación y ruta */}
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="location"
@@ -244,14 +246,14 @@ const TollForm = ({
               variant="outline" 
               onClick={onCancel}
               disabled={isSubmitting}
-              className="w-full sm:w-auto h-8 sm:h-9 text-sm"
+              className="w-full sm:w-auto h-8 sm:h-9 text-sm order-2 sm:order-1"
             >
               Cancelar
             </Button>
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full sm:w-auto h-8 sm:h-9 text-sm"
+              className="w-full sm:w-auto h-8 sm:h-9 text-sm order-1 sm:order-2"
             >
               {isSubmitting ? 'Guardando...' : (initialData?.id ? 'Actualizar' : 'Registrar')} Peaje
             </Button>

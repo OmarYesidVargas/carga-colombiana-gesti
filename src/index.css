@@ -95,12 +95,23 @@
     background-color: #f8fafc !important;
   }
 
-  /* Responsive breakpoints adicionales */
+  /* Breakpoints mobile-first mejorados */
   @screen xs {
     .xs\:inline { display: inline; }
     .xs\:hidden { display: none; }
     .xs\:block { display: block; }
     .xs\:flex { display: flex; }
+    .xs\:grid { display: grid; }
+    .xs\:col-span-2 { grid-column: span 2 / span 2; }
+    .xs\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .xs\:text-base { font-size: 1rem; line-height: 1.5rem; }
+    .xs\:flex-row { flex-direction: row; }
+    .xs\:justify-between { justify-content: space-between; }
+    .xs\:items-start { align-items: flex-start; }
+    .xs\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .xs\:max-w-100 { max-width: 100px; }
+    .xs\:max-w-120 { max-width: 120px; }
+    .xs\:max-w-150 { max-width: 150px; }
   }
 
   /* Estilo para el formato de placas vehiculares */
@@ -116,6 +127,7 @@
 
   .scrollbar-thin::-webkit-scrollbar {
     height: 6px;
+    width: 6px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -141,7 +153,7 @@
     display: none;
   }
 
-  /* Mejoras para touch devices */
+  /* Mejoras para touch devices - Mobile-first */
   @media (hover: none) and (pointer: coarse) {
     button, 
     [role="button"],
@@ -154,6 +166,22 @@
     select, 
     textarea {
       min-height: 44px;
+    }
+    
+    /* Reducir tamaños mínimos en pantallas muy pequeñas */
+    @media (max-width: 380px) {
+      button, 
+      [role="button"],
+      .cursor-pointer {
+        min-height: 40px;
+        min-width: 40px;
+      }
+      
+      input, 
+      select, 
+      textarea {
+        min-height: 40px;
+      }
     }
   }
 }
@@ -247,34 +275,34 @@
     -webkit-line-clamp: 3;
   }
 
-  /* Responsive form improvements */
+  /* Responsive form improvements - Mobile-first */
   .form-responsive {
     @apply space-y-3;
   }
   
   .form-responsive .form-grid {
-    @apply grid grid-cols-1 gap-3 md:grid-cols-2;
+    @apply grid grid-cols-1 gap-3 xs:grid-cols-2 sm:gap-4;
   }
   
   .form-responsive .form-item {
-    @apply space-y-1;
+    @apply space-y-2;
   }
   
   .form-responsive .form-label {
-    @apply text-xs font-medium;
+    @apply text-xs sm:text-sm font-medium;
   }
   
   .form-responsive .form-input {
-    @apply h-8 text-sm;
+    @apply h-8 sm:h-9 text-sm;
   }
   
   .form-responsive .form-button {
-    @apply h-8 text-sm;
+    @apply h-8 sm:h-9 text-sm;
   }
 
   /* Mobile-first dialog improvements */
   .dialog-mobile {
-    @apply w-[98vw] max-w-2xl h-[95vh] max-h-[700px] mx-auto;
+    @apply w-[95vw] max-w-2xl h-[90vh] max-h-[700px] mx-auto;
   }
   
   .dialog-mobile-header {
@@ -283,6 +311,65 @@
   
   .dialog-mobile-content {
     @apply px-3 sm:px-4 pb-3 sm:pb-4;
+  }
+
+  /* Responsive grid utilities */
+  .responsive-grid-1 {
+    @apply grid grid-cols-1 gap-3 sm:gap-4;
+  }
+  
+  .responsive-grid-2 {
+    @apply grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4;
+  }
+  
+  .responsive-grid-3 {
+    @apply grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+  }
+  
+  .responsive-grid-4 {
+    @apply grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4;
+  }
+
+  /* Responsive text utilities */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  /* Responsive spacing utilities */
+  .space-responsive {
+    @apply space-y-3 sm:space-y-4 md:space-y-6;
+  }
+  
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 md:gap-6;
+  }
+  
+  .p-responsive {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+  
+  .px-responsive {
+    @apply px-3 sm:px-4 md:px-6;
+  }
+  
+  .py-responsive {
+    @apply py-3 sm:py-4 md:py-6;
   }
 }
 
@@ -316,10 +403,28 @@
   background-color: #f5f3ff !important;
 }
 
-/* Breakpoint personalizado para extra small */
+/* Breakpoint personalizado para extra small con más utilidades */
 @media (min-width: 475px) {
   .xs\:inline { display: inline; }
   .xs\:hidden { display: none; }
   .xs\:block { display: block; }
   .xs\:flex { display: flex; }
+  .xs\:grid { display: grid; }
+  .xs\:flex-row { flex-direction: row; }
+  .xs\:flex-col { flex-direction: column; }
+  .xs\:justify-between { justify-content: space-between; }
+  .xs\:justify-center { justify-content: center; }
+  .xs\:items-start { align-items: flex-start; }
+  .xs\:items-center { align-items: center; }
+  .xs\:col-span-2 { grid-column: span 2 / span 2; }
+  .xs\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .xs\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .xs\:text-xs { font-size: 0.75rem; line-height: 1rem; }
+  .xs\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .xs\:text-base { font-size: 1rem; line-height: 1.5rem; }
+  .xs\:max-w-80 { max-width: 80px; }
+  .xs\:max-w-100 { max-width: 100px; }
+  .xs\:max-w-120 { max-width: 120px; }
+  .xs\:max-w-150 { max-width: 150px; }
+  .xs\:max-w-200 { max-width: 200px; }
 }
