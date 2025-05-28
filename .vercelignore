@@ -1,6 +1,11 @@
 .git
-node_modules
+.gitignore
 .env.local
-coverage
-.github
+.env.*.local
+node_modules
+dist
 *.log
+README.md
+.vscode
+.idea
+coverage
