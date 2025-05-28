@@ -28,7 +28,7 @@ Sistema integral de gestión de transportes. Una aplicación web moderna y respo
 ## 🚀 Despliegue
 
 ### Producción (GitHub Pages)
-La aplicación está desplegada en: https://omaryesidvargas.github.io/transporegistrosplus/
+La aplicación está desplegada en: https://transporegistrosplus.vercel.app/
 
 ### Variables de Entorno Requeridas
 
