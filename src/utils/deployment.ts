@@ -1,10 +1,10 @@
 
 /**
  * Utilidades para despliegue y configuración de producción de TransporegistrosPlus
- * Versión 2.0.0 - Optimizada para Vercel y otros providers
+ * Versión 2.1.0 - Optimizada para Vercel
  * 
  * @author TransporegistrosPlus Team
- * @version 2.0.0
+ * @version 2.1.0
  */
 
 import { APP_CONFIG } from '@/lib/constants'
@@ -20,10 +20,15 @@ export const isProduction = (): boolean => {
  * Verifica si estamos ejecutándose en Vercel
  */
 export const isVercel = (): boolean => {
-  return typeof window !== 'undefined' && (
+  if (typeof window === 'undefined') {
+    return import.meta.env.VITE_VERCEL === '1' || import.meta.env.VERCEL === '1'
+  }
+  
+  return (
     window.location.hostname.includes('vercel.app') ||
     window.location.hostname.includes('lovableproject.com') ||
-    import.meta.env.VITE_VERCEL === '1'
+    import.meta.env.VITE_VERCEL === '1' ||
+    import.meta.env.VERCEL === '1'
   )
 }
 
@@ -31,7 +36,10 @@ export const isVercel = (): boolean => {
  * Verifica si estamos ejecutándose en GitHub Pages
  */
 export const isGitHubPages = (): boolean => {
-  return typeof window !== 'undefined' && window.location.hostname.includes('github.io')
+  if (typeof window === 'undefined') {
+    return false
+  }
+  return window.location.hostname.includes('github.io')
 }
 
 /**
@@ -42,33 +50,40 @@ export const getBaseUrl = (): string => {
     return APP_CONFIG.urls.current
   }
   
+  // Para Vercel, siempre usar el origin actual
   if (isVercel()) {
     return window.location.origin
   }
   
+  // Para GitHub Pages, usar la URL específica
   if (isGitHubPages()) {
     return 'https://omaryesidvargas.github.io/transporegistrosplus'
   }
   
-  return APP_CONFIG.urls.current
+  // Para desarrollo local
+  return window.location.origin
 }
 
 /**
  * Obtiene el basename para React Router según el entorno
  */
 export const getRouterBasename = (): string => {
+  // En desarrollo siempre usar raíz
   if (import.meta.env.DEV) {
     return ""
   }
   
+  // En Vercel siempre usar raíz
   if (isVercel()) {
     return ""
   }
   
+  // Solo en GitHub Pages usar subdirectorio
   if (isGitHubPages()) {
     return "/transporegistrosplus"
   }
   
+  // Por defecto usar raíz
   return ""
 }
 
@@ -94,6 +109,7 @@ export const registerServiceWorker = async (): Promise<void> => {
   try {
     let swUrl = '/sw.js'
     
+    // Solo para GitHub Pages usar subdirectorio
     if (isGitHubPages()) {
       swUrl = '/transporegistrosplus/sw.js'
     }
@@ -166,5 +182,6 @@ export const initializeApp = (): void => {
     console.log('🔗 Router Basename:', getRouterBasename())
     console.log('🔗 Vercel:', isVercel())
     console.log('📱 GitHub Pages:', isGitHubPages())
+    console.log('🌐 Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'SSR')
   }
 }
