@@ -1,7 +1,7 @@
 
 # TransporegistrosPlus 🚛
 
-Sistema integral de gestión de transportes para Colombia. Una aplicación web moderna y responsiva para el control de vehículos, viajes, gastos y peajes.
+Sistema integral de gestión de transportes. Una aplicación web moderna y responsiva para el control de vehículos, viajes, gastos y peajes.
 
 ## 🌟 Características
 
