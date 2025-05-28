@@ -1,266 +1,263 @@
+/**
+ * TollForm Component
+ * 
+ * Formulario para crear y editar peajes
+ * Incluye validación y manejo de estados
+ * 
+ * @author OmarYesidVargas
+ * @version 2.0.0
+ * @lastModified 2025-05-28 17:33:58
+ */
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Toll } from '@/types';
-import { DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Esquema de validación optimizado
-const formSchema = z.object({
-  name: z.string().min(2, { message: 'El nombre del peaje debe tener al menos 2 caracteres' }),
-  location: z.string().min(2, { message: 'La ubicación debe tener al menos 2 caracteres' }),
-  category: z.string().min(1, { message: 'Debe ingresar la categoría del peaje' }),
-  price: z.string()
-    .refine(
-      (val) => !isNaN(Number(val)) && Number(val) >= 0,
-      { message: 'El precio debe ser un número válido mayor o igual a 0' }
-    ),
-  route: z.string().min(2, { message: 'La ruta debe tener al menos 2 caracteres' }),
-  coordinates: z.string().optional(),
-  description: z.string().optional(),
+/**
+ * Esquema de validación para el formulario
+ */
+const tollFormSchema = z.object({
+  nombre: z.string()
+    .min(3, 'El nombre debe tener al menos 3 caracteres')
+    .max(50, 'El nombre no puede exceder 50 caracteres'),
+  ubicacion: z.string()
+    .min(5, 'La ubicación debe tener al menos 5 caracteres')
+    .max(100, 'La ubicación no puede exceder 100 caracteres'),
+  tarifa: z.string()
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: 'La tarifa debe ser un número mayor a 0'
+    }),
+  categoria: z.string()
+    .min(1, 'Debe seleccionar una categoría'),
+  estado: z.string()
+    .min(1, 'Debe seleccionar un estado'),
+  coordenadas: z.object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180)
+  }).optional()
 });
 
-type FormData = z.infer<typeof formSchema>;
+/**
+ * Categorías de peajes disponibles
+ */
+const CATEGORIAS_PEAJE = [
+  { value: '1', label: 'Categoría I - Automóviles' },
+  { value: '2', label: 'Categoría II - Camiones pequeños' },
+  { value: '3', label: 'Categoría III - Camiones medianos' },
+  { value: '4', label: 'Categoría IV - Camiones grandes' },
+  { value: '5', label: 'Categoría V - Vehículos especiales' }
+];
+
+/**
+ * Estados posibles para un peaje
+ */
+const ESTADOS_PEAJE = [
+  { value: 'activo', label: 'Activo' },
+  { value: 'inactivo', label: 'Inactivo' },
+  { value: 'mantenimiento', label: 'En mantenimiento' },
+  { value: 'construccion', label: 'En construcción' }
+];
 
 interface TollFormProps {
-  initialData?: Partial<Toll>;
-  onSubmit: (data: FormData) => void;
+  toll?: Toll | null;
+  onSubmit: (data: Toll) => void;
   onCancel: () => void;
-  isSubmitting?: boolean;
 }
 
 /**
- * Componente de formulario completamente responsive con diseño mobile-first
+ * Componente TollForm
+ * @param {TollFormProps} props - Propiedades del componente
+ * @returns {JSX.Element} Formulario de peaje
  */
-const TollForm = ({ 
-  initialData, 
-  onSubmit, 
-  onCancel, 
-  isSubmitting = false 
-}: TollFormProps) => {
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+export const TollForm: React.FC<TollFormProps> = ({
+  toll,
+  onSubmit,
+  onCancel
+}) => {
+  const form = useForm<z.infer<typeof tollFormSchema>>({
+    resolver: zodResolver(tollFormSchema),
     defaultValues: {
-      name: initialData?.name || '',
-      location: initialData?.location || '',
-      category: initialData?.category || '',
-      price: initialData?.price ? String(initialData.price) : '',
-      route: initialData?.route || '',
-      coordinates: initialData?.coordinates || '',
-      description: initialData?.description || '',
-    },
+      nombre: toll?.nombre || '',
+      ubicacion: toll?.ubicacion || '',
+      tarifa: toll?.tarifa?.toString() || '',
+      categoria: toll?.categoria || '',
+      estado: toll?.estado || 'activo',
+      coordenadas: toll?.coordenadas || { lat: 0, lng: 0 }
+    }
   });
 
-  const handleSubmit = (data: FormData) => {
-    console.log('📝 [TollForm] Enviando datos del formulario:', data);
+  const handleSubmit = (values: z.infer<typeof tollFormSchema>) => {
     onSubmit({
-      ...data,
-      price: data.price,
+      id: toll?.id || crypto.randomUUID(),
+      nombre: values.nombre,
+      ubicacion: values.ubicacion,
+      tarifa: Number(values.tarifa),
+      categoria: values.categoria,
+      estado: values.estado,
+      coordenadas: values.coordenadas
     });
   };
 
   return (
-    <div className="flex flex-col h-full max-h-[85vh]">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
-          <ScrollArea className="flex-1 pr-2 sm:pr-4">
-            <div className="space-y-3 sm:space-y-4 p-1">
-              {/* Información básica del peaje */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
-                  Información del Peaje
-                </h3>
-                
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs sm:text-sm">Nombre del Peaje *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="Ej: Peaje Chusacá" 
-                          className="h-8 sm:h-9 text-sm" 
-                          disabled={isSubmitting}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Grid responsivo mejorado para categoría y precio */}
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs sm:text-sm">Categoría *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            placeholder="Ej: I, II, III" 
-                            className="h-8 sm:h-9 text-sm" 
-                            disabled={isSubmitting}
-                          />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs sm:text-sm">Precio (COP) *</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-500">$</span>
-                            <Input
-                              {...field}
-                              type="number"
-                              min="0"
-                              step="100"
-                              placeholder="0"
-                              className="pl-6 sm:pl-8 h-8 sm:h-9 text-sm"
-                              disabled={isSubmitting}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="nombre"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nombre del Peaje</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: Peaje Los Andes" {...field} />
+              </FormControl>
+              <FormDescription>
+                Nombre identificativo del peaje
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-              {/* Información de ubicación */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
-                  Ubicación
-                </h3>
-                
-                {/* Grid responsivo mejorado para ubicación y ruta */}
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs sm:text-sm">Ubicación *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            placeholder="Ej: Cundinamarca" 
-                            className="h-8 sm:h-9 text-sm" 
-                            disabled={isSubmitting}
-                          />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="route"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs sm:text-sm">Ruta *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            placeholder="Ej: Bogotá-Girardot" 
-                            className="h-8 sm:h-9 text-sm" 
-                            disabled={isSubmitting}
-                          />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="coordinates"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs sm:text-sm">Coordenadas (opcional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="Ej: 4.5371, -74.2861" 
-                          className="h-8 sm:h-9 text-sm" 
-                          disabled={isSubmitting}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
+        <FormField
+          control={form.control}
+          name="ubicacion"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ubicación</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: Km 45 Autopista Norte" {...field} />
+              </FormControl>
+              <FormDescription>
+                Ubicación física del peaje
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="tarifa"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tarifa Base</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Ej: 15000"
+                  {...field}
                 />
-              </div>
-              
-              {/* Descripción */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs sm:text-sm">Descripción (opcional)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Información adicional sobre el peaje"
-                        className="h-16 sm:h-20 resize-none text-sm"
-                        disabled={isSubmitting}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </ScrollArea>
-          
-          <DialogFooter className="mt-4 pt-3 sm:pt-4 border-t flex-col sm:flex-row gap-2 sm:gap-0">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onCancel}
-              disabled={isSubmitting}
-              className="w-full sm:w-auto h-8 sm:h-9 text-sm order-2 sm:order-1"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="w-full sm:w-auto h-8 sm:h-9 text-sm order-1 sm:order-2"
-            >
-              {isSubmitting ? 'Guardando...' : (initialData?.id ? 'Actualizar' : 'Registrar')} Peaje
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
-    </div>
+              </FormControl>
+              <FormDescription>
+                Tarifa base en pesos colombianos
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="categoria"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Categoría</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione una categoría" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {CATEGORIAS_PEAJE.map(categoria => (
+                    <SelectItem
+                      key={categoria.value}
+                      value={categoria.value}
+                    >
+                      {categoria.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Categoría principal del peaje
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="estado"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Estado</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione un estado" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {ESTADOS_PEAJE.map(estado => (
+                    <SelectItem
+                      key={estado.value}
+                      value={estado.value}
+                    >
+                      {estado.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Estado actual del peaje
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit">
+            {toll ? 'Actualizar' : 'Crear'} Peaje
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 
