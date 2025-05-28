@@ -22,8 +22,8 @@ export const isProduction = (): boolean => {
 export const isVercel = (): boolean => {
   return typeof window !== 'undefined' && (
     window.location.hostname.includes('vercel.app') ||
-    import.meta.env.VITE_VERCEL === '1' ||
-    process.env.VERCEL === '1'
+    window.location.hostname.includes('lovableproject.com') ||
+    import.meta.env.VITE_VERCEL === '1'
   )
 }
 
@@ -38,6 +38,10 @@ export const isGitHubPages = (): boolean => {
  * Obtiene la URL base de la aplicación según el entorno
  */
 export const getBaseUrl = (): string => {
+  if (typeof window === 'undefined') {
+    return APP_CONFIG.urls.current
+  }
+  
   if (isVercel()) {
     return window.location.origin
   }
@@ -72,6 +76,8 @@ export const getRouterBasename = (): string => {
  * Configura el título de la página según el entorno
  */
 export const setPageTitle = (title?: string): void => {
+  if (typeof document === 'undefined') return
+  
   const appName = APP_CONFIG.name
   const environment = isProduction() ? '' : ' (Dev)'
   document.title = title ? `${title} - ${appName}${environment}` : `${appName}${environment}`
@@ -81,22 +87,24 @@ export const setPageTitle = (title?: string): void => {
  * Configuración de Service Worker para PWA (preparado para futuro)
  */
 export const registerServiceWorker = async (): Promise<void> => {
-  if ('serviceWorker' in navigator && isProduction()) {
-    try {
-      let swUrl = '/sw.js'
-      
-      if (isGitHubPages()) {
-        swUrl = '/transporegistrosplus/sw.js'
-      }
-      
-      await navigator.serviceWorker.register(swUrl)
-      if (import.meta.env.DEV) {
-        console.log('✅ Service Worker registrado correctamente')
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.warn('⚠️ Error al registrar Service Worker:', error)
-      }
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !isProduction()) {
+    return
+  }
+  
+  try {
+    let swUrl = '/sw.js'
+    
+    if (isGitHubPages()) {
+      swUrl = '/transporegistrosplus/sw.js'
+    }
+    
+    await navigator.serviceWorker.register(swUrl)
+    if (import.meta.env.DEV) {
+      console.log('✅ Service Worker registrado correctamente')
+    }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ Error al registrar Service Worker:', error)
     }
   }
 }
@@ -117,27 +125,29 @@ export const initializeAnalytics = (): void => {
  * Manejo de errores global para producción
  */
 export const setupErrorHandling = (): void => {
-  if (isProduction()) {
-    /**
-     * Captura errores JavaScript globales
-     */
-    window.addEventListener('error', (event) => {
-      // En producción, enviar a servicio de monitoreo
-      if (import.meta.env.DEV) {
-        console.error('❌ Error global capturado:', event.error)
-      }
-    })
-    
-    /**
-     * Captura promises rechazadas no manejadas
-     */
-    window.addEventListener('unhandledrejection', (event) => {
-      // En producción, enviar a servicio de monitoreo
-      if (import.meta.env.DEV) {
-        console.error('❌ Promise rechazada no manejada:', event.reason)
-      }
-    })
+  if (typeof window === 'undefined' || !isProduction()) {
+    return
   }
+  
+  /**
+   * Captura errores JavaScript globales
+   */
+  window.addEventListener('error', (event) => {
+    // En producción, enviar a servicio de monitoreo
+    if (import.meta.env.DEV) {
+      console.error('❌ Error global capturado:', event.error)
+    }
+  })
+  
+  /**
+   * Captura promises rechazadas no manejadas
+   */
+  window.addEventListener('unhandledrejection', (event) => {
+    // En producción, enviar a servicio de monitoreo
+    if (import.meta.env.DEV) {
+      console.error('❌ Promise rechazada no manejada:', event.reason)
+    }
+  })
 }
 
 /**
