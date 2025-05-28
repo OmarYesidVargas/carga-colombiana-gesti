@@ -42,7 +42,8 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
       name,
       value,
       color,
-      category: key
+      category: key,
+      percentage: totalAmount > 0 ? Math.round((value / totalAmount) * 100) : 0
     };
   });
 
@@ -69,9 +70,9 @@ const ExpensesChart: React.FC<ExpensesChartProps> = ({
     return (
       <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-2 sm:mt-4 px-2">
         {payload.map((entry: any, index: number) => {
-          const categoryData = chartData.find(item => item.name === entry.value);
-          const percentage = totalAmount > 0 && categoryData ? 
-            Math.round((categoryData.value / totalAmount) * 100) : 0;
+          // Buscar el dato correspondiente por índice en lugar de por nombre
+          const correspondingData = chartData[index];
+          const percentage = correspondingData ? correspondingData.percentage : 0;
           
           return (
             <div key={index} className="flex items-center gap-1 sm:gap-2 min-w-0">
