@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Toll, TollRecord, Trip, Vehicle } from '@/types';
 
 // Métodos de pago
@@ -147,237 +148,279 @@ const TollRecordForm = ({
   });
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="tripId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Viaje *</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-                disabled={!!selectedTripId || isSubmitting}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar viaje" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {validTrips.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground">
-                      No hay viajes disponibles
-                    </div>
-                  ) : (
-                    validTrips.map((trip) => {
-                      const vehicle = getTripVehicle(trip.id);
-                      return (
-                        <SelectItem key={trip.id} value={trip.id}>
-                          {trip.origin} → {trip.destination} 
-                          {vehicle && ` (${vehicle.plate})`}
-                        </SelectItem>
-                      );
-                    })
+    <div className="flex flex-col h-full max-h-[85vh]">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
+          <ScrollArea className="flex-1 pr-2 sm:pr-4">
+            <div className="space-y-3 sm:space-y-4 p-1">
+              {/* Información del viaje */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
+                  Información del Viaje
+                </h3>
+                
+                <FormField
+                  control={form.control}
+                  name="tripId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs sm:text-sm">Viaje *</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                        disabled={!!selectedTripId || isSubmitting}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-9 sm:h-10 text-sm">
+                            <SelectValue placeholder="Seleccionar viaje" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="z-50">
+                          {validTrips.length === 0 ? (
+                            <div className="p-3 text-sm text-muted-foreground text-center">
+                              No hay viajes disponibles
+                            </div>
+                          ) : (
+                            validTrips.map((trip) => {
+                              const vehicle = getTripVehicle(trip.id);
+                              return (
+                                <SelectItem key={trip.id} value={trip.id} className="text-sm">
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">
+                                      {trip.origin} → {trip.destination}
+                                    </span>
+                                    {vehicle && (
+                                      <span className="text-xs text-muted-foreground">
+                                        {vehicle.plate} - {vehicle.brand} {vehicle.model}
+                                      </span>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              );
+                            })
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
                   )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="tollId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Peaje *</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-                disabled={isSubmitting}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar peaje" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {tolls.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground">
-                      No hay peajes disponibles
-                    </div>
-                  ) : (
-                    tolls.map((toll) => (
-                      <SelectItem key={toll.id} value={toll.id}>
-                        {toll.name} - {toll.route} (${toll.price})
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Fecha *</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
+                />
+              </div>
+
+              {/* Información del peaje */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
+                  Información del Peaje
+                </h3>
+                
+                <FormField
+                  control={form.control}
+                  name="tollId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs sm:text-sm">Peaje *</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
                         disabled={isSubmitting}
                       >
-                        {field.value ? (
-                          format(field.value, "PPP", { locale: es })
-                        ) : (
-                          <span>Seleccionar fecha</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                      locale={es}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Precio (COP) *</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
-                    <Input
-                      {...field}
-                      type="number"
-                      min="0"
-                      step="1"
-                      placeholder="0"
-                      className="pl-8"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="paymentMethod"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Método de pago *</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                  disabled={isSubmitting}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar método" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {paymentMethods.map((method) => (
-                      <SelectItem key={method.value} value={method.value}>
-                        {method.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="receipt"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Recibo/Factura (opcional)</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    placeholder="Número de recibo o factura"
-                    disabled={isSubmitting}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notas (opcional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  placeholder="Información adicional sobre el paso por el peaje"
-                  className="h-20"
-                  disabled={isSubmitting}
+                        <FormControl>
+                          <SelectTrigger className="h-9 sm:h-10 text-sm">
+                            <SelectValue placeholder="Seleccionar peaje" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="z-50">
+                          {tolls.length === 0 ? (
+                            <div className="p-3 text-sm text-muted-foreground text-center">
+                              No hay peajes disponibles
+                            </div>
+                          ) : (
+                            tolls.map((toll) => (
+                              <SelectItem key={toll.id} value={toll.id} className="text-sm">
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{toll.name}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {toll.route} - ${toll.price.toLocaleString()}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <DialogFooter>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting || validTrips.length === 0 || tolls.length === 0}
-          >
-            {isSubmitting ? 'Guardando...' : (initialData?.id ? 'Actualizar' : 'Registrar')} Paso por Peaje
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+              </div>
+              
+              {/* Información del pago */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
+                  Información del Pago
+                </h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-xs sm:text-sm">Fecha *</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal h-9 sm:h-10 text-sm",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                disabled={isSubmitting}
+                              >
+                                {field.value ? (
+                                  format(field.value, "dd 'de' MMMM 'de' yyyy", { locale: es })
+                                ) : (
+                                  <span>Seleccionar fecha</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0 z-50" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                              locale={es}
+                              disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs sm:text-sm">Precio (COP) *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-500">$</span>
+                            <Input
+                              {...field}
+                              type="number"
+                              min="0"
+                              step="100"
+                              placeholder="0"
+                              className="pl-6 sm:pl-8 h-9 sm:h-10 text-sm"
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="paymentMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs sm:text-sm">Método de pago *</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                        disabled={isSubmitting}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-9 sm:h-10 text-sm">
+                            <SelectValue placeholder="Seleccionar método" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="z-50">
+                          {paymentMethods.map((method) => (
+                            <SelectItem key={method.value} value={method.value} className="text-sm">
+                              {method.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="receipt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs sm:text-sm">Recibo/Factura (opcional)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          placeholder="Número de recibo o factura"
+                          className="h-9 sm:h-10 text-sm"
+                          disabled={isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              {/* Notas adicionales */}
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs sm:text-sm">Notas (opcional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Información adicional sobre el paso por el peaje"
+                        className="h-16 sm:h-20 resize-none text-sm"
+                        disabled={isSubmitting}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </ScrollArea>
+          
+          <DialogFooter className="mt-4 pt-3 sm:pt-4 border-t flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto h-9 sm:h-10 text-sm order-2 sm:order-1"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || validTrips.length === 0 || tolls.length === 0}
+              className="w-full sm:w-auto h-9 sm:h-10 text-sm order-1 sm:order-2"
+            >
+              {isSubmitting ? 'Guardando...' : (initialData?.id ? 'Actualizar' : 'Registrar')} Paso por Peaje
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </div>
   );
 };
 

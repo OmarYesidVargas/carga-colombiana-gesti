@@ -327,12 +327,12 @@ const TollRecordsPage = () => {
       
       {/* Diálogo de formulario */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] p-4 sm:p-6">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-lg sm:text-xl">
               {currentRecord ? 'Editar Registro' : 'Registrar Peaje'}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               {currentRecord 
                 ? 'Modifica los detalles del registro de peaje.' 
                 : 'Registra un nuevo paso por peaje durante un viaje.'}
