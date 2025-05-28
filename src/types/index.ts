@@ -135,7 +135,7 @@ export interface ExpenseFormData {
   date: Date;
 }
 
-// Colores para categorías de gastos
+// Colores para categorías de gastos - AHORA EXPORTADO CORRECTAMENTE
 export const expenseCategoryColors = {
   fuel: '#ef4444',
   toll: '#f97316', 
