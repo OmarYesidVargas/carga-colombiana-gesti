@@ -1,7 +1,7 @@
 
 /**
  * Utilidades para despliegue y configuración de producción de TransporegistrosPlus
- * Versión 2.0.0 - Optimizada para producción
+ * Versión 2.0.0 - Optimizada para Vercel y otros providers
  * 
  * @author TransporegistrosPlus Team
  * @version 2.0.0
@@ -17,19 +17,35 @@ export const isProduction = (): boolean => {
 }
 
 /**
+ * Verifica si estamos ejecutándose en Vercel
+ */
+export const isVercel = (): boolean => {
+  return typeof window !== 'undefined' && (
+    window.location.hostname.includes('vercel.app') ||
+    import.meta.env.VITE_VERCEL === '1' ||
+    process.env.VERCEL === '1'
+  )
+}
+
+/**
  * Verifica si estamos ejecutándose en GitHub Pages
  */
 export const isGitHubPages = (): boolean => {
-  return window.location.hostname.includes('github.io')
+  return typeof window !== 'undefined' && window.location.hostname.includes('github.io')
 }
 
 /**
  * Obtiene la URL base de la aplicación según el entorno
  */
 export const getBaseUrl = (): string => {
+  if (isVercel()) {
+    return window.location.origin
+  }
+  
   if (isGitHubPages()) {
     return 'https://omaryesidvargas.github.io/transporegistrosplus'
   }
+  
   return APP_CONFIG.urls.current
 }
 
@@ -38,6 +54,10 @@ export const getBaseUrl = (): string => {
  */
 export const getRouterBasename = (): string => {
   if (import.meta.env.DEV) {
+    return ""
+  }
+  
+  if (isVercel()) {
     return ""
   }
   
@@ -63,9 +83,12 @@ export const setPageTitle = (title?: string): void => {
 export const registerServiceWorker = async (): Promise<void> => {
   if ('serviceWorker' in navigator && isProduction()) {
     try {
-      const swUrl = isGitHubPages() 
-        ? '/transporegistrosplus/sw.js' 
-        : '/sw.js'
+      let swUrl = '/sw.js'
+      
+      if (isGitHubPages()) {
+        swUrl = '/transporegistrosplus/sw.js'
+      }
+      
       await navigator.serviceWorker.register(swUrl)
       if (import.meta.env.DEV) {
         console.log('✅ Service Worker registrado correctamente')
@@ -131,6 +154,7 @@ export const initializeApp = (): void => {
     console.log('🌍 Entorno:', isProduction() ? 'PRODUCCIÓN' : 'DESARROLLO')
     console.log('📍 URL Base:', getBaseUrl())
     console.log('🔗 Router Basename:', getRouterBasename())
+    console.log('🔗 Vercel:', isVercel())
     console.log('📱 GitHub Pages:', isGitHubPages())
   }
 }

@@ -3,14 +3,14 @@
  * Configuración de Vite para TransporegistrosPlus
  * 
  * Este archivo configura el bundler Vite para desarrollo y producción:
- * - Configuración específica para deployment en GitHub Pages
+ * - Configuración específica para deployment en Vercel
  * - Optimizaciones de build para producción
  * - Aliases de rutas para imports limpios
  * - Plugins para desarrollo y calidad de código
  * - Configuración del servidor de desarrollo
  * 
  * Características especiales:
- * - Base path dinámico según entorno (GitHub Pages vs local)
+ * - Base path dinámico según entorno (Vercel vs local)
  * - Code splitting optimizado para mejor performance
  * - Sourcemaps deshabilitados para producción
  * - Servidor con IPv6 y puerto personalizado
@@ -36,12 +36,10 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   /**
    * Base path para la aplicación
-   * - Producción: '/transporegistrosplus/' para GitHub Pages
+   * - Vercel/Producción: '/' (raíz del dominio)
    * - Desarrollo: '/' para servidor local
-   * 
-   * GitHub Pages requiere el nombre del repositorio como base path
    */
-  base: mode === 'production' ? '/transporegistrosplus/' : '/',
+  base: '/',
   
   /**
    * Configuración del servidor de desarrollo
@@ -80,7 +78,7 @@ export default defineConfig(({ mode }) => ({
   
   /**
    * Configuración del build para producción
-   * Optimizada especialmente para GitHub Pages
+   * Optimizada especialmente para Vercel
    */
   build: {
     /** Directorio de salida del build */
@@ -105,8 +103,39 @@ export default defineConfig(({ mode }) => ({
          */
         manualChunks: {
           vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          supabase: ['@supabase/supabase-js'],
+          query: ['@tanstack/react-query'],
+          charts: ['recharts'],
         },
       },
     },
+    
+    /**
+     * Configuración de optimización adicional para Vercel
+     */
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      },
+    },
+  },
+  
+  /**
+   * Configuración de optimización de dependencias
+   */
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      '@tanstack/react-query',
+      'date-fns',
+      'recharts',
+    ],
   },
 }));

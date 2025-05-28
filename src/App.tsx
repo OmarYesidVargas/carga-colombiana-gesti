@@ -22,7 +22,7 @@ import TollRecordsPage from "./pages/tolls/TollRecordsPage";
 import ExpensesReportPage from "./pages/reports/ExpensesReportPage";
 import NotFound from "./pages/NotFound";
 import AuthRoute from "./routes/AuthRoute";
-import { initializeApp } from "@/utils/deployment";
+import { initializeApp, getRouterBasename } from "@/utils/deployment";
 import { useEffect } from "react";
 import ProfileSettings from "./pages/profile/ProfileSettings";
 
@@ -35,26 +35,12 @@ const queryClient = new QueryClient({
   },
 });
 
-const getBasename = () => {
-  if (import.meta.env.DEV) {
-    return "";
-  }
-  
-  const isGitHubPages = window.location.hostname.includes('github.io');
-  
-  if (isGitHubPages) {
-    return "/transporegistrosplus";
-  }
-  
-  return "";
-};
-
 function App() {
   useEffect(() => {
     initializeApp();
   }, []);
 
-  const basename = getBasename();
+  const basename = getRouterBasename();
   
   console.log('App starting with basename:', basename);
   console.log('Current location:', window.location.href);
