@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -89,16 +88,18 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al dashboard"
           >
-            <span className="text-xs xs:text-sm sm:text-base md:text-lg font-semibold text-primary truncate">
-              {/* Versión extra pequeña - solo TR */}
-              <span className="inline xs:hidden">TR</span>
-              {/* Versión pequeña - Transpo + registros */}
-              <span className="hidden xs:inline sm:hidden">
+            <span className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-primary truncate">
+              {/* Versión móvil - nombre completo */}
+              <span className="inline sm:hidden">
+                <span className="text-primary font-bold">TransporegistrosPlus</span>
+              </span>
+              {/* Versión tablet - Transpo + registros */}
+              <span className="hidden sm:inline lg:hidden">
                 <span className="text-primary font-bold">Transpo</span>
                 <span className="text-primary font-bold">registros</span>
               </span>
-              {/* Versión mediana y grande - completo */}
-              <span className="hidden sm:inline">
+              {/* Versión desktop - completo */}
+              <span className="hidden lg:inline">
                 <span>Transpo</span>
                 <span className="text-primary font-bold">registros</span>
                 <span className="text-primary font-bold">Plus</span>
@@ -111,16 +112,18 @@ const Header = ({ userEmail, onLogout }: HeaderProps) => {
             className="cursor-pointer flex items-center min-w-0 focus:outline-none hover:opacity-80 transition-opacity" 
             aria-label="Ir al inicio"
           >
-            <span className="text-xs xs:text-sm sm:text-base md:text-lg font-semibold text-primary truncate">
-              {/* Versión extra pequeña - solo TR */}
-              <span className="inline xs:hidden">TR</span>
-              {/* Versión pequeña - Transpo + registros */}
-              <span className="hidden xs:inline sm:hidden">
+            <span className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-primary truncate">
+              {/* Versión móvil - nombre completo */}
+              <span className="inline sm:hidden">
+                <span className="text-primary font-bold">TransporegistrosPlus</span>
+              </span>
+              {/* Versión tablet - Transpo + registros */}
+              <span className="hidden sm:inline lg:hidden">
                 <span className="text-primary font-bold">Transpo</span>
                 <span className="text-primary font-bold">registros</span>
               </span>
-              {/* Versión mediana y grande - completo */}
-              <span className="hidden sm:inline">
+              {/* Versión desktop - completo */}
+              <span className="hidden lg:inline">
                 <span>Transpo</span>
                 <span className="text-primary font-bold">registros</span>
                 <span className="text-primary font-bold">Plus</span>
