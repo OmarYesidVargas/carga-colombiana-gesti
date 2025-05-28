@@ -20,7 +20,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "update-browserslist": "npx update-browserslist-db@latest"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -40,6 +41,7 @@
     "cmdk": "^0.2.0",
     "date-fns": "^2.30.0",
     "lucide-react": "^0.259.0",
+    "next-themes": "^0.2.1",
     "react": "^18.2.0",
     "react-day-picker": "^8.8.0",
     "react-dom": "^18.2.0",
