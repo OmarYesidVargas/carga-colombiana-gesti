@@ -274,7 +274,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({
                           <FormItem>
                             <FormLabel className="text-xs font-medium">Capacidad</FormLabel>
                             <FormControl>
-                              <Input placeholder="5 pasajeros" className="h-8 text-sm" {...field} />
+                              <Input placeholder="5 Toneladas" className="h-8 text-sm" {...field} />
                             </FormControl>
                             <FormMessage className="text-xs" />
                           </FormItem>
