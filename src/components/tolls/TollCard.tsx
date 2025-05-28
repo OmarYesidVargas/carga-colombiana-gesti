@@ -6,7 +6,7 @@
  * 
  * @author OmarYesidVargas
  * @version 2.0.0
- * @lastModified 2025-05-28 17:21:24
+ * @lastModified 2025-05-28 17:37:08
  */
 
 import React from 'react';
@@ -31,7 +31,7 @@ interface TollCardProps {
  * @param {TollCardProps} props - Propiedades del componente
  * @returns {JSX.Element} Componente TollCard
  */
-const TollCard: React.FC<TollCardProps> = ({
+export const TollCard: React.FC<TollCardProps> = ({
   toll,
   onEdit,
   onDelete,
