@@ -17,7 +17,7 @@
  * 
  * @author OmarYesidVargas
  * @version 2.0.0
- * @lastModified 2025-05-28 17:01:54
+ * @lastModified 2025-05-28 17:05:26
  */
 
 import { defineConfig } from "vite";
@@ -103,7 +103,7 @@ export default defineConfig(({ mode }) => ({
      * Code splitting optimizado para mejor caching y performance
      */
     rollupOptions: {
-      external: ['next-themes'],
+      external: ['next-themes', 'vaul'],
       output: {
         /**
          * Manual chunks para separar código por categorías
@@ -136,7 +136,8 @@ export default defineConfig(({ mode }) => ({
             '@radix-ui/react-tabs',
             '@radix-ui/react-toast',
             '@radix-ui/react-toggle',
-            '@radix-ui/react-tooltip'
+            '@radix-ui/react-tooltip',
+            'vaul'
           ],
           
           // Data management
@@ -196,7 +197,8 @@ export default defineConfig(({ mode }) => ({
       'next-themes',
       'sonner',
       '@hookform/resolvers/zod',
-      'react-hook-form'
+      'react-hook-form',
+      'vaul'
     ],
     exclude: ['@testing-library/jest-dom']
   },
