@@ -185,5 +185,4 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 - [x] Debugging y monitoreo avanzado
 - [x] Optimizaciones de rendimiento
 - [x] UI/UX pulida y responsiva
-- [x] Deploy automatizado en GitHub Pages
 - [x] Documentación completa
