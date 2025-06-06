@@ -162,7 +162,7 @@ const ExpenseSummary = ({ expenses, vehicles, trips, title = "Resumen de gastos"
                   .slice(0, 5)
                   .map((trip) => (
                     <div key={trip.id} className="flex items-center justify-between">
-                      <span className="truncate max-w-[150px]">
+                      <span className="truncate max-w-[250px]">
                         {trip.origin} → {trip.destination}
                         {trip.vehicle && <span className="text-xs ml-1">({trip.vehicle.plate})</span>}
                       </span>
