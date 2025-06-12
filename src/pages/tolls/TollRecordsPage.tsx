@@ -1,9 +1,6 @@
+
 import React, { useState } from 'react';
 import { useData } from '@/context/DataContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Search } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -21,10 +18,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
-import TollRecordCard from '@/components/tolls/TollRecordCard';
 import TollRecordForm from '@/components/tolls/TollRecordForm';
 import TollSummary from '@/components/tolls/TollSummary';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import TollRecordsHeader from '@/components/tolls/TollRecordsHeader';
+import TollRecordsConfigWarning from '@/components/tolls/TollRecordsConfigWarning';
+import TollRecordsFilters from '@/components/tolls/TollRecordsFilters';
+import TollRecordsList from '@/components/tolls/TollRecordsList';
 import { TollRecord } from '@/types';
 import { toast } from 'sonner';
 
@@ -172,44 +171,16 @@ const TollRecordsPage = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
-      {/* Header responsivo */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-xl sm:text-2xl font-bold">Registro de Peajes</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Gestiona los registros de paso por peajes
-          </p>
-        </div>
-        
-        <Button 
-          onClick={() => handleOpenForm()}
-          disabled={!canCreateRecord}
-          className="w-full sm:w-auto"
-        >
-          <Plus className="mr-2 h-4 w-4" /> 
-          Registrar Peaje
-        </Button>
-      </div>
+      <TollRecordsHeader 
+        canCreateRecord={canCreateRecord}
+        onOpenForm={() => handleOpenForm()}
+      />
 
-      {!canCreateRecord && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardContent className="pt-4 sm:pt-6">
-            <div className="flex items-start space-x-3">
-              <div className="flex-1">
-                <h3 className="font-medium text-orange-800">Configuración requerida</h3>
-                <p className="text-sm text-orange-700 mt-1">
-                  Para registrar peajes necesita tener:
-                </p>
-                <ul className="list-disc list-inside text-sm text-orange-700 mt-2 space-y-1">
-                  {vehicles.length === 0 && <li>Al menos un vehículo registrado</li>}
-                  {trips.length === 0 && <li>Al menos un viaje registrado</li>}
-                  {tolls.length === 0 && <li>Al menos un peaje registrado</li>}
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <TollRecordsConfigWarning 
+        trips={trips}
+        tolls={tolls}
+        vehicles={vehicles}
+      />
       
       {/* Layout responsivo mejorado */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-4">
@@ -225,103 +196,27 @@ const TollRecordsPage = () => {
         
         {/* Lista de registros de peaje - responsive */}
         <div className="lg:col-span-3 order-1 lg:order-2 space-y-4">
-          {/* Búsqueda y filtros responsivos */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="relative sm:col-span-2 lg:col-span-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar registros..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <div>
-              <Select 
-                value={selectedVehicleId} 
-                onValueChange={setSelectedVehicleId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por vehículo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los vehículos</SelectItem>
-                  {vehicles.map((vehicle) => (
-                    <SelectItem key={vehicle.id} value={vehicle.id}>
-                      <span className="truncate">
-                        {vehicle.plate} - {vehicle.brand} {vehicle.model}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Select 
-                value={selectedTripId} 
-                onValueChange={setSelectedTripId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por viaje" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los viajes</SelectItem>
-                  {trips.map((trip) => (
-                    <SelectItem key={trip.id} value={trip.id}>
-                      <span className="truncate">
-                        {trip.origin} → {trip.destination}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <TollRecordsFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            selectedTripId={selectedTripId}
+            setSelectedTripId={setSelectedTripId}
+            selectedVehicleId={selectedVehicleId}
+            setSelectedVehicleId={setSelectedVehicleId}
+            trips={trips}
+            vehicles={vehicles}
+          />
           
-          {/* Lista de registros con grid responsivo */}
-          {sortedRecords.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {sortedRecords.map((record) => {
-                try {
-                  return (
-                    <TollRecordCard
-                      key={record.id}
-                      record={record}
-                      toll={tolls.find(t => t.id === record.tollId)}
-                      trip={trips.find(t => t.id === record.tripId)}
-                      vehicle={vehicles.find(v => v.id === record.vehicleId)}
-                      onEdit={handleOpenForm}
-                      onDelete={handleDeleteClick}
-                    />
-                  );
-                } catch (error) {
-                  console.error('Error al renderizar registro:', error, record);
-                  return null;
-                }
-              })}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="py-8 sm:py-10 text-center">
-                <p className="text-muted-foreground text-sm sm:text-base">
-                  {tollRecords.length === 0 
-                    ? 'No hay registros de peaje.' 
-                    : 'No se encontraron registros con los filtros seleccionados.'}
-                </p>
-                {canCreateRecord && (
-                  <Button 
-                    onClick={() => handleOpenForm()} 
-                    className="mt-4 w-full sm:w-auto"
-                  >
-                    <Plus className="mr-2 h-4 w-4" /> 
-                    Registrar Peaje
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          )}
+          <TollRecordsList
+            tollRecords={sortedRecords}
+            tolls={tolls}
+            trips={trips}
+            vehicles={vehicles}
+            canCreateRecord={canCreateRecord}
+            onEdit={handleOpenForm}
+            onDelete={handleDeleteClick}
+            onOpenForm={() => handleOpenForm()}
+          />
         </div>
       </div>
       
