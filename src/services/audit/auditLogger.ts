@@ -56,11 +56,11 @@ export const createAuditLog = async (
       record_id: auditData.record_id
     });
 
-    // Usar función de Edge directamente con timeout más largo
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
+    // Primero intentar con Edge Function
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const { data, error } = await supabase.functions.invoke('create-audit-log', {
         body: { audit_data: auditData },
         headers: {
@@ -72,15 +72,36 @@ export const createAuditLog = async (
       
       if (error) {
         console.error('[Audit] Error from edge function:', error);
+        throw error;
+      }
+
+      console.log('[Audit] Successfully created audit log via Edge Function:', data);
+      return true;
+    } catch (edgeFunctionError) {
+      console.warn('[Audit] Edge function failed, trying direct insertion:', edgeFunctionError);
+      
+      // Fallback: inserción directa si la Edge Function falla
+      const { error: directError } = await supabase
+        .from('audit_logs')
+        .insert({
+          user_id: auditData.user_id,
+          table_name: auditData.table_name,
+          operation: auditData.operation,
+          record_id: auditData.record_id,
+          old_values: auditData.old_values,
+          new_values: auditData.new_values,
+          user_agent: auditData.user_agent,
+          session_id: auditData.session_id,
+          additional_info: auditData.additional_info
+        });
+
+      if (directError) {
+        console.error('[Audit] Direct insertion also failed:', directError);
         return false;
       }
 
-      console.log('[Audit] Successfully created audit log:', data);
+      console.log('[Audit] Successfully created audit log via direct insertion');
       return true;
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      console.error('[Audit] Network error creating audit log:', fetchError);
-      return false;
     }
 
   } catch (error) {

@@ -34,6 +34,8 @@ export const useAuditLogger = (user: User | null) => {
     recordId?: string,
     additionalInfo?: Record<string, any>
   ) => {
+    if (!user) return;
+    
     try {
       await auditRead(user, tableName, recordId, additionalInfo);
     } catch (error) {
@@ -50,10 +52,14 @@ export const useAuditLogger = (user: User | null) => {
     newValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
+    if (!user) return;
+    
     try {
+      console.log('🔄 [useAuditLogger] Ejecutando logCreate:', { tableName, recordId });
       await auditCreate(user, tableName, recordId, newValues, additionalInfo);
+      console.log('✅ [useAuditLogger] logCreate completado');
     } catch (error) {
-      console.error('Error en logCreate:', error);
+      console.error('❌ [useAuditLogger] Error en logCreate:', error);
     }
   }, [user]);
 
@@ -67,10 +73,14 @@ export const useAuditLogger = (user: User | null) => {
     newValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
+    if (!user) return;
+    
     try {
+      console.log('🔄 [useAuditLogger] Ejecutando logUpdate:', { tableName, recordId });
       await auditUpdate(user, tableName, recordId, oldValues, newValues, additionalInfo);
+      console.log('✅ [useAuditLogger] logUpdate completado');
     } catch (error) {
-      console.error('Error en logUpdate:', error);
+      console.error('❌ [useAuditLogger] Error en logUpdate:', error);
     }
   }, [user]);
 
@@ -83,10 +93,14 @@ export const useAuditLogger = (user: User | null) => {
     oldValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
+    if (!user) return;
+    
     try {
+      console.log('🔄 [useAuditLogger] Ejecutando logDelete:', { tableName, recordId });
       await auditDelete(user, tableName, recordId, oldValues, additionalInfo);
+      console.log('✅ [useAuditLogger] logDelete completado');
     } catch (error) {
-      console.error('Error en logDelete:', error);
+      console.error('❌ [useAuditLogger] Error en logDelete:', error);
     }
   }, [user]);
 

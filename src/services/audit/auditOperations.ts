@@ -22,12 +22,16 @@ export const auditRead = async (
 ): Promise<void> => {
   // Solo auditar lecturas importantes, no todas para evitar spam
   if (additionalInfo?.action && additionalInfo.action.includes('load_all')) {
-    await createAuditLog(user, {
-      tableName,
-      operation: 'READ',
-      recordId,
-      additionalInfo
-    });
+    try {
+      await createAuditLog(user, {
+        tableName,
+        operation: 'READ',
+        recordId,
+        additionalInfo
+      });
+    } catch (error) {
+      console.error('Error en auditRead:', error);
+    }
   }
 };
 
@@ -41,14 +45,19 @@ export const auditCreate = async (
   newValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  // Ejecutar inmediatamente, no de forma asíncrona
-  await createAuditLog(user, {
-    tableName,
-    operation: 'CREATE',
-    recordId,
-    newValues,
-    additionalInfo
-  });
+  try {
+    console.log('🔄 [AuditOperations] Registrando CREATE:', { tableName, recordId });
+    await createAuditLog(user, {
+      tableName,
+      operation: 'CREATE',
+      recordId,
+      newValues,
+      additionalInfo
+    });
+    console.log('✅ [AuditOperations] CREATE registrado exitosamente');
+  } catch (error) {
+    console.error('❌ [AuditOperations] Error en auditCreate:', error);
+  }
 };
 
 /**
@@ -62,15 +71,20 @@ export const auditUpdate = async (
   newValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  // Ejecutar inmediatamente, no de forma asíncrona
-  await createAuditLog(user, {
-    tableName,
-    operation: 'UPDATE',
-    recordId,
-    oldValues,
-    newValues,
-    additionalInfo
-  });
+  try {
+    console.log('🔄 [AuditOperations] Registrando UPDATE:', { tableName, recordId });
+    await createAuditLog(user, {
+      tableName,
+      operation: 'UPDATE',
+      recordId,
+      oldValues,
+      newValues,
+      additionalInfo
+    });
+    console.log('✅ [AuditOperations] UPDATE registrado exitosamente');
+  } catch (error) {
+    console.error('❌ [AuditOperations] Error en auditUpdate:', error);
+  }
 };
 
 /**
@@ -83,12 +97,17 @@ export const auditDelete = async (
   oldValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  // Ejecutar inmediatamente, no de forma asíncrona
-  await createAuditLog(user, {
-    tableName,
-    operation: 'DELETE',
-    recordId,
-    oldValues,
-    additionalInfo
-  });
+  try {
+    console.log('🔄 [AuditOperations] Registrando DELETE:', { tableName, recordId });
+    await createAuditLog(user, {
+      tableName,
+      operation: 'DELETE',
+      recordId,
+      oldValues,
+      additionalInfo
+    });
+    console.log('✅ [AuditOperations] DELETE registrado exitosamente');
+  } catch (error) {
+    console.error('❌ [AuditOperations] Error en auditDelete:', error);
+  }
 };
