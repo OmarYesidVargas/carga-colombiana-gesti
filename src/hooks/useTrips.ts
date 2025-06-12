@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Trip } from '@/types';
@@ -7,9 +6,11 @@ import { User } from '@supabase/supabase-js';
 import { validateTrip } from '@/utils/validators';
 import { mapTripFromDB, mapTripToDB } from '@/utils/tripMappers';
 import { errorHandler } from '@/utils/errorHandler';
+import { useAuditLogger } from './useAuditLogger';
 
 export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean) => void) => {
   const [trips, setTrips] = useState<Trip[]>([]);
+  const { logRead, logCreate, logUpdate, logDelete } = useAuditLogger(user);
   
   const loadTrips = async () => {
     if (!user) {
@@ -52,6 +53,12 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
       
       console.log('✅ [useTrips] Viajes cargados exitosamente:', mappedTrips.length);
       setTrips(mappedTrips);
+
+      // Auditar la carga de viajes
+      await logRead('trips', undefined, { 
+        count: mappedTrips.length,
+        action: 'load_all_trips'
+      });
     } catch (error) {
       console.error('❌ [useTrips] Error inesperado al cargar viajes:', error);
       errorHandler.handleGenericError(error, { component: 'useTrips', action: 'loadTrips' });
@@ -66,7 +73,13 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
   
   const getTripById = (id: string) => {
     if (!id || typeof id !== 'string') return undefined;
-    return trips.find(trip => trip.id === id);
+    const trip = trips.find(trip => trip.id === id);
+    
+    if (trip) {
+      logRead('trips', id, { action: 'get_trip_by_id' });
+    }
+    
+    return trip;
   };
   
   const addTrip = async (trip: Omit<Trip, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
@@ -127,6 +140,14 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
       
       const mappedTrip = mapTripFromDB(data);
       setTrips(prev => [mappedTrip, ...prev]);
+
+      // Auditar la creación
+      await logCreate('trips', mappedTrip.id, {
+        origin: mappedTrip.origin,
+        destination: mappedTrip.destination,
+        vehicleId: mappedTrip.vehicleId,
+        distance: mappedTrip.distance
+      }, { action: 'create_trip' });
       
       console.log('✅ [useTrips] Viaje creado exitosamente:', mappedTrip.id);
       toast.success('Viaje agregado correctamente');
@@ -143,6 +164,12 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     }
     
     try {
+      const existingTrip = getTripById(id);
+      if (!existingTrip) {
+        toast.error('Viaje no encontrado');
+        return;
+      }
+
       if (trip.vehicleId) {
         const { data: vehicleExists } = await supabase
           .from('vehicles')
@@ -156,8 +183,6 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
           return;
         }
       }
-      
-      console.log('🔄 [useTrips] Actualizando viaje:', id, trip);
       
       const updatedTrip = mapTripToDB(trip);
       
@@ -184,6 +209,13 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
       setTrips(prev => 
         prev.map(t => t.id === id ? { ...t, ...trip } : t)
       );
+
+      // Auditar la actualización
+      await logUpdate('trips', id, {
+        origin: existingTrip.origin,
+        destination: existingTrip.destination,
+        distance: existingTrip.distance
+      }, trip, { action: 'update_trip' });
       
       console.log('✅ [useTrips] Viaje actualizado exitosamente:', id);
       toast.success('Viaje actualizado correctamente');
@@ -200,6 +232,12 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
     }
     
     try {
+      const existingTrip = getTripById(id);
+      if (!existingTrip) {
+        toast.error('Viaje no encontrado');
+        return;
+      }
+
       console.log('🔍 [useTrips] Verificando dependencias para eliminar viaje:', id);
       
       const [{ data: expenses }, { data: tollRecords }] = await Promise.all([
@@ -227,6 +265,14 @@ export const useTrips = (user: User | null, setGlobalLoading: (loading: boolean)
       }
       
       setTrips(prev => prev.filter(t => t.id !== id));
+
+      // Auditar la eliminación
+      await logDelete('trips', id, {
+        origin: existingTrip.origin,
+        destination: existingTrip.destination,
+        vehicleId: existingTrip.vehicleId,
+        distance: existingTrip.distance
+      }, { action: 'delete_trip' });
       
       console.log('✅ [useTrips] Viaje eliminado exitosamente:', id);
       toast.success('Viaje eliminado correctamente');

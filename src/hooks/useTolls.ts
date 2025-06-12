@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Toll } from '@/types';
@@ -7,9 +6,11 @@ import { User } from '@supabase/supabase-js';
 import { validateToll } from '@/utils/validators';
 import { mapTollFromDB, mapTollToDB } from '@/utils/tollMappers';
 import { errorHandler } from '@/utils/errorHandler';
+import { useAuditLogger } from './useAuditLogger';
 
 export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean) => void) => {
   const [tolls, setTolls] = useState<Toll[]>([]);
+  const { logRead, logCreate, logUpdate, logDelete } = useAuditLogger(user);
   
   const loadTolls = async () => {
     if (!user) {
@@ -51,6 +52,12 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
       
       console.log('✅ [useTolls] Peajes cargados exitosamente:', mappedTolls.length);
       setTolls(mappedTolls);
+
+      // Auditar la carga de peajes
+      await logRead('tolls', undefined, { 
+        count: mappedTolls.length,
+        action: 'load_all_tolls'
+      });
     } catch (error) {
       console.error('❌ [useTolls] Error inesperado al cargar peajes:', error);
       errorHandler.handleGenericError(error, { component: 'useTolls', action: 'loadTolls' });
@@ -65,7 +72,13 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
   
   const getTollById = (id: string) => {
     if (!id || typeof id !== 'string') return undefined;
-    return tolls.find(toll => toll.id === id);
+    const toll = tolls.find(toll => toll.id === id);
+    
+    if (toll) {
+      logRead('tolls', id, { action: 'get_toll_by_id' });
+    }
+    
+    return toll;
   };
   
   const addToll = async (toll: Omit<Toll, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
@@ -116,6 +129,14 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
       
       const mappedToll = mapTollFromDB(data);
       setTolls(prev => [mappedToll, ...prev]);
+
+      // Auditar la creación
+      await logCreate('tolls', mappedToll.id, {
+        name: mappedToll.name,
+        location: mappedToll.location,
+        price: mappedToll.price,
+        category: mappedToll.category
+      }, { action: 'create_toll' });
       
       console.log('✅ [useTolls] Peaje creado exitosamente:', mappedToll.id);
       toast.success('Peaje agregado correctamente');
@@ -132,15 +153,15 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
     }
     
     try {
+      const existingToll = getTollById(id);
+      if (!existingToll) {
+        toast.error('Peaje no encontrado');
+        return;
+      }
+
       if (toll.name || toll.location) {
-        const currentToll = tolls.find(t => t.id === id);
-        if (!currentToll) {
-          toast.error('Peaje no encontrado');
-          return;
-        }
-        
-        const checkName = toll.name || currentToll.name;
-        const checkLocation = toll.location || currentToll.location;
+        const checkName = toll.name || existingToll.name;
+        const checkLocation = toll.location || existingToll.location;
         
         const existingToll = tolls.find(t => 
           t.id !== id &&
@@ -172,6 +193,13 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
       setTolls(prev => 
         prev.map(t => t.id === id ? { ...t, ...toll } : t)
       );
+
+      // Auditar la actualización
+      await logUpdate('tolls', id, {
+        name: existingToll.name,
+        location: existingToll.location,
+        price: existingToll.price
+      }, toll, { action: 'update_toll' });
       
       console.log('✅ [useTolls] Peaje actualizado exitosamente:', id);
       toast.success('Peaje actualizado correctamente');
@@ -188,6 +216,12 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
     }
     
     try {
+      const existingToll = getTollById(id);
+      if (!existingToll) {
+        toast.error('Peaje no encontrado');
+        return;
+      }
+
       console.log('🔍 [useTolls] Verificando dependencias para eliminar peaje:', id);
       
       const { data: tollRecords } = await supabase
@@ -216,6 +250,14 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
       }
       
       setTolls(prev => prev.filter(t => t.id !== id));
+
+      // Auditar la eliminación
+      await logDelete('tolls', id, {
+        name: existingToll.name,
+        location: existingToll.location,
+        price: existingToll.price,
+        category: existingToll.category
+      }, { action: 'delete_toll' });
       
       console.log('✅ [useTolls] Peaje eliminado exitosamente:', id);
       toast.success('Peaje eliminado correctamente');

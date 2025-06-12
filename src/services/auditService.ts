@@ -25,7 +25,7 @@ const getAuditContext = (): AuditContext => {
 };
 
 /**
- * Registra una operación en el log de auditoría de forma silenciosa
+ * Registra una operación en el log de auditoría
  * 
  * @param {User | null} user - Usuario que realiza la operación
  * @param {CreateAuditLogParams} params - Parámetros del log de auditoría
@@ -37,6 +37,7 @@ export const createAuditLog = async (
 ): Promise<boolean> => {
   // Si no hay usuario, no registrar auditoría
   if (!user) {
+    console.warn('[Audit] No user provided, skipping audit log');
     return false;
   }
 
@@ -61,12 +62,19 @@ export const createAuditLog = async (
       created_at: new Date().toISOString()
     };
 
-    // Timeout más corto y manejo silencioso de errores
+    console.log('[Audit] Creating audit log:', {
+      user_id: auditData.user_id,
+      table_name: auditData.table_name,
+      operation: auditData.operation,
+      record_id: auditData.record_id
+    });
+
+    // Usar función de Edge directamente con timeout más largo
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const { error } = await supabase.functions.invoke('create-audit-log', {
+      const { data, error } = await supabase.functions.invoke('create-audit-log', {
         body: { audit_data: auditData },
         headers: {
           'Content-Type': 'application/json'
@@ -74,21 +82,28 @@ export const createAuditLog = async (
       });
 
       clearTimeout(timeoutId);
-      return !error;
+      
+      if (error) {
+        console.error('[Audit] Error from edge function:', error);
+        return false;
+      }
+
+      console.log('[Audit] Successfully created audit log:', data);
+      return true;
     } catch (fetchError) {
       clearTimeout(timeoutId);
-      // Silenciar errores de red para no afectar UX
+      console.error('[Audit] Network error creating audit log:', fetchError);
       return false;
     }
 
   } catch (error) {
-    // Silenciar todos los errores de auditoría
+    console.error('[Audit] Unexpected error creating audit log:', error);
     return false;
   }
 };
 
 /**
- * Registra una operación de lectura (READ) - Deshabilitada para rendimiento
+ * Registra una operación de lectura (READ)
  */
 export const auditRead = async (
   user: User | null,
@@ -96,7 +111,15 @@ export const auditRead = async (
   recordId?: string,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  // No hacer auditoría de lecturas para reducir carga
+  // Solo auditar lecturas importantes, no todas para evitar spam
+  if (additionalInfo?.action && additionalInfo.action.includes('load_all')) {
+    await createAuditLog(user, {
+      tableName,
+      operation: 'READ',
+      recordId,
+      additionalInfo
+    });
+  }
 };
 
 /**
@@ -109,16 +132,14 @@ export const auditCreate = async (
   newValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  // Ejecutar de forma asíncrona sin bloquear la UI
-  setTimeout(() => {
-    createAuditLog(user, {
-      tableName,
-      operation: 'CREATE',
-      recordId,
-      newValues,
-      additionalInfo
-    });
-  }, 0);
+  // Ejecutar inmediatamente, no de forma asíncrona
+  await createAuditLog(user, {
+    tableName,
+    operation: 'CREATE',
+    recordId,
+    newValues,
+    additionalInfo
+  });
 };
 
 /**
@@ -132,17 +153,15 @@ export const auditUpdate = async (
   newValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  // Ejecutar de forma asíncrona sin bloquear la UI
-  setTimeout(() => {
-    createAuditLog(user, {
-      tableName,
-      operation: 'UPDATE',
-      recordId,
-      oldValues,
-      newValues,
-      additionalInfo
-    });
-  }, 0);
+  // Ejecutar inmediatamente, no de forma asíncrona
+  await createAuditLog(user, {
+    tableName,
+    operation: 'UPDATE',
+    recordId,
+    oldValues,
+    newValues,
+    additionalInfo
+  });
 };
 
 /**
@@ -155,16 +174,14 @@ export const auditDelete = async (
   oldValues: Record<string, any>,
   additionalInfo?: Record<string, any>
 ): Promise<void> => {
-  // Ejecutar de forma asíncrona sin bloquear la UI
-  setTimeout(() => {
-    createAuditLog(user, {
-      tableName,
-      operation: 'DELETE',
-      recordId,
-      oldValues,
-      additionalInfo
-    });
-  }, 0);
+  // Ejecutar inmediatamente, no de forma asíncrona
+  await createAuditLog(user, {
+    tableName,
+    operation: 'DELETE',
+    recordId,
+    oldValues,
+    additionalInfo
+  });
 };
 
 /**
@@ -186,11 +203,13 @@ export const getAuditLogs = async (
       .range(offset, offset + limit - 1);
 
     if (error) {
+      console.error('[Audit] Error fetching audit logs:', error);
       return [];
     }
 
     return data || [];
   } catch (error) {
+    console.error('[Audit] Error fetching audit logs:', error);
     return [];
   }
 };

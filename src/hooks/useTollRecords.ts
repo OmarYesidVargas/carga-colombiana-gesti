@@ -7,9 +7,11 @@ import { User } from '@supabase/supabase-js';
 import { validateTollRecord } from '@/utils/validators';
 import { mapTollRecordFromDB, mapTollRecordToDB } from '@/utils/tollMappers';
 import { errorHandler } from '@/utils/errorHandler';
+import { useAuditLogger } from './useAuditLogger';
 
 export const useTollRecords = (user: User | null, setGlobalLoading: (loading: boolean) => void) => {
   const [tollRecords, setTollRecords] = useState<TollRecord[]>([]);
+  const { logRead, logCreate, logUpdate, logDelete } = useAuditLogger(user);
   
   const loadTollRecords = async () => {
     if (!user) {
@@ -52,6 +54,12 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
       
       console.log('✅ [useTollRecords] Registros cargados:', mappedRecords.length);
       setTollRecords(mappedRecords);
+
+      // Auditar la carga de registros
+      await logRead('toll_records', undefined, { 
+        count: mappedRecords.length,
+        action: 'load_all_toll_records'
+      });
     } catch (error) {
       console.error('❌ [useTollRecords] Error inesperado:', error);
       errorHandler.handleGenericError(error, { component: 'useTollRecords', action: 'loadTollRecords' });
@@ -66,7 +74,13 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
   
   const getTollRecordById = (id: string) => {
     if (!id || typeof id !== 'string') return undefined;
-    return tollRecords.find(record => record.id === id);
+    const record = tollRecords.find(record => record.id === id);
+    
+    if (record) {
+      logRead('toll_records', id, { action: 'get_toll_record_by_id' });
+    }
+    
+    return record;
   };
   
   const addTollRecord = async (record: Omit<TollRecord, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
@@ -127,6 +141,15 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
       const mappedRecord = mapTollRecordFromDB(data);
       setTollRecords(prev => [mappedRecord, ...prev]);
       
+      // Auditar la creación
+      await logCreate('toll_records', mappedRecord.id, {
+        vehicleId: mappedRecord.vehicleId,
+        tripId: mappedRecord.tripId,
+        tollId: mappedRecord.tollId,
+        price: mappedRecord.price,
+        paymentMethod: mappedRecord.paymentMethod
+      }, { action: 'create_toll_record' });
+      
       console.log('✅ [useTollRecords] Registro creado:', mappedRecord.id);
       toast.success('Registro de peaje agregado correctamente');
     } catch (error) {
@@ -142,6 +165,12 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
     }
     
     try {
+      const existingRecord = getTollRecordById(id);
+      if (!existingRecord) {
+        toast.error('Registro no encontrado');
+        return;
+      }
+
       console.log('🔄 [useTollRecords] Actualizando registro:', id, record);
       
       const updatedRecord = mapTollRecordToDB(record);
@@ -165,6 +194,12 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
       setTollRecords(prev => 
         prev.map(r => r.id === id ? { ...r, ...record } : r)
       );
+
+      // Auditar la actualización
+      await logUpdate('toll_records', id, {
+        price: existingRecord.price,
+        paymentMethod: existingRecord.paymentMethod
+      }, record, { action: 'update_toll_record' });
       
       console.log('✅ [useTollRecords] Registro actualizado:', id);
       toast.success('Registro actualizado correctamente');
@@ -181,6 +216,12 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
     }
     
     try {
+      const existingRecord = getTollRecordById(id);
+      if (!existingRecord) {
+        toast.error('Registro no encontrado');
+        return;
+      }
+
       console.log('🗑️ [useTollRecords] Eliminando registro:', id);
       
       const { error } = await supabase
@@ -196,6 +237,15 @@ export const useTollRecords = (user: User | null, setGlobalLoading: (loading: bo
       }
       
       setTollRecords(prev => prev.filter(r => r.id !== id));
+
+      // Auditar la eliminación
+      await logDelete('toll_records', id, {
+        vehicleId: existingRecord.vehicleId,
+        tripId: existingRecord.tripId,
+        tollId: existingRecord.tollId,
+        price: existingRecord.price,
+        paymentMethod: existingRecord.paymentMethod
+      }, { action: 'delete_toll_record' });
       
       console.log('✅ [useTollRecords] Registro eliminado:', id);
       toast.success('Registro eliminado correctamente');
