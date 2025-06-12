@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Toll } from '@/types';
@@ -153,23 +154,23 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
     }
     
     try {
-      const existingToll = getTollById(id);
-      if (!existingToll) {
+      const currentToll = getTollById(id);
+      if (!currentToll) {
         toast.error('Peaje no encontrado');
         return;
       }
 
       if (toll.name || toll.location) {
-        const checkName = toll.name || existingToll.name;
-        const checkLocation = toll.location || existingToll.location;
+        const checkName = toll.name || currentToll.name;
+        const checkLocation = toll.location || currentToll.location;
         
-        const existingToll = tolls.find(t => 
+        const duplicateToll = tolls.find(t => 
           t.id !== id &&
           t.name.toLowerCase().trim() === checkName.toLowerCase().trim() &&
           t.location.toLowerCase().trim() === checkLocation.toLowerCase().trim()
         );
         
-        if (existingToll) {
+        if (duplicateToll) {
           toast.error('Ya existe un peaje con este nombre en esta ubicación');
           return;
         }
@@ -196,9 +197,9 @@ export const useTolls = (user: User | null, setGlobalLoading: (loading: boolean)
 
       // Auditar la actualización
       await logUpdate('tolls', id, {
-        name: existingToll.name,
-        location: existingToll.location,
-        price: existingToll.price
+        name: currentToll.name,
+        location: currentToll.location,
+        price: currentToll.price
       }, toll, { action: 'update_toll' });
       
       console.log('✅ [useTolls] Peaje actualizado exitosamente:', id);
