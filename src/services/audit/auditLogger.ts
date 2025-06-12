@@ -24,9 +24,18 @@ export const createAuditLog = async (
   user: User | null,
   params: CreateAuditLogParams
 ): Promise<boolean> => {
-  // Si no hay usuario, no registrar auditoría
+  console.log('[Audit] Iniciando creación de log de auditoría:', {
+    hasUser: !!user,
+    userId: user?.id,
+    operation: params.operation,
+    tableName: params.tableName,
+    recordId: params.recordId
+  });
+
+  // Si no hay usuario, registrar el motivo y no crear auditoría
   if (!user) {
-    console.warn('[Audit] No user provided, skipping audit log');
+    console.warn('[Audit] ❌ No se puede crear log de auditoría: Usuario no autenticado');
+    console.warn('[Audit] Para que funcione la auditoría, el usuario debe estar logueado');
     return false;
   }
 
@@ -49,17 +58,23 @@ export const createAuditLog = async (
       created_at: new Date().toISOString()
     };
 
-    console.log('[Audit] Creating audit log:', {
+    console.log('[Audit] 📝 Datos del log de auditoría preparados:', {
       user_id: auditData.user_id,
       table_name: auditData.table_name,
       operation: auditData.operation,
-      record_id: auditData.record_id
+      record_id: auditData.record_id,
+      session_id: auditData.session_id
     });
 
     // Primero intentar con Edge Function
     try {
+      console.log('[Audit] 🚀 Intentando usar Edge Function...');
+      
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => {
+        console.log('[Audit] ⏰ Timeout de Edge Function después de 10 segundos');
+        controller.abort();
+      }, 10000);
 
       const { data, error } = await supabase.functions.invoke('create-audit-log', {
         body: { audit_data: auditData },
@@ -71,16 +86,18 @@ export const createAuditLog = async (
       clearTimeout(timeoutId);
       
       if (error) {
-        console.error('[Audit] Error from edge function:', error);
+        console.error('[Audit] ❌ Error desde Edge Function:', error);
         throw error;
       }
 
-      console.log('[Audit] Successfully created audit log via Edge Function:', data);
+      console.log('[Audit] ✅ Log de auditoría creado exitosamente vía Edge Function:', data);
       return true;
     } catch (edgeFunctionError) {
-      console.warn('[Audit] Edge function failed, trying direct insertion:', edgeFunctionError);
+      console.warn('[Audit] ⚠️ Edge Function falló, intentando inserción directa:', edgeFunctionError);
       
       // Fallback: inserción directa si la Edge Function falla
+      console.log('[Audit] 🔄 Intentando inserción directa en la base de datos...');
+      
       const { error: directError } = await supabase
         .from('audit_logs')
         .insert({
@@ -96,16 +113,23 @@ export const createAuditLog = async (
         });
 
       if (directError) {
-        console.error('[Audit] Direct insertion also failed:', directError);
+        console.error('[Audit] ❌ Inserción directa también falló:', directError);
+        console.error('[Audit] Detalles del error:', {
+          code: directError.code,
+          message: directError.message,
+          details: directError.details,
+          hint: directError.hint
+        });
         return false;
       }
 
-      console.log('[Audit] Successfully created audit log via direct insertion');
+      console.log('[Audit] ✅ Log de auditoría creado exitosamente vía inserción directa');
       return true;
     }
 
   } catch (error) {
-    console.error('[Audit] Unexpected error creating audit log:', error);
+    console.error('[Audit] ❌ Error inesperado creando log de auditoría:', error);
+    console.error('[Audit] Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
     return false;
   }
 };

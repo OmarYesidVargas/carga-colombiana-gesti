@@ -34,12 +34,22 @@ export const useAuditLogger = (user: User | null) => {
     recordId?: string,
     additionalInfo?: Record<string, any>
   ) => {
-    if (!user) return;
+    console.log('🔍 [useAuditLogger] Intentando registrar operación READ:', {
+      hasUser: !!user,
+      userId: user?.id,
+      tableName,
+      recordId
+    });
+    
+    if (!user) {
+      console.warn('⚠️ [useAuditLogger] No se puede registrar READ: Usuario no autenticado');
+      return;
+    }
     
     try {
       await auditRead(user, tableName, recordId, additionalInfo);
     } catch (error) {
-      console.error('Error en logRead:', error);
+      console.error('❌ [useAuditLogger] Error en logRead:', error);
     }
   }, [user]);
 
@@ -52,12 +62,22 @@ export const useAuditLogger = (user: User | null) => {
     newValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
-    if (!user) return;
+    console.log('➕ [useAuditLogger] Intentando registrar operación CREATE:', {
+      hasUser: !!user,
+      userId: user?.id,
+      tableName,
+      recordId
+    });
+    
+    if (!user) {
+      console.warn('⚠️ [useAuditLogger] No se puede registrar CREATE: Usuario no autenticado');
+      return;
+    }
     
     try {
       console.log('🔄 [useAuditLogger] Ejecutando logCreate:', { tableName, recordId });
       await auditCreate(user, tableName, recordId, newValues, additionalInfo);
-      console.log('✅ [useAuditLogger] logCreate completado');
+      console.log('✅ [useAuditLogger] logCreate completado exitosamente');
     } catch (error) {
       console.error('❌ [useAuditLogger] Error en logCreate:', error);
     }
@@ -73,12 +93,22 @@ export const useAuditLogger = (user: User | null) => {
     newValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
-    if (!user) return;
+    console.log('✏️ [useAuditLogger] Intentando registrar operación UPDATE:', {
+      hasUser: !!user,
+      userId: user?.id,
+      tableName,
+      recordId
+    });
+    
+    if (!user) {
+      console.warn('⚠️ [useAuditLogger] No se puede registrar UPDATE: Usuario no autenticado');
+      return;
+    }
     
     try {
       console.log('🔄 [useAuditLogger] Ejecutando logUpdate:', { tableName, recordId });
       await auditUpdate(user, tableName, recordId, oldValues, newValues, additionalInfo);
-      console.log('✅ [useAuditLogger] logUpdate completado');
+      console.log('✅ [useAuditLogger] logUpdate completado exitosamente');
     } catch (error) {
       console.error('❌ [useAuditLogger] Error en logUpdate:', error);
     }
@@ -93,12 +123,22 @@ export const useAuditLogger = (user: User | null) => {
     oldValues: Record<string, any>,
     additionalInfo?: Record<string, any>
   ) => {
-    if (!user) return;
+    console.log('🗑️ [useAuditLogger] Intentando registrar operación DELETE:', {
+      hasUser: !!user,
+      userId: user?.id,
+      tableName,
+      recordId
+    });
+    
+    if (!user) {
+      console.warn('⚠️ [useAuditLogger] No se puede registrar DELETE: Usuario no autenticado');
+      return;
+    }
     
     try {
       console.log('🔄 [useAuditLogger] Ejecutando logDelete:', { tableName, recordId });
       await auditDelete(user, tableName, recordId, oldValues, additionalInfo);
-      console.log('✅ [useAuditLogger] logDelete completado');
+      console.log('✅ [useAuditLogger] logDelete completado exitosamente');
     } catch (error) {
       console.error('❌ [useAuditLogger] Error en logDelete:', error);
     }

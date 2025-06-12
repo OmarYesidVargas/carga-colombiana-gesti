@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Expense } from '@/types';
 import { User } from '@supabase/supabase-js';
@@ -22,6 +21,7 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
   useEffect(() => {
     const fetchExpenses = async () => {
       if (!user) {
+        console.log('🔍 [useExpenses] No hay usuario autenticado, limpiando gastos');
         setExpenses([]);
         setError(null);
         return;
@@ -75,6 +75,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
   const addExpense = useCallback(async (
     expense: Omit<Expense, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
   ): Promise<Expense | void> => {
+    console.log('➕ [useExpenses] Iniciando adición de gasto:', expense);
+    
     if (!user) {
       const errorMessage = 'Usuario no autenticado';
       console.error('❌ [useExpenses] addExpense:', errorMessage);
@@ -106,6 +108,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       const newExpense = await addExpenseService(user, expense);
       
       if (newExpense) {
+        console.log('📝 [useExpenses] Registrando auditoría para gasto creado:', newExpense.id);
+        
         await logCreate('expenses', newExpense.id, {
           category: newExpense.category,
           amount: newExpense.amount,
@@ -131,6 +135,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
     id: string, 
     expenseUpdates: Partial<Expense>
   ): Promise<boolean> => {
+    console.log('✏️ [useExpenses] Iniciando actualización de gasto:', id, expenseUpdates);
+    
     if (!user || !id) {
       const errorMessage = 'Parámetros inválidos para actualizar';
       console.error('❌ [useExpenses] updateExpense:', errorMessage);
@@ -155,6 +161,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       const success = await updateExpenseService(user, id, expenseUpdates);
       
       if (success) {
+        console.log('📝 [useExpenses] Registrando auditoría para gasto actualizado:', id);
+        
         await logUpdate('expenses', id, {
           category: existingExpense.category,
           amount: existingExpense.amount,
@@ -180,6 +188,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
   }, [user, getExpenseById, logUpdate]);
   
   const deleteExpense = useCallback(async (id: string): Promise<boolean> => {
+    console.log('🗑️ [useExpenses] Iniciando eliminación de gasto:', id);
+    
     if (!user || !id) {
       const errorMessage = 'Parámetros inválidos para eliminar';
       console.error('❌ [useExpenses] deleteExpense:', errorMessage);
@@ -204,6 +214,8 @@ export const useExpenses = (user: User | null, setGlobalLoading: (loading: boole
       const success = await deleteExpenseService(user, id);
       
       if (success) {
+        console.log('📝 [useExpenses] Registrando auditoría para gasto eliminado:', id);
+        
         await logDelete('expenses', id, {
           category: existingExpense.category,
           amount: existingExpense.amount,
