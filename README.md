@@ -26,8 +26,7 @@ Sistema integral de gestión de transportes. Una aplicación web moderna y respo
 - **Optimización**: Performance monitoring y caching inteligente
 
 ## 🚀 Despliegue
-
-### Producción (GitHub Pages)
+Vercel
 La aplicación está desplegada en: https://transporegistrosplus.vercel.app/
 
 ### Variables de Entorno Requeridas
