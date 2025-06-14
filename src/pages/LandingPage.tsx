@@ -45,7 +45,7 @@ const LandingPage = () => {
       <header className="w-full p-4 bg-white/80 backdrop-blur-sm border-b">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">TransporegistrosPlus</h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-center gap-2 w-full sm:w-auto">
             <Link to="/login">
               <Button variant="outline">Iniciar Sesión</Button>
             </Link>
